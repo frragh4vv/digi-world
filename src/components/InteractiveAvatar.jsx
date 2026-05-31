@@ -236,7 +236,7 @@ export default function InteractiveAvatar() {
   ];
 
   // Player continuous coordinates and direction
-  const [playerPos, setPlayerPos] = useState({ col: 3, row: 3 }); 
+  const [playerPos, setPlayerPos] = useState({ col: 11, row: 10 }); 
   const [direction, setDirection] = useState('down');
   const [frame, setFrame] = useState(0);
   const [dialogueText, setDialogueText] = useState("Welcome to my cozy overworld space! Walk up to items to inspect, or click tiles.");
@@ -245,7 +245,7 @@ export default function InteractiveAvatar() {
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
 
   // ⚽ Soccer Ball continuous physics state
-  const [ballPos, setBallPos] = useState({ col: 5.0, row: 11.0 });
+  const [ballPos, setBallPos] = useState({ col: 15.0, row: 11.0 });
   const [showGoalFlash, setShowGoalFlash] = useState(false);
   
   // Goalie NPC Y-axis sliding FSM coordinates
@@ -287,13 +287,13 @@ export default function InteractiveAvatar() {
   const [selectedVisitorReview, setSelectedVisitorReview] = useState(null); // to read a past guest NPC review
 
   const keysPressed = useRef({});
-  const playerCoords = useRef({ col: 3, row: 3 });
+  const playerCoords = useRef({ col: 11, row: 10 });
   const lastStepSound = useRef(0);
   const clickTarget = useRef(null);
   const konamiKeyHistory = useRef([]);
 
   // Soccer Ball Physics Refs
-  const ballCoords = useRef({ col: 5.0, row: 11.0 });
+  const ballCoords = useRef({ col: 15.0, row: 11.0 });
   const ballVel = useRef({ col: 0, row: 0 });
 
   // Raghav signature colors for Raghav NPC
@@ -754,13 +754,13 @@ export default function InteractiveAvatar() {
       let nextBallR = ballCoords.current.row + ballVel.current.row;
 
       // 2. Bounded specifically to the lobby green turf carpet boundary guard with elastic bounces
-      if (nextBallC < 1.3 || nextBallC > 8.7) {
+      if (nextBallC < 13.6 || nextBallC > 18.5) {
         ballVel.current.col = -ballVel.current.col * 0.72; // bounce!
-        nextBallC = Math.max(1.3, Math.min(8.7, ballCoords.current.col + ballVel.current.col));
+        nextBallC = Math.max(13.6, Math.min(18.5, ballCoords.current.col + ballVel.current.col));
       }
-      if (nextBallR < 7.3 || nextBallR > 13.3) {
+      if (nextBallR < 9.6 || nextBallR > 13.5) {
         ballVel.current.row = -ballVel.current.row * 0.72; // bounce!
-        nextBallR = Math.max(7.3, Math.min(13.3, ballCoords.current.row + ballVel.current.row));
+        nextBallR = Math.max(9.6, Math.min(13.5, ballCoords.current.row + ballVel.current.row));
       }
 
       ballCoords.current.col = nextBallC;
@@ -1966,35 +1966,6 @@ export default function InteractiveAvatar() {
             borderStyle.border = '1.5px solid rgba(255,255,255,0.06)';
             if ((t.col + t.row) % 4 === 0) content = <span style={{ fontSize: '0.65rem', opacity: 0.15 }}>🧗</span>;
           }
-          else if (t.type === 'climbing-floor') {
-            bg = '#1c1c1e';
-            borderStyle.border = '1.5px solid #2c2c2e';
-          }
-          else if (t.type === 'solid-prop') {
-            if (t.col < 10 && t.row >= 7) {
-              bg = t.col % 2 === 0 ? '#1b4d22' : '#225d2a';
-            } else if (t.col >= 10 && t.row >= 7) {
-              bg = '#1c1c1e';
-              borderStyle.border = '1.5px solid #2c2c2e';
-            } else if (t.col >= 10 && t.row < 7) {
-              bg = (t.col + t.row) % 2 === 0 ? '#262629' : '#1e1e21';
-              borderStyle.border = '1px solid rgba(255, 235, 59, 0.04)';
-            } else {
-              bg = '#4e3b26';
-              borderStyle.borderRight = '1px solid rgba(212,175,55,0.15)';
-              borderStyle.borderBottom = '1px solid rgba(212,175,55,0.15)';
-            }
-
-            if (t.col === 5 && t.row === 8) {
-              content = <div style={{ width: '40px', height: '40px', zIndex: 5 }}><PixelProp type="dumbbell-rack" /></div>;
-            } else if (t.col === 15 && t.row === 8) {
-              content = <div style={{ width: '40px', height: '40px', zIndex: 5 }}><PixelProp type="dumbbell-rack" /></div>;
-            } else if (t.col === 7 && t.row === 9) {
-              content = <div style={{ width: '40px', height: '40px', zIndex: 5 }}><PixelProp type="mirror" /></div>;
-            } else if (t.col === 17 && t.row === 9) {
-              content = <div style={{ width: '40px', height: '40px', zIndex: 5 }}><PixelProp type="mirror" /></div>;
-            }
-          }
           else if (t.type === 'garage-floor') {
             bg = (t.col + t.row) % 2 === 0 ? '#262629' : '#1e1e21'; // Checker metallic mat
             borderStyle.border = '1px solid rgba(255, 235, 59, 0.04)';
@@ -2049,12 +2020,13 @@ export default function InteractiveAvatar() {
             }
           }
           
-          // ⚽ Soccer turf field with alternating light/dark vertical stripes
+          // ⚽ Soccer turf field with chalk lines
           else if (t.type === 'soccer-turf') {
-            bg = t.col % 2 === 0 ? '#1b4d22' : '#225d2a';
-            if (t.col === 1) borderStyle.borderLeft = '1px solid rgba(255,255,255,0.1)';
-            if (t.row === 7) borderStyle.borderTop = '1px solid rgba(255,255,255,0.1)';
-            if (t.row === 13) borderStyle.borderBottom = '1px solid rgba(255,255,255,0.1)';
+            bg = '#143618';
+            if (t.col === 14) borderStyle.borderLeft = '2px solid rgba(255,255,255,0.4)';
+            if (t.col === 18) borderStyle.borderRight = '2px solid rgba(255,255,255,0.4)';
+            if (t.row === 10) borderStyle.borderTop = '2px solid rgba(255,255,255,0.4)';
+            if (t.row === 13) borderStyle.borderBottom = '2px solid rgba(255,255,255,0.4)';
           }
           // 📚 Manga tatami lounge floor
           else if (t.type === 'manga-lounge') {
@@ -2088,7 +2060,7 @@ export default function InteractiveAvatar() {
             if (t.col === 1 && t.row === 1) content = <div style={{ width: '80px', height: '80px', position: 'absolute', top: 0, left: 0, zIndex: 5 }}><PixelProp type="bed" /></div>;
           }
           else if (t.type === 'bookshelf') {
-            if (t.col === 2 && t.row === 2) content = <div style={{ width: '80px', height: '40px', position: 'absolute', top: 0, left: 0, zIndex: 5 }}><PixelProp type="bookshelf" /></div>;
+            if (t.col === 17 && t.row === 1) content = <div style={{ width: '80px', height: '40px', position: 'absolute', top: 0, left: 0, zIndex: 5 }}><PixelProp type="bookshelf" /></div>;
           }
           
           else if (t.type === 'suitcase') {
@@ -2114,25 +2086,18 @@ export default function InteractiveAvatar() {
           else if (t.type === 'bike') {
             content = <div style={{ width: '40px', height: '40px' }}><PixelProp type="bike" /></div>;
           }
+          else if (t.type === 'projector') {
+            content = <div style={{ width: '40px', height: '40px' }}><PixelProp type="projector" /></div>;
+          }
+
+          else if (t.type === 'bouldering-wall') {
+            content = <PixelProp type="bouldering-wall" />;
+          }
+
           else if (t.type.startsWith('obstacle-')) {
             const objId = t.type.split('-')[1];
             const obj = INTERACTABLE_OBJECTS.find(o => o.id === objId);
-            
-            // Set background to match their quadrant floors perfectly!
-            if (t.col < 10 && t.row >= 7) {
-              // Bottom-Left Soccer turf
-              bg = t.col % 2 === 0 ? '#1b4d22' : '#225d2a';
-            } else if (t.col >= 10 && t.row >= 7) {
-              // Bottom-Right Climbing Floor
-              bg = '#1c1c1e';
-            } else if (t.col >= 10 && t.row < 7) {
-              // Top-Right Metallic Garage
-              bg = (t.col + t.row) % 2 === 0 ? '#262629' : '#1e1e21';
-            } else {
-              // Top-Left Tatami Manga lounge
-              bg = '#4e3b26';
-            }
-            
+            bg = t.type.includes('profile') ? '#1c1c28' : t.type.includes('football') ? '#143618' : t.type.includes('anime') ? '#4e3b26' : t.type.includes('trekking') ? '#07180d' : t.type.includes('kitchen') ? '#19131c' : '#1c1c28';
             glow = `inset 0 0 10px ${obj?.color || 'var(--rpg-text)'}`;
             
             if (objId === 'kitchen') {
