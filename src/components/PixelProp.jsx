@@ -286,30 +286,29 @@ export default function PixelProp({ type }) {
   if (type === 'bike') {
     return (
       <svg width="100%" height="100%" viewBox="0 0 16 16" shapeRendering="crispEdges">
-        {/* Mechanic's mat */}
-        <rect x="1" y="10" width="14" height="5" fill="#33333b" rx="1" />
-        <rect x="2" y="11" width="12" height="3" fill="#222227" rx="0.5" />
+        {/* Mat with oil stain */}
+        <rect x="1" y="9" width="14" height="6" fill="#78909c" rx="0.5" />
+        <ellipse cx="6" cy="12" rx="3.2" ry="1.5" fill="#4e342e" opacity="0.8" /> {/* Oil stain */}
+        <ellipse cx="11" cy="13" rx="2" ry="1" fill="#4e342e" opacity="0.6" />
         {/* Kickstand */}
-        <line x1="8" y1="10" x2="6" y2="13" stroke="#555" strokeWidth="1" />
+        <line x1="8" y1="10" x2="6.5" y2="13" stroke="#444" strokeWidth="1" />
         {/* Shadow */}
         <ellipse cx="8" cy="12.5" rx="5" ry="1.5" fill="rgba(0,0,0,0.4)" />
         {/* Wheels */}
-        <circle cx="4.5" cy="11.5" r="2.8" fill="#111" stroke="#555" strokeWidth="0.8" />
-        <circle cx="11.5" cy="11.5" r="2.8" fill="#111" stroke="#555" strokeWidth="0.8" />
-        {/* Engine and Exhaust block */}
-        <rect x="6.5" y="9.5" width="3.5" height="2.5" fill="#555" />
-        <rect x="7" y="10" width="2.5" height="1.5" fill="#888" />
-        <line x1="9.5" y1="11" x2="13.5" y2="11" stroke="#aaa" strokeWidth="1.2" /> {/* Exhaust pipe */}
-        {/* Red frame body */}
-        <polygon points="4.5,11.5 8,6 10.5,6.5 11.5,11.5 8,11.5" fill="#e53935" />
-        <rect x="7.5" y="6" width="3" height="2" fill="#d32f2f" rx="0.5" /> {/* Gas tank */}
-        {/* Black leather seat */}
-        <rect x="8.5" y="5.2" width="2.8" height="1" fill="#111" rx="0.5" />
-        {/* Handlebars */}
-        <line x1="11.5" y1="11.5" x2="10.5" y2="4.5" stroke="#777" strokeWidth="1" />
-        <line x1="9.5" y1="4.5" x2="11.5" y2="4.5" stroke="#222" strokeWidth="1" />
-        {/* Headlight */}
-        <rect x="9.3" y="5.2" width="1.2" height="1.2" fill="#ffd700" />
+        <circle cx="3.8" cy="11.2" r="2.8" fill="#111" stroke="#666" strokeWidth="0.8" />
+        <circle cx="12.2" cy="11.2" r="2.8" fill="#111" stroke="#666" strokeWidth="0.8" />
+        {/* Sleek Blue Sports Body (Chassis) */}
+        <polygon points="3.8,11.2 8,5 11,5.5 12.2,11.2 8,11.2" fill="#0d47a1" /> {/* Blue */}
+        <polygon points="5.5,8 8,4 10,4.2 11,8" fill="#1565c0" /> {/* Highlights */}
+        {/* Headlight screen */}
+        <polygon points="4,7.5 5.5,5 7,6.5" fill="#ffd700" />
+        {/* Silver Engine block & Exhaust */}
+        <rect x="6.2" y="9" width="4" height="2.5" fill="#555" />
+        <line x1="9" y1="10.8" x2="13.5" y2="10.8" stroke="#ccc" strokeWidth="1.2" /> {/* Chrome exhaust */}
+        {/* Seat */}
+        <rect x="8.5" y="4.5" width="2.5" height="1" fill="#111" rx="0.3" />
+        {/* Windshield */}
+        <polygon points="4.8,6.8 5.8,4.2 6.5,5" fill="rgba(255,255,255,0.4)" />
       </svg>
     );
   }
@@ -743,15 +742,57 @@ export default function PixelProp({ type }) {
       <svg width="100%" height="100%" viewBox="0 0 16 16" shapeRendering="crispEdges">
         {/* Shadow */}
         <ellipse cx="8" cy="13.2" rx="6.2" ry="2" fill="rgba(0,0,0,0.35)" />
-        {/* Bean Bag Body (Squishy round orange) */}
-        <ellipse cx="8" cy="9.2" rx="6" ry="4.5" fill="#ff7043" />
+        {/* Bean Bag Body (Squishy round purple) */}
+        <ellipse cx="8" cy="9.2" rx="6" ry="4.5" fill="#8e24aa" />
         {/* Center indentation reading seat */}
-        <ellipse cx="8" cy="8.2" rx="4.2" ry="2.2" fill="#f4511e" />
+        <ellipse cx="8" cy="8.2" rx="4.2" ry="2.2" fill="#6a1b9a" />
         {/* Stitching and folding lines */}
-        <path d="M 2.2,9.2 C 4,11 6,12.5 8,12.5 C 10,12.5 12,11 13.8,9.2" fill="none" stroke="#d84315" strokeWidth="0.8" />
-        <path d="M 8,6.2 C 8,7.2 8,8.2 8,11.2" fill="none" stroke="#d84315" strokeWidth="0.8" />
-        <path d="M 4.2,8 C 5,8.8 6.5,9.2 8,9.2" fill="none" stroke="#d84315" strokeWidth="0.6" strokeDasharray="1.2 0.8" />
-        <path d="M 11.8,8 C 11,8.8 9.5,9.2 8,9.2" fill="none" stroke="#d84315" strokeWidth="0.6" strokeDasharray="1.2 0.8" />
+        <path d="M 2.2,9.2 C 4,11 6,12.5 8,12.5 C 10,12.5 12,11 13.8,9.2" fill="none" stroke="#4a148c" strokeWidth="0.8" />
+        <path d="M 8,6.2 C 8,7.2 8,8.2 8,11.2" fill="none" stroke="#4a148c" strokeWidth="0.8" />
+        <path d="M 4.2,8 C 5,8.8 6.5,9.2 8,9.2" fill="none" stroke="#4a148c" strokeWidth="0.6" strokeDasharray="1.2 0.8" />
+        <path d="M 11.8,8 C 11,8.8 9.5,9.2 8,9.2" fill="none" stroke="#4a148c" strokeWidth="0.6" strokeDasharray="1.2 0.8" />
+      </svg>
+    );
+  }
+
+  if (type === 'mirror') {
+    return (
+      <svg width="100%" height="100%" viewBox="0 0 16 16" shapeRendering="crispEdges">
+        {/* Wooden stand */}
+        <line x1="4" y1="12" x2="3" y2="15" stroke="#8d6e63" strokeWidth="1.2" />
+        <line x1="12" y1="12" x2="13" y2="15" stroke="#8d6e63" strokeWidth="1.2" />
+        {/* Mirror Frame */}
+        <rect x="2" y="1" width="12" height="11" fill="#8d6e63" rx="0.5" stroke="#5d4037" strokeWidth="0.8" />
+        {/* Mirror Reflection Glass */}
+        <rect x="3" y="1.8" width="10" height="9.4" fill="#e0f7fa" />
+        {/* Diagonal shine line */}
+        <line x1="4" y1="10" x2="11" y2="3" stroke="rgba(255,255,255,0.4)" strokeWidth="1" />
+        {/* Pink Flexed Bicep Silhouette */}
+        <path d="M 6,7 C 6,5 7.5,4.5 8.5,5.5 C 9.5,4.8 11.2,6 10,7.5 C 9.2,8.5 7.5,8 6,7 Z" fill="#ff4081" opacity="0.8" />
+        <path d="M 6.8,7.2 C 7,6 7.8,5.8 8.4,6.4" stroke="#ff80ab" strokeWidth="0.6" fill="none" />
+      </svg>
+    );
+  }
+
+  if (type === 'dumbbell-rack') {
+    return (
+      <svg width="100%" height="100%" viewBox="0 0 16 16" shapeRendering="crispEdges">
+        {/* Metal Stand Legs */}
+        <rect x="1" y="3" width="1.5" height="12" fill="#37474f" />
+        <rect x="13.5" y="3" width="1.5" height="12" fill="#37474f" />
+        <rect x="1" y="14" width="14" height="1" fill="#212121" />
+        {/* Top shelf - carrying colorful shoes cleats! */}
+        <rect x="2" y="4" width="12" height="1" fill="#1e1e1e" />
+        <rect x="4" y="2.5" width="3" height="1.8" fill="#ffd700" rx="0.5" /> {/* yellow shoe */}
+        <rect x="9" y="2.5" width="3" height="1.8" fill="#43a047" rx="0.5" /> {/* green shoe */}
+        {/* Middle shelf - carrying dumbbells */}
+        <rect x="2" y="9" width="12" height="1" fill="#1e1e1e" />
+        <circle cx="4" cy="9.5" r="1.5" fill="#111" /> <circle cx="5.5" cy="9.5" r="1.5" fill="#111" /> <line x1="4" y1="9.5" x2="5.5" y2="9.5" stroke="#aaa" strokeWidth="0.8" />
+        <circle cx="10" cy="9.5" r="1.5" fill="#111" /> <circle cx="11.5" cy="9.5" r="1.5" fill="#111" /> <line x1="10" y1="9.5" x2="11.5" y2="9.5" stroke="#aaa" strokeWidth="0.8" />
+        {/* Bottom shelf - carrying heavy dumbbells */}
+        <rect x="2" y="13" width="12" height="1" fill="#1e1e1e" />
+        <circle cx="4.5" cy="13.5" r="1.8" fill="#111" /> <circle cx="6.5" cy="13.5" r="1.8" fill="#111" /> <line x1="4.5" y1="13.5" x2="6.5" y2="13.5" stroke="#aaa" strokeWidth="1" />
+        <circle cx="9.5" cy="13.5" r="1.8" fill="#111" /> <circle cx="11.5" cy="13.5" r="1.8" fill="#111" /> <line x1="9.5" y1="13.5" x2="11.5" y2="13.5" stroke="#aaa" strokeWidth="1" />
       </svg>
     );
   }
