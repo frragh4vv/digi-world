@@ -1,0 +1,247 @@
+:root {
+  --paper-bg: #f4f1ea;
+  --ink-color: #2a2a2a;
+  --tape-color: rgba(230, 230, 230, 0.6);
+  --tape-border: rgba(200, 200, 200, 0.4);
+  --yellow-sticky: #fbf093;
+  --polaroid-bg: #fff;
+  --border-color: #d1cbc1;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--paper-bg);
+  color: var(--ink-color);
+  font-family: 'Courier Prime', monospace;
+  overflow-x: hidden;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+}
+
+/* Main Layout */
+.journal-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  display: flex;
+  gap: 50px;
+}
+
+/* Sidebar & Mini Sections */
+.sidebar {
+  width: 250px;
+  flex-shrink: 0;
+}
+
+.mini-section {
+  background: rgba(255, 255, 255, 0.6);
+  border: 2px solid var(--border-color);
+  padding: 20px;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.05);
+  position: relative;
+  transform: rotate(var(--rotation, 0deg));
+}
+
+.mini-section h3 {
+  margin-top: 0;
+  font-size: 2rem;
+  border-bottom: 2px dashed var(--border-color);
+  padding-bottom: 5px;
+}
+
+.nav-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.nav-links li { margin-bottom: 10px; }
+.nav-links a { color: var(--ink-color); text-decoration: none; }
+.nav-links a:hover { text-decoration: underline; color: #a33; }
+
+.main-content {
+  flex: 1;
+}
+
+/* Typography */
+.handwriting { font-family: 'Caveat', cursive; font-size: 1.8rem; line-height: 1.2; margin-top: 0; }
+.typewriter { font-family: 'Courier Prime', monospace; font-size: 1.1rem; line-height: 1.6; margin-top: 0; }
+
+.cutout-text {
+  display: inline-block;
+  background-color: #fff;
+  padding: 10px 20px;
+  transform: rotate(var(--rotation, 0deg));
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+  border: 1px solid #ccc;
+  clip-path: polygon(2% 1%, 98% 3%, 99% 97%, 1% 98%);
+}
+.cutout-text h1, .cutout-text h2 { font-family: 'Rock Salt', cursive; font-size: 2rem; margin: 0; color: #333; }
+
+/* Hero Section */
+.hero-section {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  margin-bottom: 60px;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 40px;
+}
+.hero-text-block { flex: 1; min-width: 300px; }
+.hero-photo-block { flex: 0 0 auto; }
+.hero-section .subtitle { font-size: 1.2rem; color: #444; }
+
+/* Tape */
+.tape {
+  position: absolute;
+  width: 80px;
+  height: 25px;
+  background-color: var(--tape-color);
+  border: 1px solid var(--tape-border);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  z-index: 10;
+}
+.tape.top-center { top: -10px; left: 50%; transform: translateX(-50%) rotate(-2deg); }
+.tape.corner-top-left { top: -10px; left: -20px; transform: rotate(-45deg); }
+.tape.corner-top-right { top: -10px; right: -20px; transform: rotate(45deg); }
+.tape.center-top { top: -10px; left: 50%; transform: translateX(-50%) rotate(2deg); }
+.tape.corner-bottom-right { bottom: -10px; right: -20px; transform: rotate(-45deg); }
+
+/* Scrapbook Desk Grid Layout */
+.scrapbook-desk {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 40px;
+  align-items: start;
+}
+
+/* Simple Polaroid for Hero */
+.polaroid-simple {
+  background: var(--polaroid-bg);
+  padding: 15px 15px 30px 15px;
+  width: 250px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  transform: rotate(var(--rotation, 0deg));
+  position: relative;
+}
+.polaroid-simple img { width: 100%; height: 250px; object-fit: cover; filter: sepia(0.1) contrast(1.1); }
+.polaroid-simple .caption { text-align: center; margin-top: 15px; margin-bottom: 0; font-size: 1.8rem; }
+.polaroid-simple .short-desc { font-size: 0.95rem; margin-top: 5px; text-align: center; color: #333; }
+
+/* Interactive Hover Polaroid */
+.polaroid-interactive {
+  background: var(--polaroid-bg);
+  padding: 15px 15px 15px 15px;
+  width: 280px;
+  height: 340px; /* fixed height initially */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  transform: rotate(var(--rotation, 0deg));
+  /* Super slow and smooth transition as requested */
+  transition: all 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.polaroid-front {
+  width: 100%;
+  height: 310px; /* Takes up the initial space */
+  display: flex;
+  flex-direction: column;
+}
+.polaroid-front img { 
+  width: 100%; 
+  height: 250px; 
+  object-fit: cover; 
+  filter: sepia(0.1) contrast(1.1); 
+  transition: height 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.polaroid-front .caption { 
+  text-align: center; 
+  margin-top: 15px; 
+  font-size: 1.8rem; 
+}
+
+.polaroid-reveal {
+  opacity: 0;
+  max-height: 0;
+  transform: translateY(20px);
+  transition: all 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+  margin-top: 0;
+}
+.polaroid-reveal .desc {
+  font-size: 0.95rem;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+/* The Scrollable Gallery inside */
+.gallery-scroll {
+  display: flex;
+  overflow-x: auto;
+  gap: 15px;
+  padding-bottom: 10px;
+  scroll-snap-type: x mandatory;
+}
+.gallery-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+.gallery-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+}
+.gallery-scroll::-webkit-scrollbar-thumb {
+  background: #ccc; 
+  border-radius: 4px;
+}
+.gallery-scroll img {
+  width: 200px;
+  height: 150px;
+  object-fit: cover;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  border: 1px solid #ddd;
+}
+
+/* Hover State */
+.polaroid-interactive:hover {
+  animation: none; /* stop floating */
+  transform: scale(1.05) rotate(0deg);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+  height: 520px; /* Expand to show reveal */
+  width: 320px;
+  z-index: 20;
+}
+.polaroid-interactive:hover .polaroid-front img {
+  height: 180px; /* Shrink main image slightly to make room */
+}
+.polaroid-interactive:hover .polaroid-reveal {
+  opacity: 1;
+  max-height: 300px;
+  transform: translateY(0);
+  margin-top: 10px;
+}
+
+/* Floating Animations */
+@keyframes float {
+  0% { transform: translateY(0px) rotate(var(--rotation, 0deg)); }
+  50% { transform: translateY(-8px) rotate(calc(var(--rotation, 0deg) + 1.5deg)); }
+  100% { transform: translateY(0px) rotate(var(--rotation, 0deg)); }
+}
+@keyframes floatSlow {
+  0% { transform: translateY(0px) rotate(var(--rotation, 0deg)); }
+  50% { transform: translateY(-5px) rotate(calc(var(--rotation, 0deg) - 1deg)); }
+  100% { transform: translateY(0px) rotate(var(--rotation, 0deg)); }
+}
+.floating-item { animation: float 7s ease-in-out infinite; }
+.floating-slow { animation: floatSlow 9s ease-in-out infinite; }
+
+/* Scroll Fade Animations */
+.fade-in { opacity: 0; transition: opacity 0.8s ease-out; }
+.fade-in.visible { opacity: 1; }
+
+@media (max-width: 900px) {
+  .journal-wrapper { flex-direction: column; }
+  .sidebar { width: 100%; display: flex; flex-wrap: wrap; gap: 20px; }
+  .mini-section { flex: 1; min-width: 250px; margin-top: 0 !important; }
+}
