@@ -142,6 +142,9 @@ export default function InteractiveAvatar() {
 
   // Spawning Customizer states
   const [customName, setCustomName] = useState("Heyy Visitor");
+  const [selectedPresetClass, setSelectedPresetClass] = useState("Chaotic Explorer");
+  const [customClass, setCustomClass] = useState("");
+  const [isCustomClassMode, setIsCustomClassMode] = useState(false);
   const [raghavDirection, setRaghavDirection] = useState('down');
   const [gameStarted, setGameStarted] = useState(false);
   const [pointsPool, setPointsPool] = useState(20);
@@ -204,12 +207,12 @@ export default function InteractiveAvatar() {
   const [qteStatus, setQteStatus] = useState('playing'); // 'playing' | 'success' | 'fail'
   
   const [showTechStack, setShowTechStack] = useState(false);
-  const [activeStackDrawer, setActiveStackDrawer] = useState('frontend'); // 'frontend' | 'backend' | 'devops' | 'core'
+  const [activeStackDrawer, setActiveStackDrawer] = useState('engine'); // 'engine' | 'drivetrain' | 'suspension' | 'touring'
   
   const [showFitnessStats, setShowFitnessStats] = useState(false);
   const [showTacticalBlueprints, setShowTacticalBlueprints] = useState(false);
   const [showPCProjects, setShowPCProjects] = useState(false);
-  const [pcActiveProject, setPcActiveProject] = useState('scraper'); // 'scraper' | 'rpg' | 'tactics'
+  const [pcActiveProject, setPcActiveProject] = useState('gr20'); // 'gr20' | 'hampi' | 'western_ghats'
   const [simulatedLogs, setSimulatedLogs] = useState([]);
 
   const travelSlides = [
@@ -276,6 +279,11 @@ export default function InteractiveAvatar() {
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [correctStreak, setCorrectStreak] = useState(0);
   const [triviaResult, setTriviaResult] = useState(null); // 'correct' | 'wrong'
+
+  // Books & Films Shelf / CD Shelf states
+  const [showBookshelfPrompt, setShowBookshelfPrompt] = useState(false);
+  const [showBookshelfModal, setShowBookshelfModal] = useState(false);
+  const [bookshelfTab, setBookshelfTab] = useState('anime'); // 'anime' | 'movies'
 
   // Polaroid Projector Media Carousel states
   const [showCarousel, setShowCarousel] = useState(false);
@@ -515,7 +523,7 @@ export default function InteractiveAvatar() {
 
     const gameLoop = () => {
       // Ignore overworld updates when any modal overlay is active to prevent input leak
-      if (showFullscreenSoccer || showFullscreenBiking || showTravelDiary || showCarousel || showVisitorGallery || showKitchen || showTrivia || showGuestbookSubmit || showClimbingQTE || showTechStack || showFitnessStats || showTacticalBlueprints || showPCProjects) {
+      if (showFullscreenSoccer || showFullscreenBiking || showTravelDiary || showCarousel || showVisitorGallery || showKitchen || showTrivia || showGuestbookSubmit || showClimbingQTE || showTechStack || showFitnessStats || showTacticalBlueprints || showBookshelfPrompt || showBookshelfModal) {
         keysPressed.current = {};
         clickTarget.current = null;
         animId = requestAnimationFrame(gameLoop);
@@ -623,17 +631,9 @@ export default function InteractiveAvatar() {
             keysPressed.current['e'] = false;
             keysPressed.current[' '] = false;
           }
-          else if (type === 'computerglowing') {
-            // Open PC live showcase!
-            setShowPCProjects(true);
-            setPcActiveProject('scraper');
-            setSimulatedLogs([
-              "🚀 Initiating Jujutsu Stock Tracker Scraper Daemon v1.0.4...",
-              "📡 Spawning cluster workers at Kyoto School and Tokyo School endpoints...",
-              "🔑 Authentication handshake: SUCCESS. Node cluster active.",
-              "📊 Fetching baseline Cursed Energy Indexes...",
-              "⚡ Cursed Energy Index: 2,450.40 (+1.25%) | Gojo Satoru Market Cap: ∞"
-            ]);
+          else if (type === 'bookshelf' || type === 'cd_shelf') {
+            // Open Books & Films Choice Prompt!
+            setShowBookshelfPrompt(true);
             keysPressed.current['e'] = false;
             keysPressed.current[' '] = false;
           }
@@ -1468,32 +1468,7 @@ export default function InteractiveAvatar() {
     return () => window.removeEventListener('keydown', handleQTEKeyDown);
   }, [showClimbingQTE, qteKey, qteProgress, qteStatus]);
 
-  // PC Stock market scraper simulated logs stream
-  useEffect(() => {
-    if (!showPCProjects || pcActiveProject !== 'scraper') return;
 
-    const logPhrases = [
-      "📡 Pulling cursed index from Jujutsu High data nodes...",
-      "📈 Ryomen Sukuna stock surged +12.4% after finger ingestion!",
-      "⚡ Fushiguro Megumi stock halted: Ten Shadows summon threat detected.",
-      "🔒 Executing sandbox backtest on Cursed Speech API rates...",
-      "💾 Web scraper successfully compiled 420 stock market listings.",
-      "🟢 GCP cloud compute cluster running: Status Optimal.",
-      "📊 Okkotsu Yuta stock cap reaches 9.4 Trillion Yen.",
-      "🔍 Deep crawling Jujutsu Kaisen fandom wiki for cursed inventory databases...",
-      "🕷️ Scraping completed in 420ms. Restructuring data buffers..."
-    ];
-
-    const logInterval = setInterval(() => {
-      setSimulatedLogs(prev => {
-        const next = [...prev, logPhrases[Math.floor(Math.random() * logPhrases.length)]];
-        if (next.length > 7) next.shift(); // keep screen compact
-        return next;
-      });
-    }, 1800);
-
-    return () => clearInterval(logInterval);
-  }, [showPCProjects, pcActiveProject]);
 
   const handleCookFood = (item) => {
     playSound('chime');
@@ -1540,7 +1515,8 @@ export default function InteractiveAvatar() {
     
     // Set GameState contexts
     setPlayerName(customName);
-    setPlayerStats({ stamina: 5, curiosity: 5, reflexes: 5, intellect: 5 });
+    setPlayerClass(isCustomClassMode ? (customClass.trim() || "Adventurer") : selectedPresetClass);
+    setPlayerStats(statsAlloc);
     setPlayerColors(customColors);
 
     setGameStarted(true);
@@ -1638,47 +1614,101 @@ export default function InteractiveAvatar() {
       { id: 'visor', label: '🕶️ Visor' },
       { id: 'cute', label: '🌸 Blush' }
     ];
+    const presetClasses = ['Avid Backpacker', 'Rookie Climber', 'Chaotic Explorer'];
+
+    // Dynamic dynamic class based on stats in Customizer
+    const getCustomizerClass = () => {
+      if (isCustomClassMode) return customClass.trim() || "Adventurer";
+      return selectedPresetClass;
+    };
 
     return (
       <div 
         style={{
           width: '100%',
-          height: '100%',
-          background: '#0a0a10',
+          minHeight: '100%',
+          background: '#040408',
+          backgroundImage: 'radial-gradient(circle at 50% 50%, #15152a 0%, #040408 100%)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '20px',
+          padding: '30px 15px',
           boxSizing: 'border-box',
           position: 'relative',
           overflowY: 'auto'
         }}
       >
-        <h2 className="pixel-header" style={{ fontSize: '1.15rem', color: 'var(--rpg-highlight)', marginBottom: '15px', textShadow: '0 0 10px rgba(0,255,255,0.4)', textAlign: 'center' }}>
-          🏠 DESIGN COZY EXPLORER
-        </h2>
+        <div className="crt-scanline" style={{ pointerEvents: 'none' }} />
 
-        <div style={{ display: 'flex', gap: '20px', width: '100%', maxWidth: '780px', flexWrap: 'wrap', justifyContent: 'center' }}>
+        {/* Top Header Title */}
+        <header style={{ textAlign: 'center', marginBottom: '25px', zIndex: 10 }}>
+          <h2 className="pixel-header" style={{ fontSize: '1.25rem', color: 'var(--rpg-highlight)', margin: '0 0 8px 0', textShadow: '0 0 12px rgba(0,255,255,0.6)' }}>
+            🎮 JOIN RAGHAV'S COZY WORLD
+          </h2>
+          <p className="pixel-text" style={{ fontSize: '1.25rem', color: '#888', margin: 0, letterSpacing: '0.5px' }}>
+            Welcome to my internet room! Customize your retro avatar to enter my personal diary space.
+          </p>
+        </header>
+
+        {/* Double Column Main Layout (Highly Mobile-Responsive with flexWrap) */}
+        <div style={{ 
+          display: 'flex', 
+          gap: '24px', 
+          width: '100%', 
+          maxWidth: '920px', 
+          flexWrap: 'wrap', 
+          justifyContent: 'center', 
+          zIndex: 10 
+        }}>
           
-          {/* Left panel: Live Sprite Preview */}
-          <div style={{ width: '220px', display: 'flex', flexDirection: 'column', gap: '15px', alignItems: 'center' }}>
-            <div className="rpg-box" style={{ width: '130px', height: '130px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#000', border: '3px solid var(--rpg-text)', boxShadow: '0 0 15px var(--rpg-text)' }}>
-              <div style={{ width: '72px', height: '72px' }}>
-                <Sprite direction="down" frame={Math.floor(Date.now() / 250) % 4} customColors={customColors} />
-              </div>
-            </div>
+          {/* COLUMN 1: Live Avatar Preview & Identity Card */}
+          <div style={{ 
+            flex: '1 1 340px', 
+            maxWidth: '430px', 
+            background: 'rgba(15, 15, 28, 0.75)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            border: '3px solid rgba(0, 255, 255, 0.25)',
+            borderRadius: '16px',
+            boxShadow: '0 0 25px rgba(0, 255, 255, 0.15)',
+            padding: '20px',
+            boxSizing: 'border-box',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '15px'
+          }}>
             
-            <p className="pixel-text" style={{ fontSize: '1.2rem', color: '#888', textAlign: 'center', margin: 0 }}>
-              Live 32x32 High-Res Preview
-            </p>
-          </div>
+            {/* Live 8-Bit CRT Preview Screen */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+              <div 
+                style={{ 
+                  width: '120px', 
+                  height: '120px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  background: '#020205', 
+                  border: '3px solid var(--rpg-highlight)', 
+                  borderRadius: '12px',
+                  boxShadow: '0 0 15px rgba(0, 255, 255, 0.3)',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+              >
+                <div className="crt-scanline" style={{ pointerEvents: 'none' }} />
+                <div style={{ width: '72px', height: '72px', imageRendering: 'pixelated' }}>
+                  <Sprite direction="down" frame={Math.floor(Date.now() / 250) % 4} customColors={customColors} />
+                </div>
+              </div>
+              <span className="pixel-header" style={{ fontSize: '0.62rem', color: '#ffb700' }}>
+                CLASS: {getCustomizerClass().toUpperCase()}
+              </span>
+            </div>
 
-          {/* Right panel: Name, Gender, Face, Skin, Clothes Presets */}
-          <div style={{ flex: 1, minWidth: '290px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {/* Explorer Name */}
+            {/* Explorer Name Field */}
             <div>
-              <label className="pixel-header" style={{ fontSize: '0.72rem', color: 'var(--rpg-text)', display: 'block', marginBottom: '6px' }}>
+              <label className="pixel-header" style={{ fontSize: '0.68rem', color: 'var(--rpg-text)', display: 'block', marginBottom: '6px' }}>
                 ✍️ EXPLORER NAME:
               </label>
               <input 
@@ -1688,143 +1718,279 @@ export default function InteractiveAvatar() {
                 className="pixel-text"
                 placeholder="Enter Name..."
                 style={{
-                  background: '#000',
+                  background: '#020205',
                   border: '3px solid var(--rpg-text)',
+                  borderRadius: '6px',
                   color: '#fff',
                   fontSize: '1.4rem',
-                  padding: '5px 10px',
+                  padding: '6px 12px',
                   width: '100%',
                   textAlign: 'center',
                   outline: 'none',
-                  boxSizing: 'border-box'
+                  boxSizing: 'border-box',
+                  boxShadow: 'inset 0 0 6px rgba(0,255,102,0.1)'
                 }}
               />
             </div>
 
-            {/* Gender choices */}
-            <div className="rpg-box" style={{ padding: '8px 12px', background: '#050508' }}>
-              <span className="pixel-header" style={{ fontSize: '0.62rem', display: 'block', marginBottom: '6px', color: 'var(--rpg-highlight)' }}>🙋 SELECT SPRITE GENDER / HAIR:</span>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button 
-                  onClick={() => setSpriteGender('male')}
+            {/* Explorer Class & Custom option */}
+            <div>
+              <label className="pixel-header" style={{ fontSize: '0.68rem', color: 'var(--rpg-text)', display: 'block', marginBottom: '6px' }}>
+                🛡️ CHOOSE YOUR ADVENTURE CLASS:
+              </label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+                  {presetClasses.map(cls => (
+                    <button 
+                      key={cls}
+                      onClick={() => {
+                        playSound('chime');
+                        setSelectedPresetClass(cls);
+                        setIsCustomClassMode(false);
+                      }}
+                      className="pixel-header"
+                      style={{
+                        background: (!isCustomClassMode && selectedPresetClass === cls) ? 'var(--rpg-text)' : '#05050a',
+                        color: (!isCustomClassMode && selectedPresetClass === cls) ? '#000' : '#888',
+                        border: '2px solid var(--rpg-text)',
+                        borderRadius: '4px',
+                        padding: '8px 2px',
+                        cursor: 'pointer',
+                        fontSize: '0.52rem',
+                        transition: 'all 0.15s'
+                      }}
+                    >
+                      {cls.split(' ')[1] || cls}
+                    </button>
+                  ))}
+                </div>
+                
+                <button
+                  onClick={() => {
+                    playSound('chime');
+                    setIsCustomClassMode(true);
+                  }}
                   className="pixel-header"
                   style={{
-                    flex: 1,
-                    background: spriteGender === 'male' ? 'var(--rpg-text)' : '#111',
-                    color: spriteGender === 'male' ? '#000' : '#fff',
-                    border: '2px solid var(--rpg-text)',
-                    padding: '6px 0',
+                    background: isCustomClassMode ? 'var(--rpg-accent)' : '#05050a',
+                    color: '#fff',
+                    border: '2px solid var(--rpg-accent)',
+                    borderRadius: '4px',
+                    padding: '8px 0',
                     cursor: 'pointer',
-                    fontSize: '0.65rem'
+                    fontSize: '0.6rem'
                   }}
                 >
-                  ♂️ Male (Short Spikes)
+                  ✏️ WRITE CUSTOM CLASS
                 </button>
-                <button 
-                  onClick={() => setSpriteGender('female')}
-                  className="pixel-header"
-                  style={{
-                    flex: 1,
-                    background: spriteGender === 'female' ? 'var(--rpg-text)' : '#111',
-                    color: spriteGender === 'female' ? '#000' : '#fff',
-                    border: '2px solid var(--rpg-text)',
-                    padding: '6px 0',
-                    cursor: 'pointer',
-                    fontSize: '0.65rem'
-                  }}
-                >
-                  ♀️ Female (Long locks)
-                </button>
-              </div>
-            </div>
 
-            {/* Face Styles / Accessories */}
-            <div className="rpg-box" style={{ padding: '8px 12px', background: '#050508' }}>
-              <span className="pixel-header" style={{ fontSize: '0.62rem', display: 'block', marginBottom: '6px', color: 'var(--rpg-highlight)' }}>🕶️ FACE STYLE / ACCESSORY:</span>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
-                {faceStyles.map(style => (
-                  <button 
-                    key={style.id}
-                    onClick={() => setFaceStyle(style.id)}
-                    className="pixel-header"
+                {isCustomClassMode && (
+                  <input
+                    type="text"
+                    value={customClass}
+                    onChange={(e) => setCustomClass(e.target.value.slice(0, 16))}
+                    className="pixel-text"
+                    placeholder="Enter custom class title..."
                     style={{
-                      background: faceStyle === style.id ? 'var(--rpg-accent)' : '#111',
+                      background: '#020205',
+                      border: '2px solid var(--rpg-accent)',
+                      borderRadius: '4px',
                       color: '#fff',
-                      border: `2px solid ${faceStyle === style.id ? 'var(--rpg-accent)' : '#444'}`,
-                      padding: '4px 0',
-                      cursor: 'pointer',
-                      fontSize: '0.62rem'
-                    }}
-                  >
-                    {style.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Skin Colors grid */}
-            <div className="rpg-box" style={{ padding: '8px 12px', background: '#050508' }}>
-              <span className="pixel-header" style={{ fontSize: '0.62rem', display: 'block', marginBottom: '6px', color: 'var(--rpg-highlight)' }}>🤚 SKIN COMPLEXION TONE:</span>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                {skinColors.map(color => (
-                  <div 
-                    key={color}
-                    onClick={() => setSelectedSkinColor(color)}
-                    style={{
-                      width: '28px',
-                      height: '28px',
-                      background: color,
-                      border: `3px solid ${selectedSkinColor === color ? '#ffffff' : '#000000'}`,
-                      cursor: 'pointer',
-                      borderRadius: '50%',
-                      boxShadow: selectedSkinColor === color ? '0 0 8px #fff' : 'none'
+                      fontSize: '1.25rem',
+                      padding: '5px 10px',
+                      width: '100%',
+                      boxSizing: 'border-box',
+                      outline: 'none',
+                      textAlign: 'center',
+                      animation: 'pulse-glow 0.8s infinite alternate'
                     }}
                   />
-                ))}
+                )}
               </div>
             </div>
 
-            {/* Apparel Colors presets */}
-            <div className="rpg-box" style={{ padding: '8px 12px', background: '#050508', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <span className="pixel-header" style={{ fontSize: '0.62rem', display: 'block', color: 'var(--rpg-highlight)' }}>👗 APPAREL COLOR PRESETS:</span>
+          </div>
+
+          {/* COLUMN 2: Visual presets and Attributes allocations */}
+          <div style={{ 
+            flex: '1.2 1 400px', 
+            maxWidth: '520px',
+            background: 'rgba(15, 15, 28, 0.75)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            border: '3px solid rgba(0, 255, 255, 0.25)',
+            borderRadius: '16px',
+            boxShadow: '0 0 25px rgba(0, 255, 255, 0.15)',
+            padding: '20px',
+            boxSizing: 'border-box',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px'
+          }}>
+            
+            {/* Visual presets row (gender & face accessories grouped) */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
               
-              <div>
-                <span className="pixel-header" style={{ fontSize: '0.52rem', color: '#888', display: 'block', marginBottom: '4px' }}>• Hair & Cap Color:</span>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+              {/* Gender choices */}
+              <div className="rpg-box" style={{ padding: '8px', background: '#020205', borderRadius: '8px', borderColor: '#333' }}>
+                <span className="pixel-header" style={{ fontSize: '0.52rem', display: 'block', marginBottom: '5px', color: 'var(--rpg-highlight)' }}>🙋 HAIR / GENDER:</span>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <button 
+                    onClick={() => setSpriteGender('male')}
+                    className="pixel-header"
+                    style={{
+                      flex: 1,
+                      background: spriteGender === 'male' ? 'var(--rpg-text)' : '#111',
+                      color: spriteGender === 'male' ? '#000' : '#fff',
+                      border: '2.5px solid var(--rpg-text)',
+                      padding: '4px 0',
+                      cursor: 'pointer',
+                      fontSize: '0.52rem',
+                      borderRadius: '4px'
+                    }}
+                  >
+                    ♂️ Spike
+                  </button>
+                  <button 
+                    onClick={() => setSpriteGender('female')}
+                    className="pixel-header"
+                    style={{
+                      flex: 1,
+                      background: spriteGender === 'female' ? 'var(--rpg-text)' : '#111',
+                      color: spriteGender === 'female' ? '#000' : '#fff',
+                      border: '2.5px solid var(--rpg-text)',
+                      padding: '4px 0',
+                      cursor: 'pointer',
+                      fontSize: '0.52rem',
+                      borderRadius: '4px'
+                    }}
+                  >
+                    ♀️ Locks
+                  </button>
+                </div>
+              </div>
+
+              {/* Face Accessories */}
+              <div className="rpg-box" style={{ padding: '8px', background: '#020205', borderRadius: '8px', borderColor: '#333' }}>
+                <span className="pixel-header" style={{ fontSize: '0.52rem', display: 'block', marginBottom: '5px', color: 'var(--rpg-highlight)' }}>🕶️ FACE STYLE:</span>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '4px' }}>
+                  {faceStyles.map(style => (
+                    <button 
+                      key={style.id}
+                      onClick={() => setFaceStyle(style.id)}
+                      className="pixel-header"
+                      style={{
+                        background: faceStyle === style.id ? 'var(--rpg-accent)' : '#111',
+                        color: '#fff',
+                        border: `1.5px solid ${faceStyle === style.id ? 'var(--rpg-accent)' : '#444'}`,
+                        padding: '3px 0',
+                        cursor: 'pointer',
+                        fontSize: '0.5rem',
+                        borderRadius: '3px'
+                      }}
+                    >
+                      {style.label.split(' ')[1] || style.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+
+            {/* Colors customizers (Skin, shirt, pants presets) */}
+            <div className="rpg-box" style={{ padding: '10px', background: '#020205', borderRadius: '8px', borderColor: '#333', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <span className="pixel-header" style={{ fontSize: '0.52rem', color: 'var(--rpg-highlight)' }}>👗 APPAREL PALETTE CUSTOMIZER:</span>
+              
+              <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                <span className="pixel-header" style={{ fontSize: '0.45rem', color: '#888', width: '60px' }}>🤚 SKIN:</span>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  {skinColors.map(color => (
+                    <div 
+                      key={color}
+                      onClick={() => setSelectedSkinColor(color)}
+                      style={{
+                        width: '20px', height: '20px', background: color, borderRadius: '50%', cursor: 'pointer',
+                        border: `2px solid ${selectedSkinColor === color ? '#ffffff' : '#000'}`
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                <span className="pixel-header" style={{ fontSize: '0.45rem', color: '#888', width: '60px' }}>🧢 HAT/HAIR:</span>
+                <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
                   {hairColors.map(color => (
                     <div 
                       key={color} 
                       onClick={() => setSelectedHatColor(color)}
-                      style={{ width: '16px', height: '16px', background: color, border: selectedHatColor === color ? '2px solid #fff' : '1px solid #000', cursor: 'pointer' }}
+                      style={{ width: '13px', height: '13px', background: color, border: selectedHatColor === color ? '1.5px solid #fff' : '1px solid #000', cursor: 'pointer' }}
                     />
                   ))}
                 </div>
               </div>
 
-              <div>
-                <span className="pixel-header" style={{ fontSize: '0.52rem', color: '#888', display: 'block', marginBottom: '4px' }}>• Shirt & Coat Color:</span>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+              <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                <span className="pixel-header" style={{ fontSize: '0.45rem', color: '#888', width: '60px' }}>👕 SHIRT:</span>
+                <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
                   {shirtColors.map(color => (
                     <div 
                       key={color} 
                       onClick={() => setSelectedShirtColor(color)}
-                      style={{ width: '16px', height: '16px', background: color, border: selectedShirtColor === color ? '2px solid #fff' : '1px solid #000', cursor: 'pointer' }}
+                      style={{ width: '13px', height: '13px', background: color, border: selectedShirtColor === color ? '1.5px solid #fff' : '1px solid #000', cursor: 'pointer' }}
                     />
                   ))}
                 </div>
               </div>
 
-              <div>
-                <span className="pixel-header" style={{ fontSize: '0.52rem', color: '#888', display: 'block', marginBottom: '4px' }}>• Pants & Skirt Color:</span>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+              <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                <span className="pixel-header" style={{ fontSize: '0.45rem', color: '#888', width: '60px' }}>👖 PANTS:</span>
+                <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
                   {pantsColors.map(color => (
                     <div 
                       key={color} 
                       onClick={() => setSelectedPantsColor(color)}
-                      style={{ width: '16px', height: '16px', background: color, border: selectedPantsColor === color ? '2px solid #fff' : '1px solid #000', cursor: 'pointer' }}
+                      style={{ width: '13px', height: '13px', background: color, border: selectedPantsColor === color ? '1.5px solid #fff' : '1px solid #000', cursor: 'pointer' }}
                     />
                   ))}
                 </div>
+              </div>
+            </div>
+
+            {/* Attributes stats allocations (Willpower replacing Intellect) */}
+            <div className="rpg-box" style={{ padding: '12px', background: '#020205', borderRadius: '8px', borderColor: 'var(--rpg-text)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #222', paddingBottom: '4px', marginBottom: '8px' }}>
+                <span className="pixel-header" style={{ fontSize: '0.52rem', color: 'var(--rpg-text)' }}>⚔️ DISTRIBUTE STAT POINTS:</span>
+                <span className="pixel-header animate-bob" style={{ fontSize: '0.52rem', color: 'var(--rpg-highlight)' }}>POOL: {pointsPool} PTS LEFT</span>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '1.25rem' }}>
+                {[
+                  { id: 'stamina', title: '💪 STAMINA', color: '#ff3d00' },
+                  { id: 'curiosity', title: '🔍 CURIOSITY', color: '#8a2be2' },
+                  { id: 'reflexes', title: '⚡ REFLEXES', color: '#00ff66' },
+                  { id: 'intellect', title: '🧠 WILLPOWER', color: '#00ffff' }
+                ].map(stat => (
+                  <div key={stat.id} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span className="pixel-header" style={{ fontSize: '0.48rem', width: '85px', color: '#aaa' }}>{stat.title}:</span>
+                    <button 
+                      onClick={() => adjustStat(stat.id, -1)}
+                      style={{ width: '22px', height: '22px', background: '#222', border: '1.5px solid #555', color: '#fff', fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      -
+                    </button>
+                    <div style={{ flex: 1, height: '8px', background: '#111', position: 'relative' }}>
+                      <div style={{ width: `${(statsAlloc[stat.id] / 15) * 100}%`, height: '100%', background: stat.color }} />
+                    </div>
+                    <span style={{ width: '25px', textAlign: 'center', color: '#fff', fontWeight: 'bold' }}>{statsAlloc[stat.id]}</span>
+                    <button 
+                      onClick={() => adjustStat(stat.id, 1)}
+                      style={{ width: '22px', height: '22px', background: '#222', border: '1.5px solid #555', color: '#fff', fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      +
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -1837,15 +2003,17 @@ export default function InteractiveAvatar() {
           onClick={handleStartGame}
           className="pixel-header animate-bob"
           style={{
-            marginTop: '20px',
+            marginTop: '25px',
             background: 'var(--rpg-accent)',
             color: '#fff',
             border: '4px solid #000',
-            padding: '12px 30px',
-            fontSize: '0.95rem',
+            borderRadius: '8px',
+            padding: '12px 36px',
+            fontSize: '0.9rem',
             cursor: 'pointer',
             boxShadow: '3px 3px 0 #000',
-            outline: 'none'
+            outline: 'none',
+            zIndex: 10
           }}
         >
           🎮 ENTER COZY ROOM [A]
@@ -1953,18 +2121,18 @@ export default function InteractiveAvatar() {
           let glow = 'none';
           const borderStyle = {};
 
-          if (t.type === 'grass') bg = '#122012'; 
+          if (t.type === 'grass') bg = '#100d0a'; // Warm dark mahogany floor
           else if (t.type === 'forest-floor') {
-            bg = '#07180d'; // Deep dark mossy forest green
-            borderStyle.boxShadow = 'inset 0 0 8px rgba(0, 255, 102, 0.05)';
-            if ((t.col + t.row) % 7 === 0) content = <span style={{ fontSize: '0.85rem', opacity: 0.25 }}>🍄</span>;
-            else if ((t.col + t.row) % 5 === 0) content = <span style={{ fontSize: '0.9rem', opacity: 0.2 }}>🌿</span>;
-            else if ((t.col + t.row) % 9 === 0) content = <span style={{ fontSize: '0.8rem', opacity: 0.15 }}>🌸</span>;
+            bg = '#0d130f'; // Dark forest moss
+            borderStyle.boxShadow = 'inset 0 0 8px rgba(0, 255, 102, 0.03)';
+            if ((t.col + t.row) % 7 === 0) content = <span style={{ fontSize: '0.85rem', opacity: 0.2 }}>🍄</span>;
+            else if ((t.col + t.row) % 5 === 0) content = <span style={{ fontSize: '0.9rem', opacity: 0.15 }}>🌿</span>;
+            else if ((t.col + t.row) % 9 === 0) content = <span style={{ fontSize: '0.8rem', opacity: 0.1 }}>🌸</span>;
           }
           else if (t.type === 'climbing-pad') {
-            bg = '#0d47a1'; // Deep gym blue crash pad floor
-            borderStyle.border = '1.5px solid rgba(255,255,255,0.06)';
-            if ((t.col + t.row) % 4 === 0) content = <span style={{ fontSize: '0.65rem', opacity: 0.15 }}>🧗</span>;
+            bg = '#2b2a2e'; // Premium graphite/charcoal climbing pad (no more out-of-place blue!)
+            borderStyle.border = '1.5px solid rgba(255,255,255,0.05)';
+            if ((t.col + t.row) % 4 === 0) content = <span style={{ fontSize: '0.65rem', opacity: 0.12 }}>🧗</span>;
           }
           else if (t.type === 'garage-floor') {
             bg = (t.col + t.row) % 2 === 0 ? '#262629' : '#1e1e21'; // Checker metallic mat
@@ -1974,9 +2142,9 @@ export default function InteractiveAvatar() {
               borderStyle.borderTop = '2px solid rgba(255, 235, 59, 0.3)';
             }
           }
-          else if (t.type === 'path') bg = '#363024'; 
-          else if (t.type === 'dirt') bg = '#251a10'; 
-          else if (t.type === 'rug') bg = '#1b1b33'; 
+          else if (t.type === 'path') bg = '#332722'; // Warm sandy gravel path
+          else if (t.type === 'dirt') bg = '#21170f'; 
+          else if (t.type === 'rug') bg = '#421d22'; // Cozy burgundy crimson velvet rug 
           
           // Outer Boundary Walls (Purple Steel Brick with bold gold trim stripes!)
           else if (t.type === 'wall-top') {
@@ -2030,18 +2198,18 @@ export default function InteractiveAvatar() {
           }
           // 📚 Manga tatami lounge floor
           else if (t.type === 'manga-lounge') {
-            bg = '#4e3b26';
-            borderStyle.borderRight = '1px solid rgba(212,175,55,0.15)';
-            borderStyle.borderBottom = '1px solid rgba(212,175,55,0.15)';
+            bg = '#5e4d37'; // Authentic cozy straw-gold tatami mat
+            borderStyle.borderRight = '1px solid rgba(212,175,55,0.2)';
+            borderStyle.borderBottom = '1px solid rgba(212,175,55,0.2)';
             if (t.col === 16 && t.row === 3) {
               // Plop a cozy giant plush bean bag onto the tatami mat!
               content = <div style={{ width: '40px', height: '40px', zIndex: 3 }}><PixelProp type="beanbag" /></div>;
             }
           }
-          // 3. 🍔 "Raghav's Diner" cyber bistro (red/black checkers!)
+          // 3. 🍔 "Raghav's Diner" cyber bistro (warm terracotta checkers!)
           else if (t.type === 'restaurant-floor') {
-            bg = (t.col + t.row) % 2 === 0 ? '#3b0d11' : '#1f0407';
-            borderStyle.border = '1px solid rgba(255, 0, 127, 0.06)';
+            bg = (t.col + t.row) % 2 === 0 ? '#381e1d' : '#1f0e0d';
+            borderStyle.border = '1px solid rgba(255, 235, 59, 0.04)';
           }
           // Solid diner table counter table
           else if (t.type === 'diner-table') {
@@ -2097,8 +2265,8 @@ export default function InteractiveAvatar() {
           else if (t.type.startsWith('obstacle-')) {
             const objId = t.type.split('-')[1];
             const obj = INTERACTABLE_OBJECTS.find(o => o.id === objId);
-            bg = t.type.includes('profile') ? '#1c1c28' : t.type.includes('football') ? '#143618' : t.type.includes('anime') ? '#4e3b26' : t.type.includes('trekking') ? '#07180d' : t.type.includes('kitchen') ? '#19131c' : '#1c1c28';
-            glow = `inset 0 0 10px ${obj?.color || 'var(--rpg-text)'}`;
+            bg = t.type.includes('profile') ? '#1c1c28' : t.type.includes('football') ? '#143618' : (t.type.includes('bookshelf') || t.type.includes('cd_shelf')) ? '#5e4d37' : t.type.includes('trekking') ? '#0d130f' : t.type.includes('kitchen') ? '#19131c' : '#1c1c28';
+            glow = 'none';
             
             if (objId === 'kitchen') {
               if (t.col === 6) content = <div style={{ width: '40px', height: '40px' }}><PixelProp type="stove" /></div>;
@@ -2117,8 +2285,11 @@ export default function InteractiveAvatar() {
             else if (objId === 'tacticboard') {
               content = <div style={{ width: '40px', height: '40px' }}><PixelProp type="tacticboard" /></div>;
             }
-            else if (objId === 'computerglowing') {
-              content = <div style={{ width: '40px', height: '40px' }}><PixelProp type="computerglowing" /></div>;
+            else if (objId === 'bookshelf') {
+              content = <div style={{ width: '40px', height: '40px', zIndex: 5 }}><PixelProp type="bookshelf" /></div>;
+            }
+            else if (objId === 'cd_shelf') {
+              content = <div style={{ width: '40px', height: '40px', zIndex: 5 }}><PixelProp type="cd_shelf" /></div>;
             }
             else if (objId === 'bouldering') {
               content = <div style={{ width: '40px', height: '40px' }}><PixelProp type="bouldering-wall" /></div>;
@@ -2135,11 +2306,6 @@ export default function InteractiveAvatar() {
                 );
               }
             }
-          }
-
-          // Render Manga Cabinet in Lounge corner
-          if (t.col === 16 && t.row === 1) {
-            content = <div style={{ width: '40px', height: '40px' }}><PixelProp type="arcade" /></div>;
           }
 
           const isInteractableNearby = nearObject && t.type === `obstacle-${nearObject.id}`;
@@ -2170,7 +2336,7 @@ export default function InteractiveAvatar() {
 
               {/* Central Rug custom border design */}
               {t.type === 'rug' && (t.col === 5 || t.col === 13 || t.row === 5 || t.row === 9) && (
-                <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, border: '2px dotted var(--rpg-highlight)', opacity: 0.3 }} />
+                <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, border: '2px solid #ffd700', opacity: 0.5, boxShadow: '0 0 10px rgba(255, 215, 0, 0.4)' }} />
               )}
 
               {/* Render Biking Checkpoint Loop post flags */}
@@ -3573,7 +3739,7 @@ export default function InteractiveAvatar() {
         </div>
       )}
 
-      {/* 2. 🧰 Tech Stack Toolbox drawer modal */}
+      {/* 2. 🧰 Motorbike Tuning Workbench Drawer Modal */}
       {showTechStack && (
         <div style={{
           position: 'absolute',
@@ -3587,10 +3753,10 @@ export default function InteractiveAvatar() {
           padding: '20px'
         }}>
           <div className="crt-scanline" style={{ pointerEvents: 'none' }} />
-          <div className="rpg-box" style={{ width: '95%', maxWidth: '640px', background: '#0a0505', borderColor: '#c62828', boxShadow: '0 0 25px rgba(198, 40, 40, 0.3)' }}>
+          <div className="rpg-box" style={{ width: '95%', maxWidth: '640px', background: '#0a0505', borderColor: '#ffb700', boxShadow: '0 0 25px rgba(255, 183, 0, 0.3)' }}>
             
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '3px solid #c62828', paddingBottom: '8px', marginBottom: '15px' }}>
-              <span className="pixel-header" style={{ fontSize: '0.85rem', color: '#c62828' }}>🧰 RAGHAV'S DEVELOPMENT TOOLBOX</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '3px solid #ffb700', paddingBottom: '8px', marginBottom: '15px' }}>
+              <span className="pixel-header" style={{ fontSize: '0.85rem', color: '#ffb700' }}>🧰 MOTORBIKE TUNING WORKBENCH</span>
               <button 
                 onClick={() => setShowTechStack(false)}
                 className="pixel-header"
@@ -3601,17 +3767,17 @@ export default function InteractiveAvatar() {
             </div>
 
             <p className="pixel-text" style={{ fontSize: '1.25rem', color: '#aaa', margin: '0 0 15px 0', textAlign: 'center' }}>
-              Slide open the toolbox drawers to inspect the specific software tools I use to build things!
+              Slide open the workbench drawers to inspect how I maintain and tune my MT15 Sport and Shine Cruiser motorbikes!
             </p>
 
             <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-              {/* Left Column: Drawers Buttons (Toolbox shape) */}
+              {/* Left Column: Drawers Buttons (Workbench shape) */}
               <div style={{ flex: '1 1 180px', display: 'flex', flexDirection: 'column', gap: '8px', background: '#1c1c1c', padding: '8px', borderRadius: '4px', border: '2px solid #333' }}>
                 {[
-                  { id: 'frontend', title: '🟥 Frontend UI', color: '#e53935' },
-                  { id: 'backend', title: '🟨 Backend API', color: '#ffd700' },
-                  { id: 'devops', title: '🟩 Cloud & DB', color: '#43a047' },
-                  { id: 'core', title: '🟪 Core Architecture', color: '#8a2be2' }
+                  { id: 'engine', title: '🟥 Engine Specs', color: '#e53935' },
+                  { id: 'drivetrain', title: '🟨 Tires & Chain', color: '#ffd700' },
+                  { id: 'suspension', title: '🟩 Handling Tuning', color: '#43a047' },
+                  { id: 'touring', title: '🟪 Adventure Kits', color: '#8a2be2' }
                 ].map(drawer => (
                   <button
                     key={drawer.id}
@@ -3640,40 +3806,40 @@ export default function InteractiveAvatar() {
               {/* Right Column: Open Drawer Tray Contents */}
               <div className="rpg-box" style={{ flex: '2 1 320px', minHeight: '220px', background: '#050508', border: '2px solid #444', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <h4 className="pixel-header" style={{ fontSize: '0.72rem', color: '#fff', borderBottom: '1px dotted #444', paddingBottom: '4px', margin: 0, textTransform: 'uppercase' }}>
-                  📂 Cabinet Tray: {activeStackDrawer}
+                  📂 Workbench Tray: {activeStackDrawer}
                 </h4>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '1.25rem', overflowY: 'auto', maxHeight: '200px' }}>
-                  {activeStackDrawer === 'frontend' && (
+                  {activeStackDrawer === 'engine' && (
                     <>
-                      <div>⚡ <strong style={{ color: '#00e5ff' }}>React.js & Vite:</strong> Framework of choice for lightning-fast modern Single Page Apps.</div>
-                      <div>🎨 <strong style={{ color: '#ffb700' }}>Vanilla CSS:</strong> Maximum style customisation with harmonious curated HSL palettes.</div>
-                      <div>📽️ <strong style={{ color: '#ff007f' }}>Framer Motion:</strong> Immersive, spring-based micro-animations and route transitions.</div>
-                      <div>🕹️ <strong style={{ color: '#00ff66' }}>Web Audio Synths:</strong> Custom synth sound generators for absolute browser immersion.</div>
+                      <div>⚙️ <strong style={{ color: '#00e5ff' }}>MT15 Liquid-Cooled Engine:</strong> 155cc, single-cylinder, 4-valve powerhouse. Variable Valve Actuation (VVA) provides amazing high-rev torque.</div>
+                      <div>🔥 <strong style={{ color: '#ffb700' }}>Spark Plug & Compression:</strong> High performance iridium spark plugs ensuring immediate engine ignition.</div>
+                      <div>⛽ <strong style={{ color: '#ff007f' }}>Fuel Delivery:</strong> Electronic fuel injection mapped for responsive throttle action.</div>
+                      <div>🔧 <strong style={{ color: '#00ff66' }}>Engine Oil:</strong> Premium synthetic 10W-40 oil swapped every 3,000km to keep standard friction low.</div>
                     </>
                   )}
-                  {activeStackDrawer === 'backend' && (
+                  {activeStackDrawer === 'drivetrain' && (
                     <>
-                      <div>🟢 <strong style={{ color: '#00ff66' }}>Node.js & Express:</strong> High performance RESTful APIs and real-time backend structures.</div>
-                      <div>🔌 <strong style={{ color: '#ff007f' }}>WebSockets:</strong> Secure real-time client-server communication channels.</div>
-                      <div>🕷️ <strong style={{ color: '#00e5ff' }}>Python Scrapers:</strong> Advanced scraping bots (e.g. tracking simulated stock charts).</div>
-                      <div>📦 <strong style={{ color: '#ffd700' }}>REST Client APIs:</strong> Fully rate-limited resilient external API integrations.</div>
+                      <div>🏍️ <strong style={{ color: '#00ff66' }}>Chain tensioning:</strong> Adjusted regularly to maintain a clean 30mm play. Cleared, lubed, and protected every weekend.</div>
+                      <div>🛞 <strong style={{ color: '#ff007f' }}>Radial Tires:</strong> High-grip tubeless tires. Front: 100/80-17, Rear: 140/70-17 for perfect corner leaning.</div>
+                      <div>⚙️ <strong style={{ color: '#00e5ff' }}>Sprocket Ratio:</strong> Custom steel rear sprockets mapping quick off-the-line pickup speeds.</div>
+                      <div>🛑 <strong style={{ color: '#ffd700' }}>Brake System:</strong> Dual-channel ABS with sintered brake pads for emergency stops.</div>
                     </>
                   )}
-                  {activeStackDrawer === 'devops' && (
+                  {activeStackDrawer === 'suspension' && (
                     <>
-                      <div>🐘 <strong style={{ color: '#00e5ff' }}>PostgreSQL:</strong> Highly structured database schemas, optimized query indices.</div>
-                      <div>🔥 <strong style={{ color: '#ff7043' }}>Firestore & NoSQL:</strong> Document-driven real-time database storage solutions.</div>
-                      <div>☁️ <strong style={{ color: '#ffd700' }}>GCP & Cloud Run:</strong> Secure virtual instances, containerized application hosting.</div>
-                      <div>🐙 <strong style={{ color: '#eeeeee' }}>Git & CI/CD:</strong> Strict code audits, merge control, and deployment pipes.</div>
+                      <div>🏍️ <strong style={{ color: '#00e5ff' }}>Upside Down (USD) Forks:</strong> Rigid front fork suspension absorbing shocks and improving high speed corner stability.</div>
+                      <div>🌀 <strong style={{ color: '#ff7043' }}>Link Monoshock:</strong> Rear suspension adjusted with custom preload settings for adventure backpacking weight.</div>
+                      <div>🏗️ <strong style={{ color: '#ffd700' }}>Deltabox Frame:</strong> Superb frame rigidity and chassis balance. Zero layout shifts in gravity!</div>
+                      <div>🛡️ <strong style={{ color: '#eeeeee' }}>Engine Guards:</strong> Heavy-duty crash sliders shielding engine cases from rough off-road terrain.</div>
                     </>
                   )}
-                  {activeStackDrawer === 'core' && (
+                  {activeStackDrawer === 'touring' && (
                     <>
-                      <div>🏗️ <strong style={{ color: '#ff007f' }}>Clean Architecture:</strong> Domain-driven, modular design structures for easy scale.</div>
-                      <div>⚡ <strong style={{ color: '#00e5ff' }}>Performance Profiling:</strong> Layout shift elimination, minimal asset footprints.</div>
-                      <div>🧠 <strong style={{ color: '#ffd700' }}>Algorithmic Logic:</strong> Data structures and optimization calculations.</div>
-                      <div>🛡️ <strong style={{ color: '#00ff66' }}>Code Integrity:</strong> Secure state handling, zero external pollution.</div>
+                      <div>🎒 <strong style={{ color: '#ff007f' }}>Waterproof Saddlebags:</strong> Decoupled, heavy-duty side bags to pack gear for multi-day adventure tours.</div>
+                      <div>🖥️ <strong style={{ color: '#00e5ff' }}>GPS Cockpit Mount:</strong> Vibration-dampened mobile handlebar holder plotting active maps.</div>
+                      <div>🔋 <strong style={{ color: '#ffd700' }}>Chassis USB Charger:</strong> Connected directly to the main battery for keeping telemetry devices charged.</div>
+                      <div>💨 <strong style={{ color: '#00ff66' }}>Touring Visor:</strong> High wind-shield visor reducing rider fatigue during peak highway runs.</div>
                     </>
                   )}
                 </div>
@@ -3761,6 +3927,7 @@ export default function InteractiveAvatar() {
       )}
 
       {/* 4. 📋 Tactical chalk Board Blueprint Modal */}
+      {/* 4. 📋 Soccer Tactics Chalkboard Playbook Modal */}
       {showTacticalBlueprints && (
         <div style={{
           position: 'absolute',
@@ -3777,7 +3944,7 @@ export default function InteractiveAvatar() {
           <div className="rpg-box" style={{ width: '95%', maxWidth: '580px', background: '#0a100a', borderColor: '#4caf50', boxShadow: '0 0 25px rgba(76, 175, 80, 0.3)' }}>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '3px solid #4caf50', paddingBottom: '8px', marginBottom: '15px' }}>
-              <span className="pixel-header" style={{ fontSize: '0.85rem', color: '#4caf50' }}>📋 TACTICAL CHALKBOARD BLUEPRINTS</span>
+              <span className="pixel-header" style={{ fontSize: '0.85rem', color: '#4caf50' }}>📋 CHAMPIONS LEAGUE PLAYBOOK</span>
               <button 
                 onClick={() => setShowTacticalBlueprints(false)}
                 className="pixel-header"
@@ -3792,9 +3959,9 @@ export default function InteractiveAvatar() {
               
               <div style={{ borderBottom: '2px dashed rgba(255,255,255,0.2)', paddingBottom: '8px', marginBottom: '12px', textAlign: 'center' }}>
                 <h3 className="pixel-header" style={{ fontSize: '0.8rem', color: '#ffeb3b', margin: 0 }}>
-                  CHAMPIONS LEAGUE ARCHITECTURE MAP
+                  CHAMPIONS LEAGUE 4-3-3 TACTICAL SCHEME
                 </h3>
-                <span style={{ fontSize: '0.62rem', fontFamily: 'monospace', color: '#81c784' }}>Mapping Soccer Tactics to Clean Code Structures</span>
+                <span style={{ fontSize: '0.62rem', fontFamily: 'monospace', color: '#81c784' }}>My Personal Playbook & Tactical Dribble Formations</span>
               </div>
 
               {/* Diagrams columns */}
@@ -3809,16 +3976,16 @@ export default function InteractiveAvatar() {
                 {/* Tactical mapping details */}
                 <div style={{ flex: '1.2 1 240px', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '1.2rem', fontFamily: 'monospace' }}>
                   <div>
-                    <span style={{ color: '#ffeb3b', fontWeight: 'bold' }}>🛡️ DEFENSE (Entities & Core):</span><br/>
-                    The defensive backline. Written in pure decoupled logic. Absorbs database payloads and shields application rules from dynamic framework updates.
+                    <span style={{ color: '#ffeb3b', fontWeight: 'bold' }}>🛡️ DEFENSIVE UNIT (Low Block 4-4-2):</span><br/>
+                    The solid backline foundation. Compact defensive blocks. Highly disciplined, blocking central channels, absorbing direct striker runs, and shielding the goalie.
                   </div>
                   <div>
-                    <span style={{ color: '#4fc3f7', fontWeight: 'bold' }}>🏃 MIDFIELD (Use Case Dispatchers):</span><br/>
-                    Controls game flow. Converts REST, WebSockets, or UI payloads into clean business flows, maintaining rigorous decoupled transitions.
+                    <span style={{ color: '#4fc3f7', fontWeight: 'bold' }}>🏃 THE ENGINE ROOM (Double Pivot Midfield):</span><br/>
+                    The heartbeat. Dictates match tempo, switches channels with deep long balls, and acts as the quick transition valve between defense and attacking runs.
                   </div>
                   <div>
-                    <span style={{ color: '#ffd54f', fontWeight: 'bold' }}>⚡ ATTACK (Dynamic Viewports):</span><br/>
-                    The goal-scorers. Rich premium responsive UI widgets, dynamic scanline overlays, and fast game loops designed to WOW the end-user.
+                    <span style={{ color: '#ffd54f', fontWeight: 'bold' }}>⚡ ATTACKING UNIT (Inverted 4-3-3 Wingers):</span><br/>
+                    The playmakers. High pressing defensive lines, quick short passes, overlapping fullbacks exploiting half-spaces, and taking decisive shots on target.
                   </div>
                 </div>
               </div>
@@ -3829,110 +3996,328 @@ export default function InteractiveAvatar() {
         </div>
       )}
 
-      {/* 5. 🖥️ PC Projects Monitor Terminal Modal */}
-      {showPCProjects && (
+      {/* 5. 📚 Books & Films Trigger Choice Menu */}
+      {showBookshelfPrompt && (
         <div style={{
           position: 'absolute',
           top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(5, 5, 12, 0.95)',
+          background: 'rgba(15, 10, 8, 0.85)',
           zIndex: 220,
           display: 'flex',
-          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           padding: '20px'
         }}>
-          <div className="crt-scanline" style={{ pointerEvents: 'none' }} />
-          <div className="rpg-box" style={{ width: '95%', maxWidth: '680px', background: '#050508', borderColor: '#00e5ff', boxShadow: '0 0 25px rgba(0, 229, 255, 0.3)' }}>
+          <div className="rpg-box" style={{ 
+            width: '90%', 
+            maxWidth: '450px', 
+            background: 'rgba(30, 20, 15, 0.98)', 
+            borderColor: '#ffd700', 
+            boxShadow: '0 0 25px rgba(255, 215, 0, 0.3)',
+            color: '#eae0d5',
+            padding: '25px',
+            textAlign: 'center',
+            borderRadius: '12px',
+            border: '3px solid #ffd700',
+            backdropFilter: 'blur(8px)'
+          }}>
+            <h3 className="pixel-header" style={{ color: '#ffd700', fontSize: '1.4rem', margin: '0 0 15px 0' }}>
+              📚 BOOKS & FILMS CORNER 🎬
+            </h3>
+            <p className="pixel-text" style={{ fontSize: '1.15rem', color: '#c9bda7', marginBottom: '25px', lineHeight: '1.5' }}>
+              Welcome to my cozy internet corner! What would you like to do?
+            </p>
             
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '3px solid #00e5ff', paddingBottom: '8px', marginBottom: '15px' }}>
-              <span className="pixel-header" style={{ fontSize: '0.85rem', color: '#00e5ff' }}>🖥️ RAGHAV'S GLOWING COMMAND DECK</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <button 
-                onClick={() => setShowPCProjects(false)}
-                className="pixel-header"
-                style={{ background: 'var(--rpg-accent)', color: '#fff', border: '2px solid #000', padding: '2px 8px', fontSize: '0.65rem', cursor: 'pointer' }}
+                onClick={() => {
+                  playSound('chime');
+                  setShowBookshelfPrompt(false);
+                  setShowBookshelfModal(true);
+                  setBookshelfTab('anime');
+                }}
+                className="pixel-button"
+                style={{ 
+                  background: '#d4af37', 
+                  color: '#1a100a', 
+                  border: '3px solid #ffd700', 
+                  padding: '12px', 
+                  fontSize: '1.1rem', 
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  borderRadius: '6px',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.2)',
+                  transition: 'transform 0.1s'
+                }}
               >
-                CLOSE [B]
+                📖 KNOW MORE
+              </button>
+              
+              <button 
+                onClick={() => {
+                  playSound('chime');
+                  setShowBookshelfPrompt(false);
+                  setShowTrivia(true);
+                  setCurrentQuestionIdx(0);
+                  setCorrectStreak(0);
+                  setTriviaResult(null);
+                }}
+                className="pixel-button"
+                style={{ 
+                  background: '#8a2be2', 
+                  color: '#fff', 
+                  border: '3px solid #a855f7', 
+                  padding: '12px', 
+                  fontSize: '1.1rem', 
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  borderRadius: '6px',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.2)',
+                  transition: 'transform 0.1s'
+                }}
+              >
+                🕹️ TEST YOUR KNOWLEDGE
+              </button>
+              
+              <button 
+                onClick={() => {
+                  playSound('chime');
+                  setShowBookshelfPrompt(false);
+                }}
+                className="pixel-button"
+                style={{ 
+                  background: 'transparent', 
+                  color: '#8e7f72', 
+                  border: '2px solid #5c4d3c', 
+                  padding: '8px', 
+                  fontSize: '0.95rem', 
+                  cursor: 'pointer',
+                  marginTop: '10px',
+                  borderRadius: '4px'
+                }}
+              >
+                NEVERMIND
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 6. 📖 Books & Films Info Modal Panel */}
+      {showBookshelfModal && (
+        <div style={{
+          position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(10, 6, 4, 0.9)',
+          zIndex: 220,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '10px'
+        }}>
+          <div className="rpg-box" style={{ 
+            width: '95%', 
+            maxWidth: '650px', 
+            background: 'rgba(26, 18, 13, 0.98)', 
+            borderColor: '#ffd700', 
+            boxShadow: '0 0 30px rgba(255, 215, 0, 0.25)',
+            color: '#eae0d5',
+            padding: '20px',
+            borderRadius: '12px',
+            border: '3px solid #ffd700',
+            maxHeight: '90%',
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            backdropFilter: 'blur(8px)'
+          }}>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '3px solid #ffd700', paddingBottom: '10px', marginBottom: '15px' }}>
+              <span className="pixel-header" style={{ fontSize: '1.2rem', color: '#ffd700', textShadow: '0 0 5px rgba(255, 215, 0, 0.3)' }}>
+                📖 BOOKS, ANIME & FILMS
+              </span>
+              <button 
+                onClick={() => setShowBookshelfModal(false)}
+                className="pixel-header"
+                style={{ 
+                  background: '#e53935', 
+                  color: '#fff', 
+                  border: '2px solid #000', 
+                  padding: '4px 10px', 
+                  fontSize: '0.75rem', 
+                  cursor: 'pointer',
+                  borderRadius: '4px'
+                }}
+              >
+                CLOSE [X]
               </button>
             </div>
 
-            <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
-              {/* Left Column: Project Selection Terminal */}
-              <div style={{ flex: '1 1 220px', display: 'flex', flexDirection: 'column', gap: '8px', background: '#111', padding: '10px', borderRadius: '4px', border: '2px solid #333' }}>
-                <span className="pixel-header" style={{ fontSize: '0.52rem', color: '#888', marginBottom: '4px', display: 'block' }}>📁 ACTIVE PROJECTS DICTIONARY:</span>
-                {[
-                  { id: 'scraper', title: '🔮 Jujutsu Stock Scraper', desc: 'Node.js web scraper indexing fandom stock prices.' },
-                  { id: 'rpg', title: '🏡 Cozy RPG Room Engine', desc: 'React single page game engine. Layout shifts: 0!' },
-                  { id: 'tactics', title: '⚽ UEFA Tactics Backtracker', desc: 'Graph algorithm mapping Champions League formations.' }
-                ].map(project => (
-                  <button
-                    key={project.id}
-                    onClick={() => {
-                      playSound('chime');
-                      setPcActiveProject(project.id);
-                      if (project.id === 'scraper') {
-                        setSimulatedLogs([
-                          "🚀 Initiating Jujutsu Stock Tracker Scraper Daemon v1.0.4...",
-                          "📡 Spawning cluster workers at Kyoto School and Tokyo School endpoints...",
-                          "🔑 Authentication handshake: SUCCESS. Node cluster active.",
-                          "📊 Fetching baseline Cursed Energy Indexes...",
-                          "⚡ Cursed Energy Index: 2,450.40 (+1.25%) | Gojo Satoru Market Cap: ∞"
-                        ]);
-                      } else if (project.id === 'rpg') {
-                        setSimulatedLogs([
-                          "🏡 Cozy RPG Space Engine Bootstrapping...",
-                          "🧱 Bounding collision maps (SOLID_TILES loaded: 36 nodes)...",
-                          "🎭 Character sprite custom colors injected successfully.",
-                          "🔊 Audio Web Synths: READY (Triangle & Square waves bound).",
-                          "🚀 Dev Server status: RUNNING. Layout shift counts: 0."
-                        ]);
-                      } else if (project.id === 'tactics') {
-                        setSimulatedLogs([
-                          "⚽ Loading UEFA Backtrack Tactics matrix...",
-                          "🧬 Parsing Graph vertex configurations (4-3-3 inverted)...",
-                          "📐 Core defense entities layered: decoupled from UI viewports.",
-                          "🏃 Midfield dispatchers compiled. Attack routines: bound.",
-                          "🔥 Tactical analysis optimal: System decoupled."
-                        ]);
-                      }
-                    }}
-                    className="pixel-text"
-                    style={{
-                      background: pcActiveProject === project.id ? '#1a233a' : '#050508',
-                      color: pcActiveProject === project.id ? '#00e5ff' : '#aaa',
-                      border: `2px solid ${pcActiveProject === project.id ? '#00e5ff' : '#444'}`,
-                      padding: '8px',
-                      fontSize: '1.15rem',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      transition: 'all 0.15s'
-                    }}
-                  >
-                    <strong style={{ display: 'block', fontSize: '0.62rem', fontFamily: 'monospace', textTransform: 'uppercase', marginBottom: '2px' }}>{project.title}</strong>
-                    {project.desc}
-                  </button>
-                ))}
-              </div>
-
-              {/* Right Column: Simulated Live stdout console */}
-              <div style={{ flex: '1.5 1 300px', display: 'flex', flexDirection: 'column', background: '#000', border: '3px solid #333', padding: '10px', borderRadius: '4px', height: '260px', boxSizing: 'border-box' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #333', paddingBottom: '4px', marginBottom: '8px', fontSize: '0.52rem', fontFamily: 'monospace', color: '#ff007f' }}>
-                  <span>TERMINAL: stdout</span>
-                  <span>STATUS: RUNNING</span>
-                </div>
-
-                {/* CRT Glowing terminal text logs box */}
-                <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', fontFamily: 'monospace', fontSize: '0.98rem', color: '#39ff14', textShadow: '0 0 4px rgba(57,255,20,0.5)', paddingRight: '4px' }}>
-                  {simulatedLogs.map((log, idx) => (
-                    <div key={idx} style={{ wordBreak: 'break-all', whiteSpace: 'normal' }}>
-                      {log}
-                    </div>
-                  ))}
-                  <div className="typing-cursor" style={{ height: '10px', width: '6px', background: '#39ff14', display: 'inline-block' }} />
-                </div>
-              </div>
+            {/* Tabs Row */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '15px' }}>
+              <button
+                onClick={() => { playSound('chime'); setBookshelfTab('anime'); }}
+                style={{
+                  flex: 1,
+                  padding: '10px 5px',
+                  background: bookshelfTab === 'anime' ? '#ffd700' : 'rgba(255, 255, 255, 0.05)',
+                  color: bookshelfTab === 'anime' ? '#100d0a' : '#c9bda7',
+                  border: `2px solid ${bookshelfTab === 'anime' ? '#ffd700' : '#5c4d3c'}`,
+                  fontSize: '1.05rem',
+                  fontFamily: 'inherit',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  borderRadius: '6px',
+                  transition: 'all 0.2s'
+                }}
+              >
+                📚 ANIME & MANGA
+              </button>
+              <button
+                onClick={() => { playSound('chime'); setBookshelfTab('movies'); }}
+                style={{
+                  flex: 1,
+                  padding: '10px 5px',
+                  background: bookshelfTab === 'movies' ? '#ffd700' : 'rgba(255, 255, 255, 0.05)',
+                  color: bookshelfTab === 'movies' ? '#100d0a' : '#c9bda7',
+                  border: `2px solid ${bookshelfTab === 'movies' ? '#ffd700' : '#5c4d3c'}`,
+                  fontSize: '1.05rem',
+                  fontFamily: 'inherit',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  borderRadius: '6px',
+                  transition: 'all 0.2s'
+                }}
+              >
+                🎬 MOVIES & FILMS
+              </button>
             </div>
 
+            {/* Tab Contents */}
+            <div style={{ flex: 1, overflowY: 'auto', paddingRight: '4px' }}>
+              {bookshelfTab === 'anime' ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                  <div style={{ borderBottom: '1px solid rgba(255, 215, 0, 0.15)', paddingBottom: '10px' }}>
+                    <p style={{ margin: '0 0 10px 0', fontStyle: 'italic', color: '#c9bda7', fontSize: '1rem' }}>
+                      "My absolute fixations in the manga & anime realm—masterpieces that redefined visual storytelling for me."
+                    </p>
+                  </div>
+                  
+                  {[
+                    {
+                      title: "Hunter x Hunter",
+                      type: "Anime / Manga",
+                      status: "All-Time Favorite",
+                      desc: "Togashi's masterclass in subverting battle shonen expectations. The Chimera Ant arc is a philosophical essay disguised as an action sequence. Pure narrative genius.",
+                      rating: "⭐⭐⭐⭐⭐"
+                    },
+                    {
+                      title: "Jujutsu Kaisen",
+                      type: "Manga & Anime",
+                      status: "Current Obsession",
+                      desc: "Incredibly high-octane battles with a highly mathematical magic system. Gege Akutami writes with merciless pacing, and MAPPA's animation is simply breathtaking.",
+                      rating: "⭐⭐⭐⭐⭐"
+                    },
+                    {
+                      title: "Monster (Naoki Urasawa)",
+                      type: "Manga & Anime",
+                      status: "Masterpiece Mystery",
+                      desc: "A chilling psychological thriller set in post-Cold War Germany. Johan Liebert is arguably the greatest antagonist in fiction. A deep dive into morality and human nature.",
+                      rating: "⭐⭐⭐⭐⭐"
+                    },
+                    {
+                      title: "Chainsaw Man",
+                      type: "Manga",
+                      status: "Highly Recommended",
+                      desc: "Fujimoto's chaotic, cinematic, and profoundly emotional ride. It blends grindhouse gore with subtle, heart-wrenching slice-of-life storytelling. Completely unpredictable.",
+                      rating: "⭐⭐⭐⭐½"
+                    },
+                    {
+                      title: "Vagabond",
+                      type: "Manga",
+                      status: "Artistic Peak",
+                      desc: "Takehiko Inoue's retelling of Musashi Miyamoto's life. The hand-drawn brush art is gallery-worthy. A profound story about strength, ego, and inner peace.",
+                      rating: "⭐⭐⭐⭐⭐"
+                    }
+                  ].map((item, index) => (
+                    <div key={index} style={{
+                      background: 'rgba(255, 255, 255, 0.02)',
+                      border: '1.5px solid rgba(255, 215, 0, 0.15)',
+                      padding: '12px',
+                      borderRadius: '8px',
+                      boxShadow: 'inset 0 0 5px rgba(255, 255, 255, 0.02)'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#ffd700' }}>{item.title}</span>
+                        <span style={{ fontSize: '0.8rem', background: '#3a2010', color: '#ffd700', padding: '2px 6px', borderRadius: '4px', border: '1px solid #ffd700' }}>{item.status}</span>
+                      </div>
+                      <p style={{ margin: '0 0 8px 0', fontSize: '0.95rem', color: '#eae0d5', lineHeight: '1.4' }}>{item.desc}</p>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#c9bda7' }}>
+                        <span>Type: {item.type}</span>
+                        <span>Rating: {item.rating}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                  <div style={{ borderBottom: '1px solid rgba(255, 215, 0, 0.15)', paddingBottom: '10px' }}>
+                    <p style={{ margin: '0 0 10px 0', fontStyle: 'italic', color: '#c9bda7', fontSize: '1rem' }}>
+                      "My film escapes—ranging from whimsical, hand-painted worlds to mind-bending sci-fi masterpieces."
+                    </p>
+                  </div>
+                  
+                  {[
+                    {
+                      title: "Studio Ghibli Favorites",
+                      director: "Hayao Miyazaki",
+                      highlights: "Spirited Away, Princess Mononoke, Howl's Moving Castle",
+                      desc: "Miyazaki's works are pure magic. The hand-painted backgrounds, Joe Hisaishi's swelling nostalgic scores, and themes of environmentalism and pacifism always warm my soul.",
+                      rating: "⭐⭐⭐⭐⭐"
+                    },
+                    {
+                      title: "Interstellar",
+                      director: "Christopher Nolan",
+                      highlights: "No-compromise cosmic sci-fi with Hans Zimmer's epic organ score",
+                      desc: "The ultimate journey into space, time, and human connection. Visually spectacular and scientifically sound. Cooper's library scenes never fail to give me goosebumps.",
+                      rating: "⭐⭐⭐⭐⭐"
+                    },
+                    {
+                      title: "The Dark Knight Trilogy",
+                      director: "Christopher Nolan",
+                      highlights: "Batman Begins, The Dark Knight, The Dark Knight Rises",
+                      desc: "The definitive cinematic take on superhero folklore. Gritty, realistic, perfectly paced, and featuring Heath Ledger's legendary performance that changed movie history forever.",
+                      rating: "⭐⭐⭐⭐⭐"
+                    },
+                    {
+                      title: "Inception",
+                      director: "Christopher Nolan",
+                      highlights: "A mechanical dream-heist thriller",
+                      desc: "A masterfully constructed clockwork puzzle of a movie. The world-bending dream physics, deep lore, and absolute thriller pacing make this a movie I can rewatch endless times.",
+                      rating: "⭐⭐⭐⭐½"
+                    }
+                  ].map((item, index) => (
+                    <div key={index} style={{
+                      background: 'rgba(255, 255, 255, 0.02)',
+                      border: '1.5px solid rgba(255, 215, 0, 0.15)',
+                      padding: '12px',
+                      borderRadius: '8px',
+                      boxShadow: 'inset 0 0 5px rgba(255, 255, 255, 0.02)'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#ffd700' }}>{item.title}</span>
+                        <span style={{ fontSize: '0.8rem', background: '#251b2a', color: '#c084fc', padding: '2px 6px', borderRadius: '4px', border: '1px solid #c084fc' }}>{item.director}</span>
+                      </div>
+                      <p style={{ margin: '0 0 6px 0', fontSize: '0.85rem', color: '#ffd54f', fontWeight: '500' }}>⭐ Highlights: {item.highlights}</p>
+                      <p style={{ margin: '0 0 8px 0', fontSize: '0.95rem', color: '#eae0d5', lineHeight: '1.4' }}>{item.desc}</p>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', fontSize: '0.8rem', color: '#c9bda7' }}>
+                        <span>Rating: {item.rating}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

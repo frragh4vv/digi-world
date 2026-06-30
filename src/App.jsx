@@ -8,62 +8,62 @@ import { GameStateProvider, useGameState } from './components/GameStateContext';
 const inventoryItems = [
   {
     id: 'profile',
-    title: 'Character: Raghav',
+    title: 'Character: Raghav (Host)',
     mainImg: '/profile.png',
-    desc: 'The developer candidate NPC. Class: Chaotic Co-Pilot. Stats: +15 Hyperfixation, +80 Bouldering Enthusiasm, -10 Sleep Discipline. A software engineer who loves converting normal web components into immersive retro games.',
+    desc: 'The room host, bouldering climber, and coffee enthusiast! A chaotic explorer who loves scaling high-friction sandstone slabs, riding motorbikes, cooking sizzling street treats, and analyzing UEFA formations.',
     attributes: [
-      { name: 'HP (Social Battery)', val: '75 / 100' },
+      { name: 'HP (Stamina Battery)', val: '85 / 100' },
       { name: 'EXP (Age Level)', val: 'Level 20+' },
-      { name: 'Archetype', val: 'Highly Lonely Yearner' },
-      { name: 'Active Buffs', val: 'Caffeine Surge, Code Flow' }
+      { name: 'Archetype', val: 'Chaotic Explorer' },
+      { name: 'Active Buffs', val: 'Caffeine Rush, Climber Flow' }
     ],
     gallery: ['/profile.png']
   },
   {
     id: 'bouldering',
-    title: 'Bouldering Shoes',
+    title: 'Climbing Grip Shoes',
     mainImg: '/bouldering.png',
-    desc: 'Equippable Item. +10 Wall Grip, -5 Finger Skin. Restores passion when solving physical puzzles on walls. Grants a passive ability to point at random cliffs and say "I can climb that" (usually can\'t).',
+    desc: 'Equippable Gear. +15 Wall Friction, -5 Skin Layers. Essential for scaling steep sandstone faces in Hampi and volume-board climbing. Grants a passive ability to look at any rock face and outline a perfect V5 climbing route.',
     attributes: [
-      { name: 'Item Rarity', val: 'Rare Artifact' },
-      { name: 'Grip Power', val: '+10' },
-      { name: 'Chalk Consumption', val: 'Extreme' }
+      { name: 'Item Rarity', val: 'Rare Gear' },
+      { name: 'Friction Coefficient', val: 'Extreme' },
+      { name: 'Chalk Consumption', val: 'Maximum' }
     ],
     gallery: ['/bouldering.png', '/bouldering_2.png']
   },
   {
     id: 'anime',
-    title: 'Ancient Tome of Lore',
+    title: 'Vintage Manga Shelf',
     mainImg: '/anime.png',
-    desc: 'Quest Item. A deep, unyielding well of anime and manga knowledge. Grants +15 Charisma to fellow weebs. Prepare for an intense, highly energetic 40-minute analysis of a series you have never heard of.',
+    desc: 'Quest Item. A towering shelf packed with retro manga volumes and anime logs. Contains rare first editions. Warning: interacting may trigger an energetic 45-minute discussion analyzing classic Nen ability mechanics!',
     attributes: [
-      { name: 'Lore Depth', val: 'Infinite' },
-      { name: 'Spoken Speed', val: '1.5x' },
-      { name: 'Weeb Factor', val: '99%' }
+      { name: 'Manga Volumes', val: '200+ Shelved' },
+      { name: 'Otaku Buff', val: '+50 Wisdom' },
+      { name: 'Lore Depth', val: 'Infinite' }
     ],
     gallery: ['/anime.png', '/anime_2.png']
   },
   {
     id: 'trekking',
-    title: 'Travel Diary & Scrapbook',
+    title: 'Travel Scrapbook & Log',
     mainImg: '/trekking.png',
-    desc: 'Raghav\'s personal travel scrapbook detailing alpine treks, historical temple trails in Kyoto, high-friction sandstone blocks in Hampi, and monsoons in the Western Ghats. A living collection of travel memories and climbing logs.',
+    desc: 'Raghav\'s personal travel scrapbook detailing alpine treks along the GR20 trails in Corsica, historical temple ruins in Hampi, Kyoto shrines, and monsoon hikes in the Western Ghats peaks. A living archive of memories.',
     attributes: [
-      { name: 'Travel Journeys', val: 'Corsica, Hampi, Tokyo' },
-      { name: 'Altitude Scaled', val: '2,700m+ Peaks' },
-      { name: 'Passions Detailed', val: 'Climbing, Hiking, Lore' }
+      { name: 'Alpine Expeditions', val: 'GR20 Corsica' },
+      { name: 'Sandstone Scaled', val: 'Hampi Boulders' },
+      { name: 'Monsoon Peaks', val: 'Western Ghats' }
     ],
     gallery: ['/trekking.png', '/trekking_2.png']
   },
   {
     id: 'football',
-    title: 'The Orb of Chaos',
+    title: 'The Matchday Playbook',
     mainImg: '/football.png',
-    desc: 'Artifact. The beautiful game. I spend 50% of my time playing it on the pitch and 50% providing completely unsolicited tactical analyses of Champions League matches as if I were a UEFA manager.',
+    desc: 'A soccer chalkboard detailing defensive low blocks, midfielder double-pivots, and high pressing lines. Used to analyze Champions League matches and provide completely unasked tactical reviews.',
     attributes: [
-      { name: 'Agility Boost', val: '+8' },
-      { name: 'Tactical Backseat Driver', val: '+99' },
-      { name: 'Stamina battery', val: 'Low' }
+      { name: 'Tactical Wisdom', val: '+99' },
+      { name: 'Goal Assist Power', val: 'Gold Tier' },
+      { name: 'Dribble Agility', val: 'High' }
     ],
     gallery: ['/football.png']
   }

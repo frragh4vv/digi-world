@@ -29,10 +29,10 @@ export default function RPGStats() {
     const { stamina, curiosity, reflexes, intellect } = playerStats;
     const maxVal = Math.max(stamina, curiosity, reflexes, intellect);
     
-    if (stamina === maxVal) return "Endurance Knight";
-    if (curiosity === maxVal) return "Curious Wanderer";
-    if (reflexes === maxVal) return "Reflex Dribbler";
-    return "Caffeine Alchemist"; // default if Intellect is highest
+    if (stamina === maxVal) return "Summit Trekker";
+    if (curiosity === maxVal) return "Curious Explorer";
+    if (reflexes === maxVal) return "Climbing Dyno Master";
+    return "Campfire Alchemist"; // default if Intellect is highest
   };
 
   const currentClassTitle = getDynamicClass();
@@ -43,7 +43,7 @@ export default function RPGStats() {
     { name: 'Absorb Manga Spell Tome', done: inspectedItems.includes('anime'), icon: '📚' },
     { name: 'Pack Travel Suitcase', done: inspectedItems.includes('trekking'), icon: '🧳' },
     { name: 'Inspect Soccer Ball', done: inspectedItems.includes('football'), icon: '⚽' },
-    { name: 'Meet Raghav NPC (Developer)', done: inspectedItems.includes('profile'), icon: '🖥️' },
+    { name: 'Meet Raghav (Room Host)', done: inspectedItems.includes('profile'), icon: '🧑' },
     { name: `Score Soccer Goals: [${soccerScore} scored]`, done: soccerScore > 0, icon: '🥅' },
     { name: `Bicycle Biking Lap: [${bikingBestLap > 0 ? `${bikingBestLap.toFixed(1)}s record` : 'No record'}]`, done: bikingBestLap > 0, icon: '🚲' },
     { name: `Manga Arcade Streak: [Streak: ${triviaStreak}]`, done: equippedBadges.includes("Manga Lore Master"), icon: '🕹️' },
@@ -150,7 +150,7 @@ export default function RPGStats() {
 
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
-                <span>🧠 Intellect:</span> <span>{playerStats.intellect} points</span>
+                <span>🧠 Willpower:</span> <span>{playerStats.intellect} points</span>
               </div>
               <div style={{ width: '100%', height: '6px', background: '#222' }}>
                 <div style={{ width: `${(playerStats.intellect / 15) * 100}%`, height: '100%', background: '#00ffff' }} />
@@ -167,7 +167,7 @@ export default function RPGStats() {
           {/* Main Quest */}
           <div style={{ marginBottom: '15px', padding: '10px', border: '2px solid var(--rpg-highlight)', background: '#0a0a0f' }}>
             <h3 className="pixel-header" style={{ fontSize: '0.8rem', margin: '0 0 5px 0', color: 'var(--rpg-highlight)' }}>🏆 Main Quest:</h3>
-            <p style={{ margin: '3px 0', fontSize: '1.3rem' }}>Explore Raghav's Bedroom and inspect 5 landmarks.</p>
+            <p style={{ margin: '3px 0', fontSize: '1.3rem' }}>Explore Raghav's Room and inspect 5 landmarks.</p>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', fontSize: '1.2rem' }}>
               <span>Progress: {mainQuestPercent}%</span>
               <span>[{mainQuestCount}/5 landmarks]</span>

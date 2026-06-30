@@ -706,6 +706,38 @@ export default function PixelProp({ type }) {
     );
   }
 
+  if (type === 'cd_shelf') {
+    return (
+      <svg width="100%" height="100%" viewBox="0 0 16 16" shapeRendering="crispEdges">
+        {/* Wooden Frame */}
+        <rect x="2" y="1" width="12" height="14" fill={wood} />
+        <rect x="3" y="2" width="10" height="12" fill={woodDark} />
+        {/* Horizontal CD Shelves */}
+        <rect x="3" y="5" width="10" height="1" fill={wood} />
+        <rect x="3" y="9" width="10" height="1" fill={wood} />
+        {/* Row 1 CDs */}
+        <rect x="4" y="2.5" width="0.8" height="2.2" fill="#ffd700" />
+        <rect x="5" y="2.5" width="0.8" height="2.2" fill="#00ffff" />
+        <rect x="6" y="2.5" width="0.8" height="2.2" fill="#ff00ff" />
+        <rect x="7" y="2.5" width="0.8" height="2.2" fill="#ff8c00" />
+        <rect x="8" y="2.5" width="0.8" height="2.2" fill="#39ff14" />
+        <rect x="9.5" y="3.2" width="2" height="1.5" fill="#e53935" transform="rotate(15, 10, 3)" />
+        {/* Row 2 CDs */}
+        <rect x="4" y="6.5" width="0.8" height="2.2" fill="#ff007f" />
+        <rect x="5" y="6.5" width="0.8" height="2.2" fill="#8a2be2" />
+        <rect x="6.2" y="6.5" width="0.8" height="2.2" fill="#eeeeee" />
+        <rect x="7.5" y="6.5" width="0.8" height="2.2" fill="#00ff66" />
+        <rect x="8.5" y="6.5" width="0.8" height="2.2" fill="#ff8c00" />
+        <rect x="9.5" y="6.5" width="0.8" height="2.2" fill="#00ffff" />
+        {/* Row 3 Films / Vinyls */}
+        <rect x="4" y="10.5" width="2.2" height="2.2" fill="#e53935" />
+        <circle cx="5.1" cy="11.6" r="0.7" fill="#111" />
+        <rect x="7.2" y="10.5" width="2.2" height="2.2" fill="#1e88e5" />
+        <rect x="10" y="10.5" width="2.2" height="2.2" fill="#43a047" />
+      </svg>
+    );
+  }
+
   if (type === 'computerglowing') {
     return (
       <svg width="100%" height="100%" viewBox="0 0 16 16" shapeRendering="crispEdges">

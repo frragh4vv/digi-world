@@ -22,10 +22,12 @@ for (let r = 4; r <= 9; r++) {
 // 3. 🍔 Raghav's Cyber Diner Counter (solid counter at cols 7, row 12)
 SOLID_TILES.add("7,12"); 
 
-// 4. 📚 Manga Lounge Obstacles (top-right bookshelf, pedestal, and arcade machine)
-SOLID_TILES.add("17,1"); // Manga Bookshelf
-SOLID_TILES.add("17,2"); // Pedestal Table
-SOLID_TILES.add("16,1"); // 🕹️ Manga Arcade Trivia Cabinet!
+// 4. 📚 Manga & CD Corner Obstacles (L-shaped bookshelf and CD shelf)
+SOLID_TILES.add("16,1"); // CD & Film Shelf Col 16, Row 1
+SOLID_TILES.add("17,1"); // Bookshelf Col 17, Row 1
+SOLID_TILES.add("18,1"); // Bookshelf Col 18, Row 1
+SOLID_TILES.add("18,2"); // Bookshelf Col 18, Row 2
+SOLID_TILES.add("18,3"); // Bookshelf Col 18, Row 3
 
 // 5. ⚽ Soccer Goal Obstacles (Goalpost at bottom-right col 18, row 11)
 SOLID_TILES.add("18,11"); // Soccer Net Landmark
@@ -52,15 +54,15 @@ SOLID_TILES.add("2,6"); // Upper climbing wall hold block
 export const INTERACTABLE_OBJECTS = [
   {
     id: "profile",
-    title: "Raghav NPC",
-    desc: "The elite developer and highly lonely yearner candidate.",
-    symbol: "🖥️",
+    title: "Raghav (Room Host)",
+    desc: "The room host, bouldering enthusiast, and campfire cook.",
+    symbol: "🧑",
     color: "#ff007f",
     cells: [
       { col: 5, row: 4 }
     ],
-    dialogue: "Welcome to my overworld base! I am Raghav. Walk next to my desk or any styled corner to inspect my items!",
-    inspectPrompt: "INSPECT DEVELOPER"
+    dialogue: "Welcome to my digital room overworld! I am Raghav. Stand next to my desk or any styled corner and press E to check out my items!",
+    inspectPrompt: "TALK TO HOST"
   },
   {
     id: "bouldering",
@@ -87,28 +89,31 @@ export const INTERACTABLE_OBJECTS = [
     inspectPrompt: "INSPECT STRENGTH"
   },
   {
-    id: "anime",
-    title: "Ancient Pedestal",
-    desc: "An ornate stone stand glowing with magical energy, holding a manga volume.",
+    id: "bookshelf",
+    title: "Books & Films Shelf",
+    desc: "A cozy four-tile mahogany bookshelf loaded with anime, manga volumes, and film directories.",
     symbol: "📚",
     color: "#8a2be2",
     cells: [
-      { col: 16, row: 2 }
+      { col: 17, row: 1 },
+      { col: 18, row: 1 },
+      { col: 18, row: 2 },
+      { col: 18, row: 3 }
     ],
-    dialogue: "📚 [Manga Corner]: Pedestal glowing with magical energy. Prepare to learn about retro weeb lore!",
-    inspectPrompt: "INSPECT TOME"
+    dialogue: "📚 [Books & Films Corner]: A massive mahogany bookshelf corner. Stand near it and press E to check out my fixations or test your trivia knowledge!",
+    inspectPrompt: "INSPECT CORNER"
   },
   {
-    id: "computerglowing",
-    title: "Glowing Development PC",
-    desc: "A premium dual-monitor command deck glowing in the dark, showing stock indices and web scraping terminals.",
-    symbol: "🖥️",
+    id: "cd_shelf",
+    title: "CD & Film Shelf",
+    desc: "A rustic wood shelf displaying vintage anime soundtrack CDs, Ghibli scores, and retro movies.",
+    symbol: "💿",
     color: "#8a2be2",
     cells: [
-      { col: 15, row: 2 }
+      { col: 16, row: 1 }
     ],
-    dialogue: "🖥️ [Command Deck]: Dual monitors displaying Jujutsu stock crawler codes. Press E to showcase Raghav's actual software projects!",
-    inspectPrompt: "OPEN PC"
+    dialogue: "💿 [CD & Film Shelf]: A rustic shelf loaded with classic soundtrack CDs and movies. Stand near it and press E to check out my fixations or test your trivia knowledge!",
+    inspectPrompt: "BROWSE CD SHELF"
   },
   {
     id: "trekking",
@@ -143,32 +148,32 @@ export const INTERACTABLE_OBJECTS = [
     cells: [
       { col: 17, row: 11 }
     ],
-    dialogue: "⚽ [Soccer Field]: Tactical analysis board and mini ball. Ready to backtrack-tactics Champions League?",
-    inspectPrompt: "INSPECT ORB OF CHAOS"
+    dialogue: "⚽ [Soccer Field]: Tactical analysis board and mini ball. Ready to play 1v1 soccer duel?",
+    inspectPrompt: "PLAY SOCCER MATCH"
   },
   {
     id: "tacticboard",
-    title: "Tactical Chalkboard",
-    desc: "A chalkboard showing Champions League team formations and clean-architecture software design blueprints.",
+    title: "Soccer tactics chalkboard",
+    desc: "A chalkboard showing Champions League team formations, defensive high-lines, and counter-attack transitions.",
     symbol: "📋",
     color: "#00ffff",
     cells: [
       { col: 15, row: 10 }
     ],
-    dialogue: "📋 [Tactical Chalkboard]: Chalkboard covered in complex football tactics and software modular flow charts. Press E to inspect!",
-    inspectPrompt: "READ BLUEPRINTS"
+    dialogue: "📋 [Tactical Playbook]: Chalkboard covered in Champions League 4-3-3 counter-pressing strategies. Press E to open playbook!",
+    inspectPrompt: "READ PLAYBOOK"
   },
   {
     id: "toolbox",
-    title: "Red Rolling Toolbox",
-    desc: "A sleek red rolling cabinet containing Raghav's software development stack.",
+    title: "Motorbike repair cabinet",
+    desc: "A professional tool chest loaded with wrenches, chain tensioners, and grease for bike tuning.",
     symbol: "🧰",
     color: "#e53935",
     cells: [
       { col: 11, row: 13 }
     ],
-    dialogue: "🧰 [Tech Toolbox]: A professional rolling tool cabinet. Press E to inspect Raghav's coding tech stack!",
-    inspectPrompt: "OPEN TOOLBOX"
+    dialogue: "🧰 [Tuning Workbench]: Toolbox loaded with mechanical tools to tune and upgrade your motorbike. Press E to inspect!",
+    inspectPrompt: "OPEN TUNING CABINET"
   }
 ];
 
@@ -193,11 +198,11 @@ export function getFurnitureDialogue(col, row) {
   if (col === 1 && row >= 4 && row <= 9) {
     return "🧗 [Bouldering Wall]: 10-foot climbing wall covered in tiny colorful holds. Finger grip required!";
   }
-  if (col === 17 && row === 1) {
-    return "📚 [Manga Shelf]: Packed with volumes of Hunter-X-Hunter and ancient game developer magazines.";
+  if ((col === 17 || col === 18) && row === 1 || col === 18 && (row === 2 || row === 3)) {
+    return "📚 [Books & Films Corner]: A massive mahogany bookshelf corner. Stand near it and press E to check out my fixations or test your trivia knowledge!";
   }
   if (col === 16 && row === 1) {
-    return "🕹️ [Manga Trivia Arcade]: A glowing retro arcade cabinet! Stand in front of it and press E to test your Manga Lore.";
+    return "💿 [CD & Film Shelf]: A rustic wood shelf displaying vintage anime soundtrack CDs, Ghibli scores, and retro movies. Press E to browse!";
   }
   if (col === 10 && row === 1) {
     return "🖼️ [Gallery of Explorers]: A gilded golden photo frame hanging on the wall. Walk up and press E to view the retro visitor reviews!";

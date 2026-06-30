@@ -21,7 +21,7 @@ const DEFAULT_GUESTBOOK = [
 
 export function GameStateProvider({ children }) {
   const [playerName, setPlayerName] = useState("Heyy Visitor");
-  const [playerClass, setPlayerClass] = useState("Software Wizard");
+  const [playerClass, setPlayerClass] = useState("Cozy Explorer");
   const [playerStats, setPlayerStats] = useState({ stamina: 5, curiosity: 5, reflexes: 5, intellect: 5 });
   const [playerColors, setPlayerColors] = useState({ hat: '#8a2be2', shirt: '#1e88e5', pants: '#ffd700', skin: '#ffb6c1' });
   
