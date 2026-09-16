@@ -210,7 +210,7 @@ export default function Sprite({ direction, frame, customColors }) {
             x="14" y="18" width="2.2" height="5.5" 
             fill={colors.shirt} 
             rx="0.5" 
-            transform={isWalking ? "rotate(15, 15, 18)" : "none"} 
+            transform={isWalking ? "rotate(15, 15, 18)" : undefined}
           />
           <rect x="14" y="23.5" width="2.2" height="1" fill={colors.skin} />
 
@@ -271,7 +271,7 @@ export default function Sprite({ direction, frame, customColors }) {
             x="15.8" y="18" width="2.2" height="5.5" 
             fill={colors.shirt} 
             rx="0.5" 
-            transform={isWalking ? "rotate(-15, 17, 18)" : "none"} 
+            transform={isWalking ? "rotate(-15, 17, 18)" : undefined}
           />
           <rect x="15.8" y="23.5" width="2.2" height="1" fill={colors.skin} />
 

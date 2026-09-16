@@ -47,7 +47,23 @@ export default function RPGStats() {
     { name: `Score Soccer Goals: [${soccerScore} scored]`, done: soccerScore > 0, icon: '🥅' },
     { name: `Bicycle Biking Lap: [${bikingBestLap > 0 ? `${bikingBestLap.toFixed(1)}s record` : 'No record'}]`, done: bikingBestLap > 0, icon: '🚲' },
     { name: `Manga Arcade Streak: [Streak: ${triviaStreak}]`, done: equippedBadges.includes("Manga Lore Master"), icon: '🕹️' },
-    { name: 'Secret: Master Code wwssadadba', done: konamiUnlocked, icon: '🤫' }
+    { name: 'Secret: Master Code wwssadadba', done: konamiUnlocked, icon: '🤫' },
+    // 🥚 Hidden easter-egg quests — names stay masked until discovered in the room
+    {
+      name: equippedBadges.includes('Cat Whisperer') ? 'Secret: Befriend the Room Cat (5 pets)' : '??? — something soft purrs nearby…',
+      done: equippedBadges.includes('Cat Whisperer'),
+      icon: '🐈'
+    },
+    {
+      name: equippedBadges.includes('Fireside Chef') ? 'Secret: Marshmallow Master (3 roasts)' : '??? — the campfire crackles invitingly…',
+      done: equippedBadges.includes('Fireside Chef'),
+      icon: '🔥'
+    },
+    {
+      name: equippedBadges.includes('Midnight Snacker') ? 'Secret: The Great Fridge Heist (3 raids)' : '??? — the fridge hums suspiciously…',
+      done: equippedBadges.includes('Midnight Snacker'),
+      icon: '🧊'
+    }
   ];
 
   // Main quest calculations (inspect all 5 landmarks)
@@ -105,14 +121,18 @@ export default function RPGStats() {
               <span style={{ fontSize: '1.4rem' }}>Energy level (Stamina)</span>
               <span style={{ fontSize: '1.4rem' }}>{energyLevel}/100</span>
             </div>
-            <div style={{ width: '100%', height: '20px', border: '3px solid var(--rpg-text)', backgroundColor: '#000', position: 'relative' }}>
-              <div 
-                style={{ 
-                  width: `${displayedEnergy}%`, 
-                  height: '100%', 
-                  backgroundColor: energyLevel < 30 ? 'var(--hp-bar)' : 'var(--exp-bar)', 
-                  transition: 'width 0.3s ease' 
-                }} 
+            <div style={{ width: '100%', height: '16px', border: '1px solid rgba(0,255,255,0.4)', borderRadius: '999px', backgroundColor: 'rgba(0,0,0,0.6)', position: 'relative', overflow: 'hidden', boxShadow: 'inset 0 0 6px rgba(0,0,0,0.8)' }}>
+              <div
+                style={{
+                  width: `${displayedEnergy}%`,
+                  height: '100%',
+                  borderRadius: '999px',
+                  background: energyLevel < 30
+                    ? 'linear-gradient(90deg, #b71c1c, #ff5252)'
+                    : 'linear-gradient(90deg, #1b5e20, #43a047, #76ff9a)',
+                  boxShadow: energyLevel < 30 ? '0 0 8px rgba(255,82,82,0.6)' : '0 0 8px rgba(67,160,71,0.6)',
+                  transition: 'width 0.3s ease'
+                }}
               />
             </div>
           </div>
@@ -125,7 +145,7 @@ export default function RPGStats() {
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
                 <span>💪 Stamina:</span> <span>{playerStats.stamina} points</span>
               </div>
-              <div style={{ width: '100%', height: '6px', background: '#222' }}>
+              <div style={{ width: '100%', height: '6px', background: 'rgba(0,0,0,0.5)', borderRadius: '999px', overflow: 'hidden' }}>
                 <div style={{ width: `${(playerStats.stamina / 15) * 100}%`, height: '100%', background: '#ff3d00' }} />
               </div>
             </div>
@@ -134,7 +154,7 @@ export default function RPGStats() {
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
                 <span>🔍 Curiosity:</span> <span>{playerStats.curiosity} points</span>
               </div>
-              <div style={{ width: '100%', height: '6px', background: '#222' }}>
+              <div style={{ width: '100%', height: '6px', background: 'rgba(0,0,0,0.5)', borderRadius: '999px', overflow: 'hidden' }}>
                 <div style={{ width: `${(playerStats.curiosity / 15) * 100}%`, height: '100%', background: '#8a2be2' }} />
               </div>
             </div>
@@ -143,7 +163,7 @@ export default function RPGStats() {
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
                 <span>⚡ Reflexes:</span> <span>{playerStats.reflexes} points</span>
               </div>
-              <div style={{ width: '100%', height: '6px', background: '#222' }}>
+              <div style={{ width: '100%', height: '6px', background: 'rgba(0,0,0,0.5)', borderRadius: '999px', overflow: 'hidden' }}>
                 <div style={{ width: `${(playerStats.reflexes / 15) * 100}%`, height: '100%', background: '#00ff66' }} />
               </div>
             </div>
@@ -152,7 +172,7 @@ export default function RPGStats() {
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
                 <span>🧠 Intellect:</span> <span>{playerStats.intellect} points</span>
               </div>
-              <div style={{ width: '100%', height: '6px', background: '#222' }}>
+              <div style={{ width: '100%', height: '6px', background: 'rgba(0,0,0,0.5)', borderRadius: '999px', overflow: 'hidden' }}>
                 <div style={{ width: `${(playerStats.intellect / 15) * 100}%`, height: '100%', background: '#00ffff' }} />
               </div>
             </div>

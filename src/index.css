@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
-
 :root {
   --rpg-bg: #09090e;
   --rpg-text: #00ff66; /* Retro terminal green */
@@ -16,16 +14,19 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: var(--rpg-bg);
+  background-color: #06060c;
   color: var(--rpg-text);
   font-family: 'VT323', monospace;
   overflow-x: hidden;
-  background-image: 
-    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
-    linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)),
-    radial-gradient(#1e1e30 15%, transparent 20%);
-  background-size: 100% 4px, 6px 100%, 40px 40px;
-  image-rendering: pixelated;
+  /* Retro neon grid + soft cyan/pink glow vignette — clean, not crusty-old */
+  background-image:
+    radial-gradient(circle at 50% -10%, rgba(0, 255, 255, 0.10), transparent 55%),
+    radial-gradient(circle at 50% 110%, rgba(255, 0, 127, 0.08), transparent 55%),
+    linear-gradient(rgba(0, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 46px 46px, 46px 46px;
+  background-attachment: fixed;
+  min-height: 100vh;
 }
 
 .pixel-header {
@@ -41,13 +42,14 @@ body {
 }
 
 .rpg-box {
-  background: var(--rpg-box-bg);
-  border: 4px solid var(--rpg-text);
-  box-shadow: 
-    inset -4px -4px 0px rgba(0, 0, 0, 0.6),
-    inset 4px 4px 0px rgba(255, 255, 255, 0.1),
-    0 0 15px rgba(0, 255, 102, 0.2);
-  padding: 15px;
+  background: rgba(12, 15, 23, 0.82);
+  border: 2px solid var(--rpg-highlight);
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 1px rgba(0, 255, 255, 0.12),
+    0 0 18px rgba(0, 255, 255, 0.18),
+    inset 0 0 26px rgba(0, 255, 255, 0.05);
+  padding: 16px;
   color: var(--rpg-text);
   position: relative;
 }
@@ -80,6 +82,40 @@ body {
   gap: 20px;
   position: relative;
 }
+
+/* Reference-style title status bar */
+.title-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 100%;
+  padding: 10px 20px;
+  border: 2px solid var(--rpg-highlight);
+  border-radius: 999px;
+  background: rgba(12, 15, 23, 0.85);
+  box-shadow:
+    0 0 0 1px rgba(0, 255, 255, 0.12),
+    0 0 20px rgba(0, 255, 255, 0.22);
+  color: var(--rpg-highlight);
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
+}
+.title-bar-text {
+  font-size: clamp(0.5rem, 2.4vw, 0.95rem);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 1px;
+}
+.title-bar-sep { color: #4a4a5a; }
+.title-bar-online { color: var(--rpg-text); text-shadow: 0 0 8px rgba(0, 255, 102, 0.5); }
+.title-bar-dot {
+  width: 10px; height: 10px; flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--rpg-text);
+  box-shadow: 0 0 8px var(--rpg-text), 0 0 14px var(--rpg-text);
+  animation: pulse-dot 1.4s ease-in-out infinite;
+}
+@keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
 /* Speaker Grilles */
 .speaker-grille {
@@ -240,6 +276,7 @@ body {
   margin: 0 auto;
   align-items: flex-start;
   padding: 40px 20px;
+  box-sizing: border-box;
 }
 
 .hud-sidebar {
@@ -261,13 +298,68 @@ body {
   }
 }
 
+/* Tablet & phone refinements */
+@media (max-width: 680px) {
+  .console-layout {
+    gap: 24px;
+    padding: 20px 12px;
+  }
+  .handheld-container {
+    width: 100%;
+    padding: 16px 8px;
+    min-height: auto;
+    box-sizing: border-box;
+  }
+  .handheld-chassis {
+    width: 100%;
+    max-width: 100%;
+    padding: 14px;
+    border-width: 6px;
+    border-radius: 22px;
+    gap: 14px;
+    box-sizing: border-box;
+  }
+  .game-viewport {
+    border-width: 8px;
+  }
+  .console-controls {
+    margin-top: 8px;
+    padding: 0 4px;
+    gap: 8px;
+  }
+  /* Brand label between controls shrinks first so the d-pad + buttons fit */
+  .console-controls > .pixel-header {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .action-buttons {
+    gap: 12px;
+  }
+  .action-btn {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+/* Show a manual line-break only on small screens */
+.hide-desktop { display: none; }
+@media (max-width: 680px) {
+  .hide-desktop { display: inline; }
+}
+
 /* Tiles & Grid Design */
 .map-grid {
   display: grid;
   width: 100%;
   height: 100%;
   position: relative;
-  background-color: #111e11;
+  /* Warm wooden plank floor as the whole-room base; zone tiles paint over it. */
+  background-color: #2a1c10;
+  background-image: url('/woodenfloor.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
   overflow: hidden;
 }
 

@@ -1,8 +1,119 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import RPGStats from './components/RPGStats';
 import InteractiveAvatar from './components/InteractiveAvatar';
+import Sprite from './components/Sprite';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GameStateProvider, useGameState } from './components/GameStateContext';
+
+// ── Developer character file (the fun "inspect developer" screen) ──────────
+const DEV_COLORS = { hat: '#e53935', skin: '#ffb6c1', shirt: '#111111', pants: '#1e88e5', shoes: '#ffffff' };
+const DEV_SKILLS = [
+  { name: '⚛️ React Sorcery', val: 92, color: '#4fc3f7' },
+  { name: '🟢 Node.js Conjuring', val: 85, color: '#66bb6a' },
+  { name: '🐍 Python Scraping', val: 78, color: '#ffd54f' },
+  { name: '🧗 Bouldering (V5)', val: 70, color: '#ff8a65' },
+  { name: '⚽ Football IQ', val: 95, color: '#aed581' },
+  { name: '😴 Sleep Discipline', val: 12, color: '#ef5350' },
+];
+const DEV_STATUSES = [
+  '🧗 thinking about one more V5 problem…',
+  '☕ caffeine buff active (stack ×3)',
+  '📈 watching cursed stock indices',
+  '⚽ replaying Messi highlights — for research',
+  '📚 re-reading Hunter×Hunter, again',
+  '⌨️ refactoring something that already worked',
+  '🗺️ planning a trek he will absolutely overpack for',
+];
+
+function StatBar({ label, val, max = 100, color, delay = 0 }) {
+  const [w, setW] = useState(0);
+  useEffect(() => {
+    const t = setTimeout(() => setW((val / max) * 100), 120 + delay);
+    return () => clearTimeout(t);
+  }, [val, max, delay]);
+  return (
+    <div style={{ marginBottom: '8px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+        <span className="pixel-text" style={{ fontSize: '1.15rem', color: '#ddd' }}>{label}</span>
+        <span className="pixel-text" style={{ fontSize: '1.15rem', color }}>{val}/{max}</span>
+      </div>
+      <div style={{ width: '100%', height: '12px', background: '#000', border: '2px solid #333', borderRadius: '999px', overflow: 'hidden' }}>
+        <div style={{ width: `${w}%`, height: '100%', background: `linear-gradient(90deg, ${color}88, ${color})`, borderRadius: '999px', transition: 'width 0.9s cubic-bezier(0.22, 1, 0.36, 1)', boxShadow: `0 0 8px ${color}66` }} />
+      </div>
+    </div>
+  );
+}
+
+function DevCharacterCard() {
+  const [frame, setFrame] = useState(0);
+  const [statusIdx, setStatusIdx] = useState(0);
+  useEffect(() => {
+    const walk = setInterval(() => setFrame(f => (f + 1) % 4), 240);
+    const status = setInterval(() => setStatusIdx(i => (i + 1) % DEV_STATUSES.length), 2600);
+    return () => { clearInterval(walk); clearInterval(status); };
+  }, []);
+
+  return (
+    <div style={{ display: 'flex', gap: '22px', flexWrap: 'wrap', marginTop: '10px' }}>
+      {/* Left: animated sprite on a pedestal + identity + live status ticker */}
+      <div style={{ width: '230px', display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
+        <div className="rpg-box" style={{ width: '170px', height: '170px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'radial-gradient(circle at 50% 35%, #1c2418 0%, #000 75%)', border: '3px solid var(--rpg-highlight)', boxShadow: '0 0 18px rgba(0,255,255,0.35)' }}>
+          <div style={{ width: '104px', height: '104px' }}>
+            <Sprite direction="down" frame={frame} customColors={DEV_COLORS} />
+          </div>
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <h3 className="pixel-header" style={{ fontSize: '1.05rem', color: '#fff', margin: '0 0 4px 0' }}>RAGHAV</h3>
+          <span className="pixel-header" style={{ fontSize: '0.6rem', color: 'var(--rpg-text)' }}>CLASS: CHAOTIC CO-PILOT · LV 20+</span>
+        </div>
+        {/* Live status ticker */}
+        <div className="rpg-box" style={{ width: '100%', background: '#0a0a12', borderColor: '#ffd166', padding: '8px 10px' }}>
+          <div className="pixel-header" style={{ fontSize: '0.5rem', color: '#ffd166', marginBottom: '4px' }}>◉ CURRENT STATUS:</div>
+          <div className="pixel-text" style={{ fontSize: '1.1rem', color: '#fff', minHeight: '34px' }}>{DEV_STATUSES[statusIdx]}</div>
+        </div>
+      </div>
+
+      {/* Right: vitals, skills, buffs & debuffs */}
+      <div style={{ flex: 1, minWidth: '280px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <div style={{ border: '2px dashed var(--rpg-text)', padding: '12px', background: '#09090f' }}>
+          <h4 className="pixel-header" style={{ fontSize: '0.7rem', margin: '0 0 10px 0', color: 'var(--rpg-highlight)' }}>❤️ VITALS:</h4>
+          <StatBar label="HP · Social Battery" val={75} color="#ef5350" />
+          <StatBar label="MP · Caffeine Reserve" val={88} color="#4fc3f7" delay={120} />
+          <StatBar label="XP · Level Progress" val={68} color="#66bb6a" delay={240} />
+        </div>
+
+        <div style={{ border: '2px dashed var(--rpg-text)', padding: '12px', background: '#09090f' }}>
+          <h4 className="pixel-header" style={{ fontSize: '0.7rem', margin: '0 0 10px 0', color: 'var(--rpg-highlight)' }}>⚔️ SKILL TREE:</h4>
+          {DEV_SKILLS.map((s, i) => (
+            <StatBar key={s.name} label={s.name} val={s.val} color={s.color} delay={i * 90} />
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: '170px', border: '2px solid #2e7d32', padding: '10px', background: '#0a120a' }}>
+            <h4 className="pixel-header" style={{ fontSize: '0.6rem', margin: '0 0 8px 0', color: '#66bb6a' }}>▲ ACTIVE BUFFS:</h4>
+            {['☕ Caffeine Surge ×3', '🧗 Chalked Up (+grip)', '📺 Anime Arc Momentum'].map(b => (
+              <div key={b} className="pixel-text" style={{ fontSize: '1.1rem', color: '#cde6cd', marginBottom: '4px' }}>{b}</div>
+            ))}
+          </div>
+          <div style={{ flex: 1, minWidth: '170px', border: '2px solid #8a3a2a', padding: '10px', background: '#120a0a' }}>
+            <h4 className="pixel-header" style={{ fontSize: '0.6rem', margin: '0 0 8px 0', color: '#ef9a8a' }}>▼ DEBUFFS:</h4>
+            {['💤 Sleep Discipline -10', '🧲 Hyperfixation (random)', '🛒 Gear Acquisition Syndrome'].map(b => (
+              <div key={b} className="pixel-text" style={{ fontSize: '1.1rem', color: '#e6cdcd', marginBottom: '4px' }}>{b}</div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ border: '2px solid var(--rpg-highlight)', padding: '10px', background: '#0a0a12' }}>
+          <h4 className="pixel-header" style={{ fontSize: '0.6rem', margin: '0 0 8px 0', color: 'var(--rpg-highlight)' }}>🏆 NOTABLE ACHIEVEMENTS:</h4>
+          <div className="pixel-text" style={{ fontSize: '1.1rem', color: '#ddd', lineHeight: 1.6 }}>
+            🥾 GR20 Corsica Finisher (180km) · 🧗 V5 Sender, Hampi Granite · ⚽ Unlicensed UEFA Tactics Oracle · 🕹️ Shipped this very overworld
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // Expanded portfolio database matching mapConfig IDs
 const inventoryItems = [
@@ -78,7 +189,7 @@ function GameConsole() {
 
   // Keyboard Event Dispatcher for Console D-Pad and Buttons (Mobile Touch Support!)
   const simulateKeyEvent = (key, type) => {
-    const code = key === 'e' ? 'KeyE' : key === 'Escape' ? 'Escape' : '';
+    const code = key === 'e' ? 'KeyE' : key === 'b' ? 'KeyB' : key === 'Escape' ? 'Escape' : '';
     const event = new KeyboardEvent(type, {
       key: key,
       code: code,
@@ -97,12 +208,16 @@ function GameConsole() {
       {/* Handheld Console Screen Chassis */}
       <div className="handheld-container" style={{ flex: 1 }}>
         
-        <header style={{ textAlign: 'center', marginBottom: '15px' }}>
-          <h1 className="pixel-header" style={{ fontSize: '1.7rem', color: 'var(--rpg-highlight)', textShadow: '0 0 10px rgba(0,255,255,0.4)', margin: '0 0 5px 0' }}>
-            🏡 Raghav's Cozy Personal Space
-          </h1>
-          <p className="pixel-text" style={{ fontSize: '1.25rem', color: '#aaa', margin: 0 }}>
-            Walk around my bedroom overworld! [WASD/Arrows to Walk, Click tiles, E to Inspect]
+        <header style={{ textAlign: 'center', marginBottom: '18px', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+          {/* Reference-style status title bar */}
+          <div className="title-bar pixel-header">
+            <span className="title-bar-dot" />
+            <span className="title-bar-text">
+              RAGHAV'S DIGITAL WORLD <span className="title-bar-sep">//</span> <span className="title-bar-online">ONLINE</span> <span className="title-bar-sep">//</span> V2.0
+            </span>
+          </div>
+          <p className="pixel-text" style={{ fontSize: 'clamp(1rem, 3.4vw, 1.25rem)', color: '#9aa0b0', margin: 0, lineHeight: 1.4 }}>
+            Walk around my bedroom overworld! <br className="hide-desktop" />[WASD / Arrows to walk · Click tiles · E to inspect]
           </p>
         </header>
 
@@ -173,8 +288,11 @@ function GameConsole() {
               >
                 A
               </button>
-              <button 
-                onClick={() => setActiveItemId(null)}
+              <button
+                onMouseDown={() => simulateKeyEvent('b', 'keydown')}
+                onMouseUp={() => simulateKeyEvent('b', 'keyup')}
+                onTouchStart={() => simulateKeyEvent('b', 'keydown')}
+                onTouchEnd={() => simulateKeyEvent('b', 'keyup')}
                 className="action-btn btn-a"
               >
                 B
@@ -202,7 +320,7 @@ function GameConsole() {
             📜 Guide Book
           </h2>
           <p className="pixel-text" style={{ fontSize: '1.3rem', margin: '4px 0', lineHeight: '1.4' }}>
-            - Kick the soccer ball into the goalpost to score! Bounces off goalie & cones.
+            - Open the Football Chalkboard (bottom-right) to read Raghav's Barça/Messi lore & play a 1v1 match.
           </p>
           <p className="pixel-text" style={{ fontSize: '1.3rem', margin: '4px 0', lineHeight: '1.4' }}>
             - Grab energy drinks / pizza for active buffs and stamina restoration.
@@ -254,7 +372,7 @@ function GameConsole() {
               {/* Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '4px solid var(--rpg-highlight)', paddingBottom: '10px' }}>
                 <h2 className="pixel-header" style={{ fontSize: '1.4rem', color: 'var(--rpg-highlight)', margin: 0 }}>
-                  🔍 Item Inspected
+                  {selectedItem.id === 'profile' ? '⚔️ Character File' : '🔍 Item Inspected'}
                 </h2>
                 <button 
                   onClick={() => setActiveItemId(null)}
@@ -273,7 +391,10 @@ function GameConsole() {
                 </button>
               </div>
 
-              {/* Main Content Info */}
+              {/* Main Content Info — the developer gets a full RPG character file */}
+              {selectedItem.id === 'profile' ? (
+                <DevCharacterCard />
+              ) : (
               <div style={{ display: 'flex', gap: '25px', flexWrap: 'wrap', marginTop: '10px' }}>
                 <img 
                   src={selectedItem.mainImg} 
@@ -309,9 +430,10 @@ function GameConsole() {
                   </div>
                 </div>
               </div>
+              )}
 
               {/* Gallery scroll list */}
-              {selectedItem.gallery && selectedItem.gallery.length > 0 && (
+              {selectedItem.id !== 'profile' && selectedItem.gallery && selectedItem.gallery.length > 0 && (
                 <div style={{ marginTop: '10px' }}>
                   <h4 className="pixel-header" style={{ fontSize: '0.9rem', marginBottom: '10px', color: 'var(--rpg-text)' }}>
                     📷 Empirical Visual Evidence:

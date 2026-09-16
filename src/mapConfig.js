@@ -19,16 +19,22 @@ for (let r = 4; r <= 9; r++) {
   SOLID_TILES.add(`1,${r}`);
 }
 
-// 3. 🍔 Raghav's Cyber Diner Counter (solid counter at cols 7, row 12)
-SOLID_TILES.add("7,12"); 
+// 3. 🍔 Raghav's Cyber Diner Counter — made walkable (was a solid block at 7,12)
 
 // 4. 📚 Manga Lounge Obstacles (top-right bookshelf, pedestal, and arcade machine)
-SOLID_TILES.add("17,1"); // Manga Bookshelf
-SOLID_TILES.add("17,2"); // Pedestal Table
+SOLID_TILES.add("13,1"); // Bookshelf (tall — body spans rows 1-2, base hangs to row 3)
+SOLID_TILES.add("13,2"); // Bookshelf (lower half)
 SOLID_TILES.add("16,1"); // 🕹️ Manga Arcade Trivia Cabinet!
+SOLID_TILES.add("15,2"); // 📽️ Slide projector
 
-// 5. ⚽ Soccer Goal Obstacles (Goalpost at bottom-right col 18, row 11)
-SOLID_TILES.add("18,11"); // Soccer Net Landmark
+// Camping / trekking corner + garage spare tyre
+SOLID_TILES.add("2,11");  // Tent
+SOLID_TILES.add("4,12");  // Campfire
+SOLID_TILES.add("5,11");  // Travel suitcase
+SOLID_TILES.add("12,13"); // Spare tyre
+
+// 5. ⚽ Soccer corner — left as open, walkable grass turf (no goal / no collisions).
+//    The soccer match is launched from the Tactical Chalkboard instead.
 
 // 6. Bedroom Spawning Pad (Bed at top-left corner)
 SOLID_TILES.add("1,1");
@@ -40,7 +46,7 @@ SOLID_TILES.add("2,2");
 SOLID_TILES.add("10,1"); 
 
 // 8. 🚲 Red Bicycle Rack
-SOLID_TILES.add("10,13"); 
+SOLID_TILES.add("9,12");
 
 // 9. Manual solid coordinates for visual props that are not interactable
 SOLID_TILES.add("6,1"); // Stove (left kitchen block)
@@ -81,7 +87,7 @@ export const INTERACTABLE_OBJECTS = [
     symbol: "💪",
     color: "#ff8c00",
     cells: [
-      { col: 2, row: 5 }
+      { col: 3, row: 5 }
     ],
     dialogue: "💪 [Hangboard]: A wooden fingerboard. Press E to inspect Raghav's climbing and bicep stats!",
     inspectPrompt: "INSPECT STRENGTH"
@@ -105,7 +111,7 @@ export const INTERACTABLE_OBJECTS = [
     symbol: "🖥️",
     color: "#8a2be2",
     cells: [
-      { col: 15, row: 2 }
+      { col: 9, row: 5 }
     ],
     dialogue: "🖥️ [Command Deck]: Dual monitors displaying Jujutsu stock crawler codes. Press E to showcase Raghav's actual software projects!",
     inspectPrompt: "OPEN PC"
@@ -135,28 +141,16 @@ export const INTERACTABLE_OBJECTS = [
     inspectPrompt: "COOK FOOD"
   },
   {
-    id: "football",
-    title: "Soccer Ball",
-    desc: "A mini goal post with a black and white soccer ball parked inside.",
-    symbol: "⚽",
-    color: "#00ffff",
-    cells: [
-      { col: 17, row: 11 }
-    ],
-    dialogue: "⚽ [Soccer Field]: Tactical analysis board and mini ball. Ready to backtrack-tactics Champions League?",
-    inspectPrompt: "INSPECT ORB OF CHAOS"
-  },
-  {
     id: "tacticboard",
-    title: "Tactical Chalkboard",
-    desc: "A chalkboard showing Champions League team formations and clean-architecture software design blueprints.",
+    title: "Football Chalkboard",
+    desc: "A chalkboard celebrating FC Barcelona and Messi, with the line-up ready to kick off a match.",
     symbol: "📋",
     color: "#00ffff",
     cells: [
       { col: 15, row: 10 }
     ],
-    dialogue: "📋 [Tactical Chalkboard]: Chalkboard covered in complex football tactics and software modular flow charts. Press E to inspect!",
-    inspectPrompt: "READ BLUEPRINTS"
+    dialogue: "📋 [Football Chalkboard]: FC Barcelona tactics, Messi tributes, and a ⚽ Play Match button. Press E to open!",
+    inspectPrompt: "OPEN CHALKBOARD"
   },
   {
     id: "toolbox",
@@ -193,7 +187,7 @@ export function getFurnitureDialogue(col, row) {
   if (col === 1 && row >= 4 && row <= 9) {
     return "🧗 [Bouldering Wall]: 10-foot climbing wall covered in tiny colorful holds. Finger grip required!";
   }
-  if (col === 17 && row === 1) {
+  if (col === 13 && row === 1) {
     return "📚 [Manga Shelf]: Packed with volumes of Hunter-X-Hunter and ancient game developer magazines.";
   }
   if (col === 16 && row === 1) {
@@ -202,7 +196,7 @@ export function getFurnitureDialogue(col, row) {
   if (col === 10 && row === 1) {
     return "🖼️ [Gallery of Explorers]: A gilded golden photo frame hanging on the wall. Walk up and press E to view the retro visitor reviews!";
   }
-  if (col === 10 && row === 13) {
+  if (col === 9 && row === 12) {
     return "🚲 [Bicycle Rack]: Raghav\'s red pixel cruiser. Stand next to it and press E to mount the bike and double your speed!";
   }
   if (col === 3 && row === 12) {
@@ -213,9 +207,6 @@ export function getFurnitureDialogue(col, row) {
   }
   if (col === 7 && row === 12) {
     return "🍽️ [Bistro Dining Table]: A wood diner counter in the Cyber Diner bistro. Restores tranquility and serves hot street eats!";
-  }
-  if (col === 18 && row === 11) {
-    return "🥅 [Soccer Net]: Decorative goalpost net. Stand next to it and press E to open the Fullscreen Soccer Arcade!";
   }
   return null;
 }
@@ -231,14 +222,20 @@ export function getTileType(col, row) {
     // Check specific furniture types
     if (col === 1 && row === 1 || col === 2 && row === 1 || col === 1 && row === 2 || col === 2 && row === 2) return "bed";
     if (col === 1 && row >= 4 && row <= 9) return "bouldering-wall";
-    if (col === 17 && row === 1) return "bookshelf";
-    
+    if (col === 13 && (row === 1 || row === 2)) return "bookshelf";
+
+    // Camping / trekking corner props (bottom-left forest)
+    if (col === 2 && row === 11) return "tent";
+    if (col === 4 && row === 12) return "campfire";
+    if (col === 5 && row === 11) return "suitcase";
+    // Garage spare tyre + manga-lounge slide projector
+    if (col === 12 && row === 13) return "tyre";
+    if (col === 15 && row === 2) return "projector";
+
     if (col === 7 && row === 12) return "diner-table";
 
-    if (col === 18 && row === 11) return "goalpost";
-
     if (col === 10 && row === 1) return "bulletin";
-    if (col === 10 && row === 13) return "bike";
+    if (col === 9 && row === 12) return "bike";
 
     // Borders
     if (row === 0) return "wall-top";
@@ -247,6 +244,13 @@ export function getTileType(col, row) {
     return "solid-prop";
   }
   
+  return getFloorType(col, row);
+}
+
+// Returns the floor zone a cell belongs to, ignoring whether it's solid.
+// Used so that prop / obstacle tiles can paint the SAME floor as their
+// surroundings instead of a dark box, letting the art sit on the floor.
+export function getFloorType(col, row) {
   // New Floor Mats: Climbing Crash Pad (cols 1-3, rows 4-9) & Garage Mat (cols 10-12, rows 12-13)
   if (col >= 1 && col <= 3 && row >= 4 && row <= 9) {
     return "climbing-pad";
@@ -260,8 +264,8 @@ export function getTileType(col, row) {
     return "forest-floor";
   }
 
-  // 2. ⚽ Soccer Field Zone (Bottom-right turf: cols 15-18, rows 10-12)
-  if (col >= 15 && col <= 18 && row >= 10 && row <= 12) {
+  // 2. ⚽ Soccer Field Zone (Bottom-right turf: expanded to cols 14-18, rows 9-13)
+  if (col >= 14 && col <= 18 && row >= 9 && row <= 13) {
     return "soccer-turf";
   }
 

@@ -5,11 +5,123 @@ import { useGameState } from './GameStateContext';
 import { 
   MAP_COLS, 
   MAP_ROWS, 
-  isTileSolid, 
-  getTileType, 
+  isTileSolid,
+  getTileType,
+  getFloorType,
   INTERACTABLE_OBJECTS,
   getFurnitureDialogue
 } from '../mapConfig';
+
+// ── Raghav NPC "mini-AI" ────────────────────────────────────────────────────
+// Walkable standing tiles next to each activity, the way Raghav should face once
+// there, and what he "thinks"/does. He wanders between these, acting out his life.
+const RAGHAV_STATIONS = [
+  { col: 9,  row: 6,  dir: 'up',   thought: '⌨️ shipping code…' },
+  { col: 3,  row: 6,  dir: 'left', thought: '🧗 sending a V5!' },
+  { col: 7,  row: 2,  dir: 'up',   thought: '🍳 cooking shawarma' },
+  { col: 16, row: 11, dir: 'down', thought: '⚽ top-corner finish!' },
+  { col: 10, row: 12, dir: 'down', thought: '🚲 going for a ride' },
+  { col: 17, row: 3,  dir: 'up',   thought: '📚 re-reading HxH' },
+  { col: 3,  row: 11, dir: 'down', thought: '🗺️ planning a trek' },
+  { col: 2,  row: 3,  dir: 'up',   thought: '😴 power nap…' },
+];
+
+// Breadth-first path over walkable tiles. Returns the list of step cells from
+// just-after-start through goal, or null if unreachable.
+function findPath(start, goal) {
+  const k = (c, r) => `${c},${r}`;
+  if (isTileSolid(goal.col, goal.row) || isTileSolid(start.col, start.row)) return null;
+  const came = new Map([[k(start.col, start.row), null]]);
+  const queue = [start];
+  const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  let found = false;
+  while (queue.length) {
+    const cur = queue.shift();
+    if (cur.col === goal.col && cur.row === goal.row) { found = true; break; }
+    for (const [dc, dr] of dirs) {
+      const nc = cur.col + dc, nr = cur.row + dr;
+      if (nc < 0 || nr < 0 || nc >= MAP_COLS || nr >= MAP_ROWS) continue;
+      if (isTileSolid(nc, nr)) continue;
+      const key = k(nc, nr);
+      if (came.has(key)) continue;
+      came.set(key, cur);
+      queue.push({ col: nc, row: nr });
+    }
+  }
+  if (!found) return null;
+  const path = [];
+  let cur = goal;
+  while (cur) { path.unshift(cur); cur = came.get(k(cur.col, cur.row)); }
+  path.shift(); // drop the start cell
+  return path;
+}
+
+// ── Shared menu data (used by both the rendered UI and the D-pad navigator) ──
+const FOCUS_RING = {
+  outline: '3px solid #ffd166',
+  outlineOffset: '2px',
+  boxShadow: '0 0 12px rgba(255, 209, 102, 0.65)',
+};
+
+const KITCHEN_MENU = [
+  { id: 'popcorn', type: 'dbt-popcorn', title: 'DBT Popcorn', desc: 'Warm, airy kernels puffed with tandoori butter!', effect: '+25 Stamina' },
+  { id: 'shwarma', type: 'shwarma', title: 'Lebanese Shwarma', desc: 'Spicy wraps full of garlic-mustard goodness!', effect: '+25 Stamina' },
+  { id: 'chaap', type: 'chaap', title: 'Soya Chaap Skewer', desc: 'Flame-grilled spicy protein pieces!', effect: '+25 Stamina' },
+  { id: 'garlic-bread', type: 'garlic-bread', title: 'Garlic Bread', desc: 'Warm, toasted golden garlic butter slices!', effect: '+25 Stamina' },
+  { id: 'thumbs-up', type: 'thumbs-up', title: 'Thumbs Up Bottle', desc: 'Cold glass bottle cola with fizzy tingle!', effect: '+25 Stamina' },
+  { id: 'coffee', type: 'coffee', title: 'Hot Coffee Mug', desc: 'Espresso shot. Grants 15s CAFFEINE SPEED surge!', effect: '+25 Stamina & Speedup' }
+];
+
+// Character-creation option rows (navigated with the D-pad, row by row)
+const GENDERS = ['male', 'female'];
+const FACE_STYLES = [
+  { id: 'classic', label: '😊 Classic' },
+  { id: 'glasses', label: '👓 Specs' },
+  { id: 'visor', label: '🕶️ Visor' },
+  { id: 'cute', label: '🌸 Blush' }
+];
+const SKIN_COLORS = ['#ffdbac', '#ffb6c1', '#e0ac69', '#c68642', '#8d5524'];
+const HAIR_COLORS = ['#8a2be2', '#000000', '#ffffff', '#e53935', '#ff8c00', '#ffd700', '#43a047', '#1e88e5', '#ff69b4'];
+const SHIRT_COLORS = ['#1e88e5', '#e53935', '#43a047', '#ffd700', '#8a2be2', '#00e5ff', '#ff8c00', '#ffffff', '#222222'];
+const PANTS_COLORS = ['#ffd700', '#1e88e5', '#777777', '#8b4513', '#222222', '#e53935'];
+const STAT_KEYS = ['stamina', 'curiosity', 'reflexes', 'intellect'];
+const STAT_INFO = {
+  stamina:   { icon: '💪', label: 'Stamina',   perk: 'bigger energy tank, slower drain' },
+  curiosity: { icon: '🔍', label: 'Curiosity', perk: 'inspect things from further away' },
+  reflexes:  { icon: '⚡', label: 'Reflexes',  perk: 'walk & bike faster' },
+  intellect: { icon: '🧠', label: 'Intellect', perk: 'trivia hints, faster cooking' },
+};
+// Creation-screen row map for the D-pad: 0 gender · 1 face · 2 skin · 3 hair
+// · 4 shirt · 5 pants · 6-9 stat rows (◀ takes / ▶ gives a point) · 10 START
+const CREATION_ROW_SIZES = [2, 4, 5, 9, 9, 6, 1, 1, 1, 1, 1];
+
+// Background colour for each floor zone, so prop/obstacle tiles can paint the
+// SAME floor as their surroundings instead of a dark box. Keep in sync with the
+// floor-type branches in the tile renderer below.
+const floorBgFor = (type, col, row) => {
+  switch (type) {
+    // Wood-plank base zones → transparent so the grid's wood-floor background shows
+    // behind props instead of a flat box.
+    case 'grass': return 'transparent';
+    case 'path': return 'transparent';
+    case 'restaurant-floor': return 'transparent';
+    case 'rug': return 'rgba(27, 23, 51, 0.55)';
+    // Textured zones → a representative colour (props mostly cover the tile).
+    case 'forest-floor': return '#1f6b2e';
+    case 'climbing-pad': return '#0d47a1';
+    case 'garage-floor': return '#6f6f73';
+    case 'soccer-turf': return '#2f7d33';
+    case 'manga-lounge': return '#c8a96a';
+    default: return 'transparent';
+  }
+};
+
+// 🔧 DEV-ONLY TILE NUMBERS ───────────────────────────────────────────────────
+// Overlays a tiny index number on every tile so issues can be reported by number
+// ("tile 152 looks wrong"). idx → grid position: col = idx % MAP_COLS, row = Math.floor(idx / MAP_COLS).
+// TO REMOVE BEFORE GOING LIVE: set this to false (or delete this const + the
+// `{SHOW_TILE_NUMBERS && (...)}` block in the tile render below).
+const SHOW_TILE_NUMBERS = false;
 
 // Web Audio Synth Sound Engine
 const playSound = (type) => {
@@ -88,6 +200,20 @@ const playSound = (type) => {
         osc.start(ctx.currentTime + idx * 0.07);
         osc.stop(ctx.currentTime + idx * 0.07 + 0.2);
       });
+    } else if (type === 'meow') {
+      // Two quick rising sine chirps — close enough to a pixel cat
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(620, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.09);
+      osc.frequency.exponentialRampToValueAtTime(540, ctx.currentTime + 0.22);
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.28);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.28);
     } else if (type === 'step') {
       const bufferSize = ctx.sampleRate * 0.04;
       const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
@@ -137,15 +263,48 @@ export default function InteractiveAvatar() {
     triviaStreak, setTriviaStreak,
     equippedBadges, unlockBadge,
     guestbookEntries, addGuestbookEntry,
-    caffeineTimer, setCaffeineTimer
+    caffeineTimer, setCaffeineTimer,
+    activeItemId, setActiveItemId
   } = useGameState();
 
   // Spawning Customizer states
-  const [customName, setCustomName] = useState("Heyy Visitor");
+  const [customName, setCustomName] = useState("Wanderer");
   const [raghavDirection, setRaghavDirection] = useState('down');
+  // Raghav NPC "mini-AI" — autonomous position + current thought bubble
+  const [raghavPos, setRaghavPos] = useState({ col: 5, row: 6 });
+  const [raghavThought, setRaghavThought] = useState(null);
+  const raghavBrain = useRef({ pos: { col: 5, row: 6 }, path: [], mode: 'idle', actUntil: 0, stationIdx: -1 });
   const [gameStarted, setGameStarted] = useState(false);
   const [pointsPool, setPointsPool] = useState(20);
   const [statsAlloc, setStatsAlloc] = useState({ stamina: 5, curiosity: 5, reflexes: 5, intellect: 5 });
+  // Always-ticking frame for static sprite previews (creation screen, gallery, guestbook)
+  const [previewFrame, setPreviewFrame] = useState(0);
+
+  // ── Game Boy-style menu navigation ─────────────────────────────────────
+  // Arrow keys / D-pad move a gold highlight across the options of whichever
+  // selection screen is open; A (E / Enter) confirms it; B / Esc backs out.
+  const [menuRow, setMenuRow] = useState(0);
+  const [menuCol, setMenuCol] = useState(0);
+
+  // ── Quest toast notifications (top-center popups) ───────────────────────
+  const [toasts, setToasts] = useState([]);
+  const toastSeq = useRef(0);
+  const pushToast = (text, color = 'var(--rpg-highlight)') => {
+    const id = ++toastSeq.current;
+    setToasts(t => [...t.slice(-2), { id, text, color }]);
+    setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3500);
+  };
+
+  // ── Easter eggs: wandering cat, marshmallow roasting, fridge raids ──────
+  const CAT_SPOTS = [
+    { col: 12, row: 8 }, { col: 6, row: 8 }, { col: 13, row: 6 },
+    { col: 5, row: 13 }, { col: 16, row: 4 },
+  ];
+  const [catSpot, setCatSpot] = useState(0);
+  const [petCount, setPetCount] = useState(0);
+  const [roastCount, setRoastCount] = useState(0);
+  const [raidCount, setRaidCount] = useState(0);
+  const [isRoasting, setIsRoasting] = useState(false);
 
   // Hands-on Handheld Arcade Portal System states
   const [activeGameStation, setActiveGameStation] = useState(null);
@@ -276,6 +435,9 @@ export default function InteractiveAvatar() {
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [correctStreak, setCorrectStreak] = useState(0);
   const [triviaResult, setTriviaResult] = useState(null); // 'correct' | 'wrong'
+  // 🧠 Intellect perk: a once-per-question hint that greys out two wrong answers
+  const [triviaHidden, setTriviaHidden] = useState([]);
+  const [triviaHintUsed, setTriviaHintUsed] = useState(false);
 
   // Polaroid Projector Media Carousel states
   const [showCarousel, setShowCarousel] = useState(false);
@@ -327,9 +489,424 @@ export default function InteractiveAvatar() {
     isAudioEnabledRef.current = isAudioEnabled;
   }, [isAudioEnabled]);
 
+  // Drive idle sprite-preview animation (creation screen + gallery cards)
+  useEffect(() => {
+    const tick = setInterval(() => setPreviewFrame(f => (f + 1) % 4), 220);
+    return () => clearInterval(tick);
+  }, []);
+
+  // Reset the menu highlight whenever a selection screen opens / changes page
+  useEffect(() => {
+    setMenuRow(0);
+    setMenuCol(0);
+  }, [activeGameStation, showTrivia, showKitchen, showVisitorGallery, showTechStack, showPCProjects, currentQuestionIdx, gameStarted]);
+
+  // New trivia question → fresh hint
+  useEffect(() => {
+    setTriviaHidden([]);
+    setTriviaHintUsed(false);
+  }, [currentQuestionIdx, showTrivia]);
+
+  // 🧠 Intellect perk — grey out two wrong answers (once per question)
+  const useTriviaHint = () => {
+    if (triviaHintUsed || triviaResult) return;
+    const ans = triviaQuestions[currentQuestionIdx].ans;
+    const wrong = [0, 1, 2, 3].filter(i => i !== ans);
+    // deterministic-ish pick: hide the first two wrong options
+    setTriviaHidden(wrong.slice(0, 2));
+    setTriviaHintUsed(true);
+    playSound('chime');
+    setDialogueText('🧠 [Intellect]: Two suspicious options fade away…');
+  };
+
+  // Shared handler for the game-station choice menu (mouse + D-pad)
+  const stationChoose = (idx) => {
+    const station = activeGameStation;
+    if (!station) return;
+    setActiveGameStation(null);
+    if (idx === 0) {
+      if (station === 'football') handleInspect('football');
+      if (station === 'bike') handleInspect('trekking');
+      if (station === 'arcade') handleInspect('anime');
+    } else if (idx === 1) {
+      if (station === 'football') setShowFullscreenSoccer(true);
+      if (station === 'bike') setShowFullscreenBiking(true);
+      if (station === 'arcade') {
+        setShowTrivia(true);
+        setCurrentQuestionIdx(0);
+        setCorrectStreak(0);
+        setTriviaResult(null);
+      }
+    }
+  };
+
+  // Shared handler for PC project selection (mouse + D-pad)
+  const PC_PROJECTS = [
+    { id: 'scraper', title: '🔮 Jujutsu Stock Scraper', desc: 'Node.js web scraper indexing fandom stock prices.' },
+    { id: 'rpg', title: '🏡 Cozy RPG Room Engine', desc: 'React single page game engine. Layout shifts: 0!' },
+    { id: 'tactics', title: '⚽ UEFA Tactics Backtracker', desc: 'Graph algorithm mapping Champions League formations.' }
+  ];
+  const selectPcProject = (projectId) => {
+    playSound('chime');
+    setPcActiveProject(projectId);
+    if (projectId === 'scraper') {
+      setSimulatedLogs([
+        "🚀 Initiating Jujutsu Stock Tracker Scraper Daemon v1.0.4...",
+        "📡 Spawning cluster workers at Kyoto School and Tokyo School endpoints...",
+        "🔑 Authentication handshake: SUCCESS. Node cluster active.",
+        "📊 Fetching baseline Cursed Energy Indexes...",
+        "⚡ Cursed Energy Index: 2,450.40 (+1.25%) | Gojo Satoru Market Cap: ∞"
+      ]);
+    } else if (projectId === 'rpg') {
+      setSimulatedLogs([
+        "🏡 Cozy RPG Space Engine Bootstrapping...",
+        "🧱 Bounding collision maps (SOLID_TILES loaded: 36 nodes)...",
+        "🎭 Character sprite custom colors injected successfully.",
+        "🔊 Audio Web Synths: READY (Triangle & Square waves bound).",
+        "🚀 Dev Server status: RUNNING. Layout shift counts: 0."
+      ]);
+    } else if (projectId === 'tactics') {
+      setSimulatedLogs([
+        "⚽ Loading UEFA Backtrack Tactics matrix...",
+        "🧬 Parsing Graph vertex configurations (4-3-3 inverted)...",
+        "📐 Core defense entities layered: decoupled from UI viewports.",
+        "🏃 Midfield dispatchers compiled. Attack routines: bound.",
+        "🔥 Tactical analysis optimal: System decoupled."
+      ]);
+    }
+  };
+
+  // Apply a creation-screen choice for (row, col) — used by clicks AND the D-pad
+  const applyCreationChoice = (row, col) => {
+    if (row === 0) setSpriteGender(GENDERS[col]);
+    else if (row === 1) setFaceStyle(FACE_STYLES[col].id);
+    else if (row === 2) setSelectedSkinColor(SKIN_COLORS[col]);
+    else if (row === 3) setSelectedHatColor(HAIR_COLORS[col]);
+    else if (row === 4) setSelectedShirtColor(SHIRT_COLORS[col]);
+    else if (row === 5) setSelectedPantsColor(PANTS_COLORS[col]);
+  };
+
+  // ── GLOBAL GAME BOY CONTROLS ──────────────────────────────────────────────
+  // One window-level listener makes the whole site console-playable:
+  //  · B / Esc      → close the topmost open screen (no modal can trap you)
+  //  · Arrow D-pad  → move the gold focus highlight on whichever menu is open
+  //  · A (E/Enter)  → confirm the focused option
+  useEffect(() => {
+    const handler = (e) => {
+      const tag = e.target && e.target.tagName;
+      const typing = tag === 'INPUT' || tag === 'TEXTAREA';
+      const k = (e.key || '').toLowerCase();
+      const isBack = k === 'b' || e.key === 'Escape';
+      const isConfirm = k === 'e' || e.key === 'Enter';
+      const isArrow = ['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k);
+      if (typing && e.key !== 'Escape' && e.key !== 'Enter') return;
+
+      // Fullscreen minigames own their keys (incl. B/Esc to quit)…
+      if (showFullscreenSoccer) return;
+      if (showFullscreenBiking) {
+        // …except the garage vehicle-select screen, which the D-pad drives here
+        // (the race's own key handler only mounts once a bike is selected).
+        if (!bikeSelected) {
+          if (k === 'arrowleft' || k === 'arrowright') {
+            e.preventDefault();
+            playSound('step');
+            setSelectedMotorbike(m => (m === 'shine' ? 'mt15' : 'shine'));
+          } else if (isConfirm) {
+            e.preventDefault();
+            playSound('chime');
+            setBikeSelected(true);
+          } else if (isBack) {
+            e.preventDefault();
+            playSound('thump');
+            setShowFullscreenBiking(false);
+          }
+        }
+        return;
+      }
+
+      // B / Esc — close the topmost overlay, strictly one per press
+      if (isBack) {
+        let closed = true;
+        if (showGuestbookSubmit) setShowGuestbookSubmit(false);
+        else if (selectedGalleryProfile) setSelectedGalleryProfile(null);
+        else if (selectedVisitorReview) setSelectedVisitorReview(null);
+        else if (showVisitorGallery) setShowVisitorGallery(false);
+        else if (showTravelDiary) setShowTravelDiary(false);
+        else if (showCarousel) setShowCarousel(false);
+        else if (showKitchen) { setShowKitchen(false); setCookingItem(null); setCookingProgress(0); }
+        else if (showTrivia) setShowTrivia(false);
+        else if (showClimbingQTE) setShowClimbingQTE(false);
+        else if (showTechStack) setShowTechStack(false);
+        else if (showFitnessStats) setShowFitnessStats(false);
+        else if (showTacticalBlueprints) setShowTacticalBlueprints(false);
+        else if (showPCProjects) setShowPCProjects(false);
+        else if (activeGameStation) setActiveGameStation(null);
+        else if (activeItemId) setActiveItemId(null);
+        else closed = false;
+        if (closed) {
+          e.preventDefault();
+          playSound('thump');
+        }
+        return;
+      }
+
+      // During the climbing QTE, letters/arrows are game inputs — leave them be
+      if (showClimbingQTE) return;
+
+      // ── D-pad + A on each selection screen ──
+      if (activeGameStation) {
+        if (k === 'arrowup' || k === 'arrowdown') {
+          e.preventDefault();
+          playSound('step');
+          setMenuRow(r => (r + (k === 'arrowdown' ? 1 : 2)) % 3);
+        } else if (isConfirm) {
+          e.preventDefault();
+          playSound('chime');
+          stationChoose(menuRow);
+        }
+        return;
+      }
+
+      if (showTrivia) {
+        if (k === 'arrowup' || k === 'arrowdown') {
+          e.preventDefault();
+          playSound('step');
+          setMenuRow(r => {
+            let n = r;
+            for (let i = 0; i < 4; i++) {
+              n = (n + (k === 'arrowdown' ? 1 : 3)) % 4;
+              if (!triviaHidden.includes(n)) break;
+            }
+            return n;
+          });
+        } else if (isConfirm && !triviaResult) {
+          e.preventDefault();
+          if (!triviaHidden.includes(menuRow)) handleTriviaAnswer(menuRow);
+        } else if (k === 'h' && playerStats.intellect >= 7) {
+          e.preventDefault();
+          useTriviaHint();
+        }
+        return;
+      }
+
+      if (showKitchen && !cookingItem) {
+        if (isArrow) {
+          e.preventDefault();
+          playSound('step');
+          const d = k === 'arrowleft' ? -1 : k === 'arrowright' ? 1 : k === 'arrowup' ? -2 : 2;
+          setMenuRow(i => (i + d + KITCHEN_MENU.length) % KITCHEN_MENU.length);
+        } else if (isConfirm) {
+          e.preventDefault();
+          handleCookFood(KITCHEN_MENU[menuRow]);
+        }
+        return;
+      }
+
+      if (showTechStack) {
+        if (k === 'arrowup' || k === 'arrowdown') {
+          e.preventDefault();
+          const ids = ['frontend', 'backend', 'devops', 'core'];
+          const cur = ids.indexOf(activeStackDrawer);
+          playSound('chime');
+          setActiveStackDrawer(ids[(cur + (k === 'arrowdown' ? 1 : 3)) % 4]);
+        }
+        return;
+      }
+
+      if (showPCProjects) {
+        if (k === 'arrowup' || k === 'arrowdown') {
+          e.preventDefault();
+          const cur = PC_PROJECTS.findIndex(p => p.id === pcActiveProject);
+          selectPcProject(PC_PROJECTS[(cur + (k === 'arrowdown' ? 1 : 2)) % 3].id);
+        }
+        return;
+      }
+
+      if (showTacticalBlueprints) {
+        if (isConfirm) {
+          e.preventDefault();
+          playSound('chime');
+          setShowTacticalBlueprints(false);
+          setShowFullscreenSoccer(true);
+        }
+        return;
+      }
+
+      if (showCarousel) {
+        if (k === 'arrowleft' || k === 'arrowright') {
+          e.preventDefault();
+          playSound('step');
+          setCarouselIdx(p => (k === 'arrowleft' ? (p === 0 ? polaroids.length - 1 : p - 1) : (p === polaroids.length - 1 ? 0 : p + 1)));
+        }
+        return;
+      }
+
+      if (showTravelDiary) {
+        if (k === 'arrowleft' || k === 'arrowright') {
+          e.preventDefault();
+          playSound('step');
+          setDiaryIdx(p => (k === 'arrowleft' ? (p - 1 + travelSlides.length) % travelSlides.length : (p + 1) % travelSlides.length));
+        }
+        return;
+      }
+
+      if (showVisitorGallery && !selectedGalleryProfile && !showGuestbookSubmit) {
+        if (k === 'arrowleft' || k === 'arrowright') {
+          e.preventDefault();
+          playSound('step');
+          setMenuRow(i => (i + (k === 'arrowright' ? 1 : guestbookEntries.length - 1)) % Math.max(1, guestbookEntries.length));
+        } else if (isConfirm && guestbookEntries[menuRow]) {
+          e.preventDefault();
+          playSound('chime');
+          setSelectedGalleryProfile(guestbookEntries[menuRow]);
+        }
+        return;
+      }
+
+      // ── Character-creation screen: full D-pad walkthrough ──
+      if (!gameStarted) {
+        const rows = CREATION_ROW_SIZES.length;
+        if (isArrow) {
+          e.preventDefault();
+          if (k === 'arrowup' || k === 'arrowdown') {
+            playSound('step');
+            setMenuRow(r => {
+              const n = (r + (k === 'arrowdown' ? 1 : rows - 1)) % rows;
+              setMenuCol(c => Math.min(c, CREATION_ROW_SIZES[n] - 1));
+              return n;
+            });
+          } else {
+            const dir = k === 'arrowright' ? 1 : -1;
+            if (menuRow >= 6 && menuRow <= 9) {
+              // stat rows: ◀ takes a point back, ▶ spends one
+              adjustStat(STAT_KEYS[menuRow - 6], dir);
+              playSound(dir > 0 ? 'chime' : 'thump');
+            } else if (menuRow <= 5) {
+              playSound('step');
+              const size = CREATION_ROW_SIZES[menuRow];
+              const next = (menuCol + dir + size) % size;
+              setMenuCol(next);
+              applyCreationChoice(menuRow, next);
+            }
+          }
+        } else if (isConfirm) {
+          if (typing && e.key !== 'Enter') return;
+          e.preventDefault();
+          if (menuRow === 10 || e.key === 'Enter') handleStartGame();
+          else if (menuRow <= 5) applyCreationChoice(menuRow, menuCol);
+        }
+        return;
+      }
+    };
+
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [gameStarted, menuRow, menuCol, activeGameStation, showTrivia, triviaResult, triviaHidden, triviaHintUsed,
+      showKitchen, cookingItem, showCarousel, showTravelDiary, showVisitorGallery, selectedGalleryProfile,
+      selectedVisitorReview, showGuestbookSubmit, showTechStack, activeStackDrawer, showPCProjects, pcActiveProject,
+      showFitnessStats, showTacticalBlueprints, showClimbingQTE, showFullscreenSoccer, showFullscreenBiking,
+      bikeSelected, activeItemId, guestbookEntries, currentQuestionIdx, playerStats, statsAlloc, pointsPool]);
+
+  // ── Raghav NPC brain: wander → act → repeat ──────────────────────────────
+  // Picks a random activity station, paths there avoiding walls, faces it, shows
+  // a thought bubble for a few seconds, then heads to the next one.
+  useEffect(() => {
+    if (!gameStarted) return;
+    const SPEED = 0.07; // cells per tick
+    let lastDir = 'down';
+    const id = setInterval(() => {
+      const s = raghavBrain.current;
+
+      if (s.mode === 'acting') {
+        if (Date.now() >= s.actUntil) { s.mode = 'idle'; setRaghavThought(null); }
+        return;
+      }
+
+      if (s.mode === 'idle' || s.path.length === 0) {
+        let idx;
+        do { idx = Math.floor(Math.random() * RAGHAV_STATIONS.length); }
+        while (idx === s.stationIdx && RAGHAV_STATIONS.length > 1);
+        const goal = RAGHAV_STATIONS[idx];
+        const start = { col: Math.round(s.pos.col), row: Math.round(s.pos.row) };
+        const path = findPath(start, { col: goal.col, row: goal.row });
+        if (!path) { s.mode = 'idle'; return; }
+        s.stationIdx = idx;
+        s.path = path;
+        s.mode = 'walking';
+        return;
+      }
+
+      // walking toward the next waypoint
+      const next = s.path[0];
+      const dc = next.col - s.pos.col;
+      const dr = next.row - s.pos.row;
+      const dist = Math.hypot(dc, dr) || 1;
+      let dir = lastDir;
+      if (Math.abs(dc) > Math.abs(dr)) dir = dc > 0 ? 'right' : 'left';
+      else dir = dr > 0 ? 'down' : 'up';
+      if (dir !== lastDir) { lastDir = dir; setRaghavDirection(dir); }
+
+      if (dist < SPEED) {
+        s.pos = { col: next.col, row: next.row };
+        s.path.shift();
+        if (s.path.length === 0) {
+          const st = RAGHAV_STATIONS[s.stationIdx];
+          setRaghavDirection(st.dir);
+          lastDir = st.dir;
+          setRaghavThought(st.thought);
+          s.mode = 'acting';
+          s.actUntil = Date.now() + 3500 + Math.random() * 2500;
+        }
+      } else {
+        s.pos = { col: s.pos.col + (dc / dist) * SPEED, row: s.pos.row + (dr / dist) * SPEED };
+      }
+      setRaghavPos({ col: s.pos.col, row: s.pos.row });
+    }, 33);
+    return () => clearInterval(id);
+  }, [gameStarted]);
+
   useEffect(() => {
     energyLevelRef.current = energyLevel;
   }, [energyLevel]);
+
+  // ── Quest toasts: celebrate progress the moment it happens ───────────────
+  const prevInspectedCount = useRef(0);
+  useEffect(() => {
+    const MAIN_LANDMARKS = ['profile', 'bouldering', 'anime', 'trekking', 'football'];
+    if (inspectedItems.length > prevInspectedCount.current) {
+      const newest = inspectedItems[inspectedItems.length - 1];
+      if (MAIN_LANDMARKS.includes(newest)) {
+        const done = MAIN_LANDMARKS.filter(m => inspectedItems.includes(m)).length;
+        if (done === MAIN_LANDMARKS.length) {
+          pushToast('🏆 MAIN QUEST COMPLETE — all 5 landmarks explored!', '#ffd166');
+          playSound('stadium');
+          unlockBadge('Overworld Explorer');
+        } else {
+          pushToast(`📜 Main quest: landmark inspected (${done}/5)`);
+          playSound('chime');
+        }
+      }
+    }
+    prevInspectedCount.current = inspectedItems.length;
+  }, [inspectedItems]);
+
+  const prevBadgeCount = useRef(0);
+  useEffect(() => {
+    if (equippedBadges.length > prevBadgeCount.current) {
+      pushToast(`🏅 Badge unlocked: ${equippedBadges[equippedBadges.length - 1]}`, '#ffd166');
+      playSound('stadium');
+    }
+    prevBadgeCount.current = equippedBadges.length;
+  }, [equippedBadges]);
+
+  // 🐈 The cat occasionally relocates on its own (cats answer to no one)
+  useEffect(() => {
+    if (!gameStarted) return;
+    const wander = setInterval(() => {
+      if (Math.random() < 0.5) setCatSpot(s => (s + 1) % CAT_SPOTS.length);
+    }, 14000);
+    return () => clearInterval(wander);
+  }, [gameStarted]);
 
   // Real-world photography images for projector carousel
   const polaroids = [
@@ -388,10 +965,14 @@ export default function InteractiveAvatar() {
   // Proximity triggers and Raghav NPC AI
   const checkProximity = (col, row) => {
     let foundNearby = null;
-    let minDistance = 2.0;
+    // 🔍 Curiosity perk: each point above 5 widens the inspect radius.
+    let minDistance = 2.0 + (playerStats.curiosity - 5) * 0.1;
 
-    // Check portfolio interactable objects
+    // Check portfolio interactable objects.
+    // 'profile' (Raghav himself) is NOT pinned to a tile — he roams, so we attach
+    // his inspect to his live NPC position further below instead.
     INTERACTABLE_OBJECTS.forEach(obj => {
+      if (obj.id === 'profile') return;
       obj.cells.forEach(cell => {
         const dx = cell.col - col;
         const dy = cell.row - row;
@@ -417,8 +998,8 @@ export default function InteractiveAvatar() {
     }
 
     // Check red bike
-    const bikeDx = 10 - col;
-    const bikeDy = 13 - row;
+    const bikeDx = 9 - col;
+    const bikeDy = 12 - row;
     if (Math.sqrt(bikeDx*bikeDx + bikeDy*bikeDy) < 1.8) {
       foundNearby = {
         id: 'bike',
@@ -440,7 +1021,53 @@ export default function InteractiveAvatar() {
       };
     }
 
-    // Obsolete projector check removed
+    // 🐈 Easter egg: the wandering cat
+    const cat = CAT_SPOTS[catSpot];
+    const catDx = cat.col - col, catDy = cat.row - row;
+    if (Math.sqrt(catDx * catDx + catDy * catDy) < 1.4) {
+      foundNearby = {
+        id: 'cat',
+        title: '??? · A Cat',
+        dialogue: "🐈 A soft orange cat is loafing here, slowly blinking at you. It seems to own this room. Press E to pet.",
+        inspectPrompt: 'PET THE CAT'
+      };
+    }
+
+    // 🔥 Easter egg: roast a marshmallow at the campfire (4,12)
+    const cfDx = 4 - col, cfDy = 12 - row;
+    if (Math.sqrt(cfDx * cfDx + cfDy * cfDy) < 1.7) {
+      foundNearby = {
+        id: 'campfire-roast',
+        title: 'Cozy Campfire',
+        dialogue: isRoasting
+          ? "🔥 [Campfire]: The marshmallow is browning nicely… don't drop it!"
+          : "🔥 [Campfire]: The flames crackle invitingly. Press E to roast a marshmallow (+10 energy).",
+        inspectPrompt: 'ROAST MARSHMALLOW'
+      };
+    }
+
+    // 🥪 Easter egg: midnight fridge raid (left fridge at 6,1)
+    const frDx = 6 - col, frDy = 1 - row;
+    if (Math.sqrt(frDx * frDx + frDy * frDy) < 1.4) {
+      foundNearby = {
+        id: 'fridge-raid',
+        title: 'Suspicious Fridge',
+        dialogue: "🧊 [Fridge]: A faint glow comes from inside. Raghav labelled everything 'DO NOT EAT'. Press E anyway.",
+        inspectPrompt: 'RAID FRIDGE'
+      };
+    }
+
+    // Inspect the roaming developer himself — follows Raghav's live NPC position.
+    const rp = raghavBrain.current.pos;
+    const rdx = rp.col - col, rdy = rp.row - row;
+    if (Math.sqrt(rdx * rdx + rdy * rdy) < 1.6) {
+      foundNearby = {
+        id: 'profile',
+        title: 'Raghav · The Developer',
+        dialogue: "🧑‍💻 [Raghav]: Oh hey — you caught me! Press E to inspect the developer (stats, story & projects).",
+        inspectPrompt: 'INSPECT DEVELOPER'
+      };
+    }
 
     if (foundNearby) {
       if (nearObjectRef.current?.id !== foundNearby.id) {
@@ -522,16 +1149,20 @@ export default function InteractiveAvatar() {
         return;
       }
 
-      // 1. Calculate dynamic player speed (caffeine speed boost & riding bike speed)
-      let baseSpeed = 0.08; 
+      // 1. Calculate dynamic player speed (caffeine boost, bike, ⚡ Reflexes stat)
+      // Reflexes perk: each point above 5 = +2% move speed (15 pts → +20%).
+      const reflexMult = 1 + (playerStats.reflexes - 5) * 0.02;
+      // Stamina perk: each point above 5 drains the energy bar 6% slower.
+      const drainMult = Math.max(0.4, 1 - (playerStats.stamina - 5) * 0.06);
+      let baseSpeed = 0.08 * reflexMult;
       if (caffeineTimer > 0) {
-        baseSpeed = 0.12; // 1.5x speed boost from Caffeine Surge!
+        baseSpeed = 0.12 * reflexMult; // 1.5x speed boost from Caffeine Surge!
       }
-      
+
       if (isRiding) {
-        baseSpeed = caffeineTimer > 0 ? 0.20 : 0.16; // Even faster if caffeinated!
+        baseSpeed = (caffeineTimer > 0 ? 0.20 : 0.16) * reflexMult; // Even faster if caffeinated!
         // Drains energyLevel faster when biking!
-        if (Math.random() < 0.008) {
+        if (Math.random() < 0.008 * drainMult) {
           setEnergyLevel(prev => {
             const next = Math.max(0, prev - 1);
             if (next === 0) {
@@ -543,8 +1174,8 @@ export default function InteractiveAvatar() {
           });
         }
       } else {
-        // slow normal walking energyLevel drain
-        if (Math.random() < 0.002) {
+        // slow normal walking energyLevel drain (💪 Stamina makes it slower)
+        if (Math.random() < 0.002 * drainMult) {
           setEnergyLevel(prev => Math.max(0, prev - 1));
         }
       }
@@ -626,14 +1257,67 @@ export default function InteractiveAvatar() {
           else if (type === 'computerglowing') {
             // Open PC live showcase!
             setShowPCProjects(true);
-            setPcActiveProject('scraper');
-            setSimulatedLogs([
-              "🚀 Initiating Jujutsu Stock Tracker Scraper Daemon v1.0.4...",
-              "📡 Spawning cluster workers at Kyoto School and Tokyo School endpoints...",
-              "🔑 Authentication handshake: SUCCESS. Node cluster active.",
-              "📊 Fetching baseline Cursed Energy Indexes...",
-              "⚡ Cursed Energy Index: 2,450.40 (+1.25%) | Gojo Satoru Market Cap: ∞"
-            ]);
+            selectPcProject('scraper');
+            keysPressed.current['e'] = false;
+            keysPressed.current[' '] = false;
+          }
+          else if (type === 'cat') {
+            // 🐈 Pet the cat — it has opinions, then relocates.
+            playSound('meow');
+            const catLines = [
+              "🐈 Mrrrp! The cat headbutts your hand approvingly.",
+              "🐈 Purrrrrr… the cat kneads the floor like dough.",
+              "🐈 The cat flops over and shows its belly. It's a trap.",
+              "🐈 The cat slow-blinks at you. In cat, that means 'I love you'.",
+              "🐈 The cat bites you gently, then licks the same spot. Cats.",
+            ];
+            setDialogueText(catLines[petCount % catLines.length]);
+            const nextPets = petCount + 1;
+            setPetCount(nextPets);
+            if (nextPets === 5) {
+              unlockBadge('Cat Whisperer');
+            }
+            // After a couple of pets the cat saunters off to a new spot
+            if (nextPets % 2 === 0) {
+              setCatSpot(s => (s + 1) % CAT_SPOTS.length);
+            }
+            keysPressed.current['e'] = false;
+            keysPressed.current[' '] = false;
+          }
+          else if (type === 'campfire-roast') {
+            // 🔥 Roast a marshmallow: short cozy ritual, +10 energy
+            if (!isRoasting) {
+              setIsRoasting(true);
+              setDialogueText("🔥 Roasting a marshmallow… hold it steady… almost golden…");
+              setTimeout(() => {
+                setIsRoasting(false);
+                playSound('gulp');
+                setEnergyLevel(en => Math.min(100, en + 10));
+                const nextRoast = roastCount + 1;
+                setRoastCount(nextRoast);
+                setDialogueText(nextRoast >= 3
+                  ? "🍡 Perfectly toasted! You've mastered the campfire arts. (+10 energy)"
+                  : "🍡 Crispy outside, molten inside. Heavenly. (+10 energy)");
+                if (nextRoast === 3) unlockBadge('Fireside Chef');
+              }, 1800);
+            }
+            keysPressed.current['e'] = false;
+            keysPressed.current[' '] = false;
+          }
+          else if (type === 'fridge-raid') {
+            // 🥪 Fridge raid: random loot, mild guilt
+            playSound('gulp');
+            const loot = [
+              "🥪 You found half a sandwich labelled 'RAGHAV'S — DO NOT'. You ate it. (+5 energy)",
+              "🧃 One suspicious mango juice box, expiry date smudged. Delicious. (+5 energy)",
+              "🍮 A hidden caramel pudding behind the vegetables. Crime pays. (+5 energy)",
+              "🧀 A single heroic cheese cube. It did not survive. (+5 energy)",
+            ];
+            setDialogueText(loot[raidCount % loot.length]);
+            setEnergyLevel(en => Math.min(100, en + 5));
+            const nextRaid = raidCount + 1;
+            setRaidCount(nextRaid);
+            if (nextRaid === 3) unlockBadge('Midnight Snacker');
             keysPressed.current['e'] = false;
             keysPressed.current[' '] = false;
           }
@@ -821,7 +1505,7 @@ export default function InteractiveAvatar() {
 
     animId = requestAnimationFrame(gameLoop);
     return () => cancelAnimationFrame(animId);
-  }, [gameStarted, isRiding, caffeineTimer]);
+  }, [gameStarted, isRiding, caffeineTimer, playerStats, catSpot, petCount, roastCount, raidCount, isRoasting]);
   // --- standalone ⚽ 1V1 SOCCER DUEL ARCADE PORTAL SYSTEM ---
   useEffect(() => {
     if (!showFullscreenSoccer) return;
@@ -1499,8 +2183,10 @@ export default function InteractiveAvatar() {
     playSound('chime');
     setCookingItem(item);
     setCookingProgress(0);
-    
+
     let progress = 0;
+    // 🧠 Intellect perk: efficient chefs cook faster (80ms/tick at 5 → 40ms at 15)
+    const tickMs = Math.max(40, 80 - (playerStats.intellect - 5) * 4);
     const interval = setInterval(() => {
       progress += 10;
       setCookingProgress(progress);
@@ -1530,23 +2216,26 @@ export default function InteractiveAvatar() {
         setCookingProgress(0);
         setShowKitchen(false);
       }
-    }, 80); // 800ms cooking time
+    }, tickMs); // ~800ms cook at 5 INT, down to ~400ms at 15 INT
   };
 
   const handleStartGame = () => {
     if (!customName.trim()) return;
 
     playSound('chime');
-    
-    // Set GameState contexts
+
+    // Set GameState contexts — the allocated attribute build is now REAL:
+    // ⚡ reflexes → speed · 💪 stamina → energy drain · 🔍 curiosity → inspect
+    // range · 🧠 intellect → trivia hints + cook speed (see the game loop).
     setPlayerName(customName);
-    setPlayerStats({ stamina: 5, curiosity: 5, reflexes: 5, intellect: 5 });
+    setPlayerStats({ ...statsAlloc });
     setPlayerColors(customColors);
 
     setGameStarted(true);
     setTimeout(() => {
       window.focus();
-    }, 50);
+      pushToast('🎒 Build locked in — your stats shape the run!');
+    }, 400);
   };
 
   const submitGuestbookReview = () => {
@@ -1628,16 +2317,8 @@ export default function InteractiveAvatar() {
 
   // --- RENDERING COZY CHARACTER CUSTOMIZER STARTUP SCREEN ---
   if (!gameStarted) {
-    const skinColors = ['#ffdbac', '#ffb6c1', '#e0ac69', '#c68642', '#8d5524'];
-    const hairColors = ['#8a2be2', '#000000', '#ffffff', '#e53935', '#ff8c00', '#ffd700', '#43a047', '#1e88e5', '#ff69b4'];
-    const shirtColors = ['#1e88e5', '#e53935', '#43a047', '#ffd700', '#8a2be2', '#00e5ff', '#ff8c00', '#ffffff', '#222222'];
-    const pantsColors = ['#ffd700', '#1e88e5', '#777777', '#8b4513', '#222222', '#e53935'];
-    const faceStyles = [
-      { id: 'classic', label: '😊 Classic' },
-      { id: 'glasses', label: '👓 Specs' },
-      { id: 'visor', label: '🕶️ Visor' },
-      { id: 'cute', label: '🌸 Blush' }
-    ];
+    // Gold ring marking the D-pad focus position (see CREATION_ROW_SIZES map)
+    const ring = (r, c) => (menuRow === r && menuCol === c ? FOCUS_RING : {});
 
     return (
       <div 
@@ -1655,22 +2336,30 @@ export default function InteractiveAvatar() {
           overflowY: 'auto'
         }}
       >
-        <h2 className="pixel-header" style={{ fontSize: '1.15rem', color: 'var(--rpg-highlight)', marginBottom: '15px', textShadow: '0 0 10px rgba(0,255,255,0.4)', textAlign: 'center' }}>
-          🏠 DESIGN COZY EXPLORER
-        </h2>
+        <div style={{ textAlign: 'center', marginBottom: '18px' }}>
+          <h2 className="pixel-header" style={{ fontSize: '1.15rem', color: 'var(--rpg-highlight)', margin: '0 0 8px 0', textShadow: '0 0 12px rgba(0,255,255,0.45)' }}>
+            🏠 DESIGN YOUR EXPLORER
+          </h2>
+          <p className="pixel-text" style={{ fontSize: '1.2rem', color: '#7a7a8a', margin: 0 }}>
+            Create an avatar, then step into Raghav's pixel world.
+          </p>
+        </div>
 
         <div style={{ display: 'flex', gap: '20px', width: '100%', maxWidth: '780px', flexWrap: 'wrap', justifyContent: 'center' }}>
           
           {/* Left panel: Live Sprite Preview */}
-          <div style={{ width: '220px', display: 'flex', flexDirection: 'column', gap: '15px', alignItems: 'center' }}>
-            <div className="rpg-box" style={{ width: '130px', height: '130px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#000', border: '3px solid var(--rpg-text)', boxShadow: '0 0 15px var(--rpg-text)' }}>
-              <div style={{ width: '72px', height: '72px' }}>
-                <Sprite direction="down" frame={Math.floor(Date.now() / 250) % 4} customColors={customColors} />
+          <div style={{ width: '220px', display: 'flex', flexDirection: 'column', gap: '14px', alignItems: 'center' }}>
+            <div className="rpg-box" style={{ width: '160px', height: '160px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'radial-gradient(circle at 50% 40%, #11241a 0%, #000 75%)', border: '3px solid var(--rpg-text)', boxShadow: '0 0 18px rgba(0,255,102,0.45)' }}>
+              <div style={{ width: '96px', height: '96px' }}>
+                <Sprite direction="down" frame={previewFrame} customColors={customColors} />
               </div>
             </div>
-            
-            <p className="pixel-text" style={{ fontSize: '1.2rem', color: '#888', textAlign: 'center', margin: 0 }}>
-              Live 32x32 High-Res Preview
+
+            <p className="pixel-text" style={{ fontSize: '1.35rem', color: 'var(--rpg-highlight)', textAlign: 'center', margin: 0, fontWeight: 'bold' }}>
+              {customName.trim() || 'Wanderer'}
+            </p>
+            <p className="pixel-text" style={{ fontSize: '1.05rem', color: '#888', textAlign: 'center', margin: 0 }}>
+              Live preview · animates as you walk
             </p>
           </div>
 
@@ -1705,36 +2394,25 @@ export default function InteractiveAvatar() {
             <div className="rpg-box" style={{ padding: '8px 12px', background: '#050508' }}>
               <span className="pixel-header" style={{ fontSize: '0.62rem', display: 'block', marginBottom: '6px', color: 'var(--rpg-highlight)' }}>🙋 SELECT SPRITE GENDER / HAIR:</span>
               <div style={{ display: 'flex', gap: '10px' }}>
-                <button 
-                  onClick={() => setSpriteGender('male')}
-                  className="pixel-header"
-                  style={{
-                    flex: 1,
-                    background: spriteGender === 'male' ? 'var(--rpg-text)' : '#111',
-                    color: spriteGender === 'male' ? '#000' : '#fff',
-                    border: '2px solid var(--rpg-text)',
-                    padding: '6px 0',
-                    cursor: 'pointer',
-                    fontSize: '0.65rem'
-                  }}
-                >
-                  ♂️ Male (Short Spikes)
-                </button>
-                <button 
-                  onClick={() => setSpriteGender('female')}
-                  className="pixel-header"
-                  style={{
-                    flex: 1,
-                    background: spriteGender === 'female' ? 'var(--rpg-text)' : '#111',
-                    color: spriteGender === 'female' ? '#000' : '#fff',
-                    border: '2px solid var(--rpg-text)',
-                    padding: '6px 0',
-                    cursor: 'pointer',
-                    fontSize: '0.65rem'
-                  }}
-                >
-                  ♀️ Female (Long locks)
-                </button>
+                {GENDERS.map((g, idx) => (
+                  <button
+                    key={g}
+                    onClick={() => setSpriteGender(g)}
+                    className="pixel-header"
+                    style={{
+                      flex: 1,
+                      background: spriteGender === g ? 'var(--rpg-text)' : '#111',
+                      color: spriteGender === g ? '#000' : '#fff',
+                      border: '2px solid var(--rpg-text)',
+                      padding: '6px 0',
+                      cursor: 'pointer',
+                      fontSize: '0.65rem',
+                      ...ring(0, idx)
+                    }}
+                  >
+                    {g === 'male' ? '♂️ Male (Short Spikes)' : '♀️ Female (Long locks)'}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -1742,8 +2420,8 @@ export default function InteractiveAvatar() {
             <div className="rpg-box" style={{ padding: '8px 12px', background: '#050508' }}>
               <span className="pixel-header" style={{ fontSize: '0.62rem', display: 'block', marginBottom: '6px', color: 'var(--rpg-highlight)' }}>🕶️ FACE STYLE / ACCESSORY:</span>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
-                {faceStyles.map(style => (
-                  <button 
+                {FACE_STYLES.map((style, idx) => (
+                  <button
                     key={style.id}
                     onClick={() => setFaceStyle(style.id)}
                     className="pixel-header"
@@ -1753,7 +2431,8 @@ export default function InteractiveAvatar() {
                       border: `2px solid ${faceStyle === style.id ? 'var(--rpg-accent)' : '#444'}`,
                       padding: '4px 0',
                       cursor: 'pointer',
-                      fontSize: '0.62rem'
+                      fontSize: '0.62rem',
+                      ...ring(1, idx)
                     }}
                   >
                     {style.label}
@@ -1766,8 +2445,8 @@ export default function InteractiveAvatar() {
             <div className="rpg-box" style={{ padding: '8px 12px', background: '#050508' }}>
               <span className="pixel-header" style={{ fontSize: '0.62rem', display: 'block', marginBottom: '6px', color: 'var(--rpg-highlight)' }}>🤚 SKIN COMPLEXION TONE:</span>
               <div style={{ display: 'flex', gap: '10px' }}>
-                {skinColors.map(color => (
-                  <div 
+                {SKIN_COLORS.map((color, idx) => (
+                  <div
                     key={color}
                     onClick={() => setSelectedSkinColor(color)}
                     style={{
@@ -1777,7 +2456,8 @@ export default function InteractiveAvatar() {
                       border: `3px solid ${selectedSkinColor === color ? '#ffffff' : '#000000'}`,
                       cursor: 'pointer',
                       borderRadius: '50%',
-                      boxShadow: selectedSkinColor === color ? '0 0 8px #fff' : 'none'
+                      boxShadow: selectedSkinColor === color ? '0 0 8px #fff' : 'none',
+                      ...ring(2, idx)
                     }}
                   />
                 ))}
@@ -1791,11 +2471,11 @@ export default function InteractiveAvatar() {
               <div>
                 <span className="pixel-header" style={{ fontSize: '0.52rem', color: '#888', display: 'block', marginBottom: '4px' }}>• Hair & Cap Color:</span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
-                  {hairColors.map(color => (
-                    <div 
-                      key={color} 
+                  {HAIR_COLORS.map((color, idx) => (
+                    <div
+                      key={color}
                       onClick={() => setSelectedHatColor(color)}
-                      style={{ width: '16px', height: '16px', background: color, border: selectedHatColor === color ? '2px solid #fff' : '1px solid #000', cursor: 'pointer' }}
+                      style={{ width: '16px', height: '16px', background: color, border: selectedHatColor === color ? '2px solid #fff' : '1px solid #000', cursor: 'pointer', ...ring(3, idx) }}
                     />
                   ))}
                 </div>
@@ -1804,11 +2484,11 @@ export default function InteractiveAvatar() {
               <div>
                 <span className="pixel-header" style={{ fontSize: '0.52rem', color: '#888', display: 'block', marginBottom: '4px' }}>• Shirt & Coat Color:</span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
-                  {shirtColors.map(color => (
-                    <div 
-                      key={color} 
+                  {SHIRT_COLORS.map((color, idx) => (
+                    <div
+                      key={color}
                       onClick={() => setSelectedShirtColor(color)}
-                      style={{ width: '16px', height: '16px', background: color, border: selectedShirtColor === color ? '2px solid #fff' : '1px solid #000', cursor: 'pointer' }}
+                      style={{ width: '16px', height: '16px', background: color, border: selectedShirtColor === color ? '2px solid #fff' : '1px solid #000', cursor: 'pointer', ...ring(4, idx) }}
                     />
                   ))}
                 </div>
@@ -1817,15 +2497,60 @@ export default function InteractiveAvatar() {
               <div>
                 <span className="pixel-header" style={{ fontSize: '0.52rem', color: '#888', display: 'block', marginBottom: '4px' }}>• Pants & Skirt Color:</span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
-                  {pantsColors.map(color => (
-                    <div 
-                      key={color} 
+                  {PANTS_COLORS.map((color, idx) => (
+                    <div
+                      key={color}
                       onClick={() => setSelectedPantsColor(color)}
-                      style={{ width: '16px', height: '16px', background: color, border: selectedPantsColor === color ? '2px solid #fff' : '1px solid #000', cursor: 'pointer' }}
+                      style={{ width: '16px', height: '16px', background: color, border: selectedPantsColor === color ? '2px solid #fff' : '1px solid #000', cursor: 'pointer', ...ring(5, idx) }}
                     />
                   ))}
                 </div>
               </div>
+            </div>
+
+            {/* ⚔️ Attribute Point Allocator — these stats have REAL in-game effects */}
+            <div className="rpg-box" style={{ padding: '8px 12px', background: '#050508' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <span className="pixel-header" style={{ fontSize: '0.62rem', color: 'var(--rpg-highlight)' }}>⚔️ ALLOCATE ATTRIBUTES:</span>
+                <span className="pixel-header" style={{ fontSize: '0.62rem', color: pointsPool > 0 ? '#ffd166' : '#666' }}>
+                  POINTS LEFT: {pointsPool}
+                </span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {STAT_KEYS.map((key, idx) => (
+                  <div
+                    key={key}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '8px', padding: '3px 6px',
+                      background: '#0a0a12', border: '1px solid #222',
+                      ...(menuRow === 6 + idx ? FOCUS_RING : {})
+                    }}
+                  >
+                    <span className="pixel-text" style={{ fontSize: '1.15rem', width: '110px', color: '#fff' }}>
+                      {STAT_INFO[key].icon} {STAT_INFO[key].label}
+                    </span>
+                    <button
+                      onClick={() => adjustStat(key, -1)}
+                      className="pixel-header"
+                      style={{ background: '#222', color: '#fff', border: '1px solid #555', width: '22px', cursor: 'pointer', fontSize: '0.7rem' }}
+                    >–</button>
+                    <div style={{ flex: 1, height: '10px', background: '#000', border: '1px solid #333', borderRadius: '999px', overflow: 'hidden' }}>
+                      <div style={{ width: `${(statsAlloc[key] / 15) * 100}%`, height: '100%', background: 'var(--rpg-text)', transition: 'width 0.15s' }} />
+                    </div>
+                    <span className="pixel-text" style={{ fontSize: '1.15rem', width: '22px', textAlign: 'center', color: 'var(--rpg-highlight)' }}>{statsAlloc[key]}</span>
+                    <button
+                      onClick={() => adjustStat(key, 1)}
+                      className="pixel-header"
+                      style={{ background: '#222', color: '#fff', border: '1px solid #555', width: '22px', cursor: 'pointer', fontSize: '0.7rem' }}
+                    >+</button>
+                  </div>
+                ))}
+              </div>
+              <p className="pixel-text" style={{ fontSize: '0.95rem', color: '#777', margin: '8px 0 0 0', lineHeight: 1.4 }}>
+                {menuRow >= 6 && menuRow <= 9
+                  ? `▶ ${STAT_INFO[STAT_KEYS[menuRow - 6]].perk}`
+                  : '💡 These change how the game plays: speed, energy, inspect range, hints.'}
+              </p>
             </div>
 
           </div>
@@ -1845,11 +2570,16 @@ export default function InteractiveAvatar() {
             fontSize: '0.95rem',
             cursor: 'pointer',
             boxShadow: '3px 3px 0 #000',
-            outline: 'none'
+            outline: 'none',
+            ...(menuRow === 10 ? FOCUS_RING : {})
           }}
         >
           🎮 ENTER COZY ROOM [A]
         </button>
+
+        <p className="pixel-text" style={{ fontSize: '1.05rem', color: '#666', marginTop: '12px', textAlign: 'center' }}>
+          🎮 D-pad / arrows: move the gold highlight · A / Enter: select · Enter anywhere: start
+        </p>
 
       </div>
     );
@@ -1882,6 +2612,28 @@ export default function InteractiveAvatar() {
       >
         🔊 {isAudioEnabled ? "SOUND: ON" : "SOUND: MUTED"}
       </button>
+
+      {/* 🍞 Quest / badge toast stack (top-center popups) */}
+      <div style={{ position: 'absolute', top: '12px', left: '50%', transform: 'translateX(-50%)', zIndex: 300, display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center', pointerEvents: 'none' }}>
+        {toasts.map(t => (
+          <div
+            key={t.id}
+            className="pixel-header animate-bob"
+            style={{
+              background: 'rgba(10, 10, 18, 0.92)',
+              color: t.color,
+              border: `2px solid ${t.color}`,
+              padding: '6px 14px',
+              fontSize: '0.7rem',
+              borderRadius: '4px',
+              boxShadow: '0 4px 0 rgba(0,0,0,0.6)',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            {t.text}
+          </div>
+        ))}
+      </div>
 
       {/* Flashing GOAL!!! Retro Overlay */}
       {showGoalFlash && (
@@ -1948,62 +2700,80 @@ export default function InteractiveAvatar() {
         }}
       >
         {tiles.map((t, idx) => {
-          let bg = 'var(--rpg-box-bg)';
+          // Default every tile to the floor of its zone, so prop / obstacle tiles
+          // blend into the floor instead of showing a dark box.
+          let bg = floorBgFor(getFloorType(t.col, t.row), t.col, t.row);
           let content = null;
           let glow = 'none';
+          let tileZOverride = null;
           const borderStyle = {};
 
-          if (t.type === 'grass') bg = '#122012'; 
+          // Base indoor floor → transparent so the wood-plank grid background shows through.
+          if (t.type === 'grass') bg = 'transparent';
+          else if (t.type === 'path') bg = 'transparent';
+          else if (t.type === 'dirt') bg = 'transparent';
+          // Cozy central rug — a translucent tint over the wood so it reads as a rug
+          // laid on the floor, plus the dotted border further below.
+          else if (t.type === 'rug') bg = 'rgba(27, 23, 51, 0.55)';
+          // 🌲 Camping corner — green grass (cols 1-5, rows 10-13) stitched from grassturf.
           else if (t.type === 'forest-floor') {
-            bg = '#07180d'; // Deep dark mossy forest green
-            borderStyle.boxShadow = 'inset 0 0 8px rgba(0, 255, 102, 0.05)';
-            if ((t.col + t.row) % 7 === 0) content = <span style={{ fontSize: '0.85rem', opacity: 0.25 }}>🍄</span>;
-            else if ((t.col + t.row) % 5 === 0) content = <span style={{ fontSize: '0.9rem', opacity: 0.2 }}>🌿</span>;
-            else if ((t.col + t.row) % 9 === 0) content = <span style={{ fontSize: '0.8rem', opacity: 0.15 }}>🌸</span>;
+            const localCol = t.col - 1; // 0..4
+            const localRow = t.row - 10; // 0..3
+            borderStyle.backgroundImage = 'url(/grassturf.png)';
+            borderStyle.backgroundSize = '500% 400%';
+            borderStyle.backgroundPosition = `${(localCol / 4) * 100}% ${(localRow / 3) * 100}%`;
+            borderStyle.imageRendering = 'pixelated';
           }
           else if (t.type === 'climbing-pad') {
-            bg = '#0d47a1'; // Deep gym blue crash pad floor
-            borderStyle.border = '1.5px solid rgba(255,255,255,0.06)';
-            if ((t.col + t.row) % 4 === 0) content = <span style={{ fontSize: '0.65rem', opacity: 0.15 }}>🧗</span>;
-          }
-          else if (t.type === 'garage-floor') {
-            bg = (t.col + t.row) % 2 === 0 ? '#262629' : '#1e1e21'; // Checker metallic mat
-            borderStyle.border = '1px solid rgba(255, 235, 59, 0.04)';
-            borderStyle.boxShadow = 'inset 0 0 5px rgba(255, 235, 59, 0.05)';
-            if ((t.col === 10 || t.col === 12) && t.row === 12) {
-              borderStyle.borderTop = '2px solid rgba(255, 235, 59, 0.3)';
+            // Col 2 sits under the wall sprite's overflow — keep it transparent so the
+            // sprite isn't cut by the blue floor painting on top of it (higher z).
+            if (t.col === 2) {
+              bg = 'transparent';
+              borderStyle.border = 'none';
+            } else {
+              bg = '#0d47a1'; // Deep gym blue crash pad floor
+              borderStyle.border = '1.5px solid rgba(255,255,255,0.06)';
             }
           }
-          else if (t.type === 'path') bg = '#363024'; 
-          else if (t.type === 'dirt') bg = '#251a10'; 
-          else if (t.type === 'rug') bg = '#1b1b33'; 
+          // 🔧 Garage — concrete floor (cols 10-12, rows 12-13) stitched from garagefloor.png.
+          else if (t.type === 'garage-floor') {
+            const localCol = t.col - 10; // 0..2
+            const localRow = t.row - 12; // 0..1
+            borderStyle.backgroundImage = 'url(/garagefloor.png)';
+            borderStyle.backgroundSize = '300% 200%';
+            borderStyle.backgroundPosition = `${(localCol / 2) * 100}% ${localRow * 100}%`;
+            borderStyle.imageRendering = 'pixelated';
+          }
           
-          // Outer Boundary Walls (Purple Steel Brick with bold gold trim stripes!)
+          // Outer boundary walls — warm dark-wood panelling with honey trim,
+          // matching the cozy reference (framed art hangs along the top wall).
           else if (t.type === 'wall-top') {
-            bg = '#4e3344'; 
-            borderStyle.borderBottom = '4px solid #ffd700'; 
+            bg = '#503a2e';
+            borderStyle.borderBottom = '4px solid #c89b4a';
             borderStyle.boxShadow = 'inset 0 -3px 8px rgba(0,0,0,0.8)';
+            const WALL_ART = { 3: 'frame-landscape', 4: 'frame-photo', 9: 'poster-band', 12: 'frame-landscape', 14: 'poster-anime', 17: 'poster-anime' };
+            if (WALL_ART[t.col]) {
+              content = <div style={{ width: '78%', height: '82%', zIndex: 6 }}><PixelProp type={WALL_ART[t.col]} /></div>;
+            }
           }
           else if (t.type === 'wall-bottom') {
-            bg = '#2a1a24';
-            borderStyle.borderTop = '4px solid #ffd700';
+            bg = '#2e2118';
+            borderStyle.borderTop = '4px solid #c89b4a';
             borderStyle.boxShadow = 'inset 0 3px 8px rgba(0,0,0,0.8)';
             if (t.col === 11) {
-              // Glowing Neon wall sign for Bike Garage!
+              // Warm wooden hanging sign for the bike garage
               content = (
                 <div style={{
-                  color: '#ff1744',
-                  textShadow: '0 0 8px #ff1744, 0 0 15px #ff1744',
+                  color: '#f3e6c8',
                   fontSize: '0.48rem',
                   fontFamily: 'monospace',
                   fontWeight: 'bold',
                   letterSpacing: '1px',
-                  animation: 'pulse-glow 1.2s infinite alternate',
-                  background: '#111',
-                  padding: '2px 4px',
-                  border: '1.5px solid #ff1744',
+                  background: '#6e4a28',
+                  padding: '2px 5px',
+                  border: '1.5px solid #3a2419',
                   borderRadius: '2px',
-                  boxShadow: '0 0 5px #ff1744'
+                  boxShadow: '0 2px 0 #3a2419'
                 }}>
                   GARAGE
                 </div>
@@ -2011,125 +2781,169 @@ export default function InteractiveAvatar() {
             }
           }
           else if (t.type === 'wall-side') {
-            bg = '#2d1f2b';
-            if (t.col === 0) borderStyle.borderRight = '4px solid #ffd700';
-            else borderStyle.borderLeft = '4px solid #gold';
+            bg = '#3a2a20';
+            if (t.col === 0) borderStyle.borderRight = '4px solid #c89b4a';
             borderStyle.boxShadow = t.col === 0 ? 'inset -3px 0 8px rgba(0,0,0,0.8)' : 'inset 3px 0 8px rgba(0,0,0,0.8)';
             if (t.col === MAP_COLS - 1) {
-              borderStyle.borderLeft = '4px solid #ffd700';
+              borderStyle.borderLeft = '4px solid #c89b4a';
             }
           }
           
-          // ⚽ Soccer turf field with chalk lines
+          // ⚽ Soccer turf field — grassturf.png stitched across the 5×5 corner (cols 14-18,
+          // rows 9-13), each tile showing its slice of the single image, plus chalk lines.
           else if (t.type === 'soccer-turf') {
-            bg = '#143618';
+            const localCol = t.col - 14; // 0..4
+            const localRow = t.row - 9;  // 0..4
+            borderStyle.backgroundImage = 'url(/grassturf.png)';
+            borderStyle.backgroundSize = '500% 500%';
+            borderStyle.backgroundPosition = `${(localCol / 4) * 100}% ${(localRow / 4) * 100}%`;
+            borderStyle.imageRendering = 'pixelated';
             if (t.col === 14) borderStyle.borderLeft = '2px solid rgba(255,255,255,0.4)';
             if (t.col === 18) borderStyle.borderRight = '2px solid rgba(255,255,255,0.4)';
-            if (t.row === 10) borderStyle.borderTop = '2px solid rgba(255,255,255,0.4)';
+            if (t.row === 9) borderStyle.borderTop = '2px solid rgba(255,255,255,0.4)';
             if (t.row === 13) borderStyle.borderBottom = '2px solid rgba(255,255,255,0.4)';
           }
-          // 📚 Manga tatami lounge floor
+          // 📚 Manga tatami lounge floor — tatami mat (cols 15-18, rows 1-3) stitched from tatamifloor.png.
           else if (t.type === 'manga-lounge') {
-            bg = '#4e3b26';
-            borderStyle.borderRight = '1px solid rgba(212,175,55,0.15)';
-            borderStyle.borderBottom = '1px solid rgba(212,175,55,0.15)';
+            const localCol = t.col - 15; // 0..3
+            const localRow = t.row - 1;  // 0..2
+            borderStyle.backgroundImage = 'url(/tatamifloor.png)';
+            borderStyle.backgroundSize = '400% 300%';
+            borderStyle.backgroundPosition = `${(localCol / 3) * 100}% ${(localRow / 2) * 100}%`;
+            borderStyle.imageRendering = 'pixelated';
             if (t.col === 16 && t.row === 3) {
               // Plop a cozy giant plush bean bag onto the tatami mat!
-              content = <div style={{ width: '40px', height: '40px', zIndex: 3 }}><PixelProp type="beanbag" /></div>;
+              content = <div style={{ width: '52px', height: '52px', position: 'absolute', left: '50%', bottom: '-4px', transform: 'translateX(-50%)', zIndex: 3 }}><PixelProp type="beanbag" /></div>;
             }
           }
-          // 3. 🍔 "Raghav's Diner" cyber bistro (red/black checkers!)
+          // 3. 🍔 Old diner zone — now plain wooden floor (show the wood-plank base).
           else if (t.type === 'restaurant-floor') {
-            bg = (t.col + t.row) % 2 === 0 ? '#3b0d11' : '#1f0407';
-            borderStyle.border = '1px solid rgba(255, 0, 127, 0.06)';
+            bg = 'transparent';
           }
           // Solid diner table counter table
           else if (t.type === 'diner-table') {
             bg = '#5c3a21'; // rich mahogany wood counter
             borderStyle.border = '2px solid #8d6e63';
             borderStyle.boxShadow = '0 3px 6px rgba(0,0,0,0.6)';
-            content = <span style={{ fontSize: '1.2rem' }}>🪵</span>;
           }
-          // 🧗 Bouldering Rock Wall
+          // 🧗 Bouldering Rock Wall — one continuous tall sprite over the 1×6 column.
+          // Draw the full wall once at the TOP cell; keep the rest of the column
+          // transparent so the lower rows' backgrounds (which Y-sort gives a higher
+          // z-index) don't paint over the sprite. The wall sits behind the hangboard /
+          // climb obstacles in col 2, so they read as "mounted on the wall".
           else if (t.type === 'bouldering-wall') {
-            bg = '#4a4a52';
+            if (t.col === 1 && t.row === 4) {
+              bg = '#0c1320';
+              borderStyle.border = 'none';
+              content = <div style={{ width: '88px', height: '240px', position: 'absolute', top: 0, left: 0, zIndex: 5 }}><PixelProp type="bouldering-wall" /></div>;
+            } else {
+              bg = 'transparent';
+              borderStyle.border = 'none'; // avoid per-cell border lines painting over the sprite
+            }
           }
 
           // 16-Bit Pixel Props Vector Rendering!
           else if (t.type === 'bed') {
-            if (t.col === 1 && t.row === 1) content = <div style={{ width: '80px', height: '80px', position: 'absolute', top: 0, left: 0, zIndex: 5 }}><PixelProp type="bed" /></div>;
+            // Keep the other 3 bed cells transparent so their floor bg doesn't paint
+            // over the (lower-z) bed sprite anchored at the top-left cell.
+            bg = 'transparent';
+            borderStyle.border = 'none';
+            if (t.col === 1 && t.row === 1) content = <div style={{ width: '116px', height: '116px', position: 'absolute', top: 0, left: 0, zIndex: 5 }}><PixelProp type="bed" /></div>;
           }
           else if (t.type === 'bookshelf') {
-            if (t.col === 17 && t.row === 1) content = <div style={{ width: '80px', height: '40px', position: 'absolute', top: 0, left: 0, zIndex: 5 }}><PixelProp type="bookshelf" /></div>;
+            // Relocated to col 13 (rows 1-2 body). Top cell stays transparent + holds the
+            // sprite, drawn one row higher (top:-100%) so the tall shelf stands flush to
+            // the ceiling and its base lands at row 3 (tile 73).
+            borderStyle.border = 'none';
+            if (t.col === 13 && t.row === 1) {
+              bg = 'transparent';
+              content = <div style={{ width: '78px', height: '118px', position: 'absolute', top: '-100%', left: 0, zIndex: 5 }}><PixelProp type="bookshelf" /></div>;
+            } else {
+              // Lower body cell: paint the grass floor (col 13 isn't tatami) and drop it
+              // BELOW the sprite so the bookshelf art still shows over it.
+              bg = '#122012';
+              tileZOverride = 1;
+            }
           }
           
           else if (t.type === 'suitcase') {
-            content = <div style={{ width: '40px', height: '40px', zIndex: 5 }}><PixelProp type="suitcase" /></div>;
+            content = <div style={{ width: '56px', height: '56px', position: 'absolute', left: '50%', bottom: '-6px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="suitcase" /></div>;
           }
           else if (t.type === 'campfire') {
-            content = <div style={{ width: '40px', height: '40px', zIndex: 5 }}><PixelProp type="campfire" /></div>;
+            content = <div style={{ width: '56px', height: '56px', position: 'absolute', left: '50%', bottom: '-6px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="campfire" /></div>;
+          }
+          else if (t.type === 'tent') {
+            content = <div style={{ width: '64px', height: '64px', position: 'absolute', left: '50%', bottom: '-6px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="tent" /></div>;
+          }
+          else if (t.type === 'tyre') {
+            content = <div style={{ width: '48px', height: '48px', position: 'absolute', left: '50%', bottom: '-4px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="tyre" /></div>;
+          }
+          else if (t.type === 'projector') {
+            content = <div style={{ width: '52px', height: '52px', position: 'absolute', left: '50%', bottom: '-4px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="projector" /></div>;
           }
           
           else if (t.type === 'goalpost') {
             let subtype = 'goalpost-mid';
             if (t.row === 10) subtype = 'goalpost-top';
             if (t.row === 12) subtype = 'goalpost-bottom';
-            content = <div style={{ width: '40px', height: '40px', zIndex: 5 }}><PixelProp type={subtype} /></div>;
+            // Grass behind the net so the goal column matches the rest of the turf corner.
+            borderStyle.backgroundImage = 'url(/grassturf.png)';
+            borderStyle.backgroundSize = '400% 300%';
+            borderStyle.backgroundPosition = `100% ${((t.row - 10) / 2) * 100}%`;
+            borderStyle.imageRendering = 'pixelated';
+            content = <div style={{ width: '56px', height: '56px', position: 'absolute', left: '50%', bottom: '-6px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type={subtype} /></div>;
           }
           else if (t.type === 'cone') {
             content = <div style={{ width: '30px', height: '30px', fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🚩</div>;
           }
           
           else if (t.type === 'bulletin') {
-            content = <div style={{ width: '40px', height: '40px' }}><PixelProp type="bulletin" /></div>;
+            content = <div style={{ width: '74px', height: '74px', position: 'absolute', left: '50%', bottom: '-8px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="bulletin" /></div>;
           }
           else if (t.type === 'bike') {
-            content = <div style={{ width: '40px', height: '40px' }}><PixelProp type="bike" /></div>;
-          }
-          else if (t.type === 'projector') {
-            content = <div style={{ width: '40px', height: '40px' }}><PixelProp type="projector" /></div>;
-          }
-
-          else if (t.type === 'bouldering-wall') {
-            content = <PixelProp type="bouldering-wall" />;
+            content = <div style={{ width: '74px', height: '74px', position: 'absolute', left: '50%', bottom: '-8px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="bike" /></div>;
           }
 
           else if (t.type.startsWith('obstacle-')) {
             const objId = t.type.split('-')[1];
             const obj = INTERACTABLE_OBJECTS.find(o => o.id === objId);
-            bg = t.type.includes('profile') ? '#1c1c28' : t.type.includes('football') ? '#143618' : t.type.includes('anime') ? '#4e3b26' : t.type.includes('trekking') ? '#07180d' : t.type.includes('kitchen') ? '#19131c' : '#1c1c28';
-            glow = `inset 0 0 10px ${obj?.color || 'var(--rpg-text)'}`;
+            // Props sit directly on the zone floor (set as the default bg above) — no
+            // dark box, no glow border, so the art doesn't look boxed-in / out of place.
+            // The pulse-glow when the player is nearby still signals interactivity.
+            borderStyle.border = 'none';
             
             if (objId === 'kitchen') {
-              if (t.col === 6) content = <div style={{ width: '40px', height: '40px' }}><PixelProp type="stove" /></div>;
-              else if (t.col === 7) content = <div style={{ width: '40px', height: '40px' }}><PixelProp type="kitchen-counter" /></div>;
-              else if (t.col === 8) content = <div style={{ width: '40px', height: '40px' }}><PixelProp type="fridge" /></div>;
+              if (t.col === 6) content = <div style={{ width: '56px', height: '56px', position: 'absolute', left: '50%', bottom: '-6px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="stove" /></div>;
+              else if (t.col === 7) content = <div style={{ width: '56px', height: '56px', position: 'absolute', left: '50%', bottom: '-6px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="kitchen-counter" /></div>;
+              else if (t.col === 8) content = <div style={{ width: '56px', height: '56px', position: 'absolute', left: '50%', bottom: '-6px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="fridge" /></div>;
             }
             else if (objId === 'trekking') {
-              content = <div style={{ width: '40px', height: '40px' }}><PixelProp type="travel-table" /></div>;
+              content = <div style={{ width: '56px', height: '56px', position: 'absolute', left: '50%', bottom: '-6px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="travel-table" /></div>;
             }
             else if (objId === 'toolbox') {
-              content = <div style={{ width: '40px', height: '40px' }}><PixelProp type="toolbox" /></div>;
+              content = <div style={{ width: '56px', height: '56px', position: 'absolute', left: '50%', bottom: '-6px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="toolbox" /></div>;
             }
             else if (objId === 'hangboard') {
-              content = <div style={{ width: '40px', height: '40px' }}><PixelProp type="hangboard" /></div>;
+              content = <div style={{ width: '56px', height: '56px', position: 'absolute', left: '50%', bottom: '-6px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="hangboard" /></div>;
             }
             else if (objId === 'tacticboard') {
-              content = <div style={{ width: '40px', height: '40px' }}><PixelProp type="tacticboard" /></div>;
+              content = <div style={{ width: '56px', height: '56px', position: 'absolute', left: '50%', bottom: '-6px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="tacticboard" /></div>;
             }
             else if (objId === 'computerglowing') {
-              content = <div style={{ width: '40px', height: '40px' }}><PixelProp type="computerglowing" /></div>;
+              content = <div style={{ width: '78px', height: '78px', position: 'absolute', left: '50%', bottom: '-8px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="computerglowing" /></div>;
             }
             else if (objId === 'bouldering') {
-              content = <div style={{ width: '40px', height: '40px' }}><PixelProp type="bouldering-wall" /></div>;
+              // This tile sits under the wall sprite (col 2) — keep it transparent and
+              // empty; the wall is the visual and the proximity pulse signals interaction.
+              bg = 'transparent';
+              content = null;
             }
             else {
               const centerCell = obj?.cells[0];
               if (centerCell && centerCell.col === t.col && centerCell.row === t.row) {
                 content = (
                   <div style={{ fontSize: '1.8rem', zIndex: 2, filter: 'drop-shadow(0 0 4px #000)' }}>
-                    {obj.id === 'profile' ? null : 
-                     obj.id === 'football' ? null : 
+                    {obj.id === 'profile' || obj.id === 'football' || obj.id === 'anime' ? null :
                      obj.symbol}
                   </div>
                 );
@@ -2139,14 +2953,42 @@ export default function InteractiveAvatar() {
 
           // Render Manga Cabinet in Lounge corner
           if (t.col === 16 && t.row === 1) {
-            content = <div style={{ width: '40px', height: '40px' }}><PixelProp type="arcade" /></div>;
+            content = <div style={{ width: '76px', height: '76px', position: 'absolute', left: '50%', bottom: '-8px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="arcade" /></div>;
+          }
+
+          // Kitchen appliances flanking the interactive counter (7,1). These two tiles
+          // are solid (see mapConfig) but their sprites were never drawn, so they read
+          // as invisible walls — render them here.
+          if (t.col === 6 && t.row === 1) {
+            content = <div style={{ width: '56px', height: '56px', position: 'absolute', left: '50%', bottom: '-6px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="fridge" /></div>;
+          }
+          if (t.col === 8 && t.row === 1) {
+            content = <div style={{ width: '56px', height: '56px', position: 'absolute', left: '50%', bottom: '-6px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="stove" /></div>;
+          }
+
+          // Decorative mini goal at the right edge of the soccer turf (col 18, rows 10-12).
+          // Non-solid, so the player can walk right up to / through it.
+          if (t.col === 18 && t.row >= 10 && t.row <= 12) {
+            const goalSub = t.row === 10 ? 'goalpost-top' : t.row === 12 ? 'goalpost-bottom' : 'goalpost-mid';
+            content = <div style={{ width: '54px', height: '54px', position: 'absolute', left: '50%', bottom: '-4px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type={goalSub} /></div>;
+          }
+
+          // Climbing-pad column 2 sits under the wall sprite's overflow (the wall is drawn
+          // once at col 1, row 4 and is wider than one tile). Keep this whole column
+          // transparent so no floor / solid-prop box paints over the wall art.
+          if (t.col === 2 && t.row >= 4 && t.row <= 9) {
+            bg = 'transparent';
+            borderStyle.border = 'none';
+            borderStyle.backgroundImage = 'none';
           }
 
           const isInteractableNearby = nearObject && t.type === `obstacle-${nearObject.id}`;
-          
+
           // Y-SORTING DEPTH ENGINE: Dynamic Stacking Contexts
           const isSolidObstacle = isTileSolid(t.col, t.row);
-          const tileZIndex = isSolidObstacle ? (Math.floor(t.row * 10) + 5) : 1;
+          const tileZIndex = tileZOverride != null
+            ? tileZOverride
+            : (isSolidObstacle ? (Math.floor(t.row * 10) + 5) : 1);
 
           return (
             <div 
@@ -2167,6 +3009,26 @@ export default function InteractiveAvatar() {
               }}
             >
               {content}
+
+              {/* 🔧 DEV-ONLY tile number overlay — remove via SHOW_TILE_NUMBERS flag before going live */}
+              {SHOW_TILE_NUMBERS && (
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 1,
+                  fontSize: '7px',
+                  lineHeight: 1,
+                  fontFamily: 'monospace',
+                  color: 'rgba(255,255,255,0.9)',
+                  background: 'rgba(0,0,0,0.55)',
+                  padding: '1px 2px',
+                  borderRadius: '2px',
+                  zIndex: 9999,
+                  pointerEvents: 'none'
+                }}>
+                  {idx}
+                </div>
+              )}
 
               {/* Central Rug custom border design */}
               {t.type === 'rug' && (t.col === 5 || t.col === 13 || t.row === 5 || t.row === 9) && (
@@ -2223,25 +3085,64 @@ export default function InteractiveAvatar() {
 
 
 
-        {/* Raghav Animated NPC (Signature developer candidate standing at col 5, row 5) */}
-        <div 
+        {/* 🐈 Easter-egg cat — loafs around, relocates when it pleases */}
+        <div
           style={{
             position: 'absolute',
-            left: `${(5 / MAP_COLS) * 100}%`,
-            top: `${(5 / MAP_ROWS) * 100}%`,
+            left: `${((CAT_SPOTS[catSpot].col + 0.5) / MAP_COLS) * 100}%`,
+            top: `${((CAT_SPOTS[catSpot].row + 0.5) / MAP_ROWS) * 100}%`,
             transform: 'translate(-50%, -60%)',
-            zIndex: Math.floor(5 * 10) + 5,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '45px',
-            height: '45px'
+            zIndex: Math.floor(CAT_SPOTS[catSpot].row * 10) + 4,
+            width: '30px',
+            height: '30px',
+            transition: 'left 1.4s ease-in-out, top 1.4s ease-in-out',
+            pointerEvents: 'none'
           }}
         >
-          <Sprite 
-            direction={raghavDirection} 
-            frame={Math.floor(Date.now() / 250) % 4} 
-            customColors={raghavColors} 
+          <PixelProp type="cat" />
+        </div>
+
+        {/* Raghav Animated NPC — autonomous "mini-AI" that roams + acts out his hobbies */}
+        <div
+          style={{
+            position: 'absolute',
+            left: `${(raghavPos.col / MAP_COLS) * 100}%`,
+            top: `${(raghavPos.row / MAP_ROWS) * 100}%`,
+            transform: 'translate(-50%, -60%)',
+            zIndex: Math.floor(raghavPos.row * 10) + 5,
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+            width: '32px',
+            height: '38px'
+          }}
+        >
+          {/* Thought bubble while acting at a station */}
+          {raghavThought && (
+            <div
+              className="pixel-header animate-bob"
+              style={{
+                position: 'absolute',
+                top: '-34px',
+                background: '#fff',
+                color: '#111',
+                border: '2px solid #000',
+                padding: '3px 7px',
+                fontSize: '0.62rem',
+                borderRadius: '6px',
+                whiteSpace: 'nowrap',
+                boxShadow: '0 3px 0 #000',
+                zIndex: 16
+              }}
+            >
+              {raghavThought}
+              <span style={{ position: 'absolute', bottom: '-6px', left: '10px', width: 0, height: 0, borderLeft: '4px solid transparent', borderRight: '4px solid transparent', borderTop: '6px solid #000' }} />
+            </div>
+          )}
+          <Sprite
+            direction={raghavDirection}
+            frame={raghavThought ? 0 : previewFrame}
+            customColors={raghavColors}
           />
         </div>
 
@@ -2306,6 +3207,13 @@ export default function InteractiveAvatar() {
             </div>
           )}
 
+          {/* 🍡 Marshmallow on a stick while roasting at the campfire */}
+          {isRoasting && (
+            <div className="animate-bob" style={{ position: 'absolute', top: '-16px', right: '-16px', width: '24px', height: '24px', zIndex: 14 }}>
+              <PixelProp type="marshmallow" />
+            </div>
+          )}
+
           {/* Render small bike beneath player if isRiding is true! */}
           {isRiding && (
             <div style={{ width: '40px', height: '40px', position: 'absolute', bottom: '-8px', zIndex: 9 }}>
@@ -2318,13 +3226,13 @@ export default function InteractiveAvatar() {
 
       </div>
 
-      {/* Classic Retro RPG Dialogue Box (always visible to prevent layout shifts) */}
-      <div 
+      {/* Parchment-scroll RPG dialogue box (always visible to prevent layout shifts) */}
+      <div
         style={{
           height: '100px',
-          background: '#000',
-          borderTop: '6px solid var(--rpg-text)',
-          boxShadow: 'inset 0 4px 10px rgba(0,0,0,0.8)',
+          background: 'linear-gradient(180deg, #f6e7bd 0%, #eed9a0 100%)',
+          borderTop: '3px solid #8a5a2b',
+          boxShadow: 'inset 0 0 18px rgba(138, 90, 43, 0.28), 0 -2px 10px rgba(0,0,0,0.35)',
           padding: '12px 20px',
           display: 'flex',
           flexDirection: 'column',
@@ -2333,24 +3241,26 @@ export default function InteractiveAvatar() {
           zIndex: 12
         }}
       >
-        <span 
-          className="pixel-header" 
-          style={{ 
-            fontSize: '0.8rem', 
-            color: nearObject ? nearObject.color : 'var(--rpg-highlight)', 
+        {/* stitched inner border for the scroll look */}
+        <div style={{ position: 'absolute', top: '5px', left: '8px', right: '8px', bottom: '5px', border: '2px dashed rgba(138, 90, 43, 0.35)', borderRadius: '4px', pointerEvents: 'none' }} />
+        <span
+          className="pixel-header"
+          style={{
+            fontSize: '0.8rem',
+            color: '#8a3a2a',
             marginBottom: '6px',
             textTransform: 'uppercase'
           }}
         >
           {nearObject ? `📍 ${nearObject.title}` : `🏡 Cozy Space`}
         </span>
-        <p 
-          className="pixel-text typing-cursor" 
-          style={{ 
-            margin: 0, 
-            fontSize: '1.4rem', 
-            lineHeight: '1.4', 
-            color: '#fff',
+        <p
+          className="pixel-text typing-cursor"
+          style={{
+            margin: 0,
+            fontSize: '1.4rem',
+            lineHeight: '1.4',
+            color: '#2e2013',
             whiteSpace: 'normal',
             wordWrap: 'break-word'
           }}
@@ -2368,13 +3278,14 @@ export default function InteractiveAvatar() {
               position: 'absolute',
               right: '20px',
               bottom: '15px',
-              background: 'var(--rpg-accent)',
-              color: '#fff',
-              border: '3px solid #000',
+              background: '#c0392b',
+              color: '#f6e7bd',
+              border: '3px solid #3a2419',
               padding: '6px 12px',
               fontSize: '0.8rem',
               cursor: 'pointer',
-              boxShadow: '2px 2px 0 #000'
+              boxShadow: '2px 2px 0 #3a2419',
+              zIndex: 1
             }}
           >
             ACTION [A]
@@ -2411,25 +3322,51 @@ export default function InteractiveAvatar() {
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
-              {triviaQuestions[currentQuestionIdx].options.map((opt, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleTriviaAnswer(idx)}
-                  className="pixel-text"
-                  style={{
-                    background: '#000',
-                    color: 'var(--rpg-text)',
-                    border: '2px solid var(--rpg-text)',
-                    padding: '10px',
-                    fontSize: '1.2rem',
-                    cursor: 'pointer',
-                    textAlign: 'left'
-                  }}
-                >
-                  {idx + 1}. {opt}
-                </button>
-              ))}
+              {triviaQuestions[currentQuestionIdx].options.map((opt, idx) => {
+                const hidden = triviaHidden.includes(idx);
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => !hidden && handleTriviaAnswer(idx)}
+                    className="pixel-text"
+                    disabled={hidden}
+                    style={{
+                      background: '#000',
+                      color: hidden ? '#333' : 'var(--rpg-text)',
+                      border: `2px solid ${hidden ? '#222' : 'var(--rpg-text)'}`,
+                      padding: '10px',
+                      fontSize: '1.2rem',
+                      cursor: hidden ? 'default' : 'pointer',
+                      textAlign: 'left',
+                      textDecoration: hidden ? 'line-through' : 'none',
+                      ...(menuRow === idx && !hidden ? FOCUS_RING : {})
+                    }}
+                  >
+                    {idx + 1}. {opt}
+                  </button>
+                );
+              })}
             </div>
+
+            {/* 🧠 Intellect ≥ 7 perk: one hint per question */}
+            {playerStats.intellect >= 7 && (
+              <button
+                onClick={useTriviaHint}
+                disabled={triviaHintUsed || !!triviaResult}
+                className="pixel-header"
+                style={{
+                  alignSelf: 'flex-start',
+                  background: triviaHintUsed ? '#222' : '#1a233a',
+                  color: triviaHintUsed ? '#555' : '#ffd166',
+                  border: `2px solid ${triviaHintUsed ? '#333' : '#ffd166'}`,
+                  padding: '5px 12px',
+                  cursor: triviaHintUsed ? 'default' : 'pointer',
+                  fontSize: '0.65rem'
+                }}
+              >
+                🧠 {triviaHintUsed ? 'HINT USED' : 'USE INTELLECT HINT [H]'}
+              </button>
+            )}
 
             {/* Answer Result Banner */}
             {triviaResult === 'correct' && (
@@ -2644,7 +3581,7 @@ export default function InteractiveAvatar() {
           {/* Grid of Polaroid Cards */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'center', flex: 1, overflowY: 'auto', paddingBottom: '30px' }}>
             {guestbookEntries.map((visitor, idx) => (
-              <div 
+              <div
                 key={idx}
                 onClick={() => setSelectedGalleryProfile(visitor)}
                 className="rpg-box"
@@ -2661,13 +3598,14 @@ export default function InteractiveAvatar() {
                   flexDirection: 'column',
                   gap: '8px',
                   transition: 'transform 0.2s',
-                  transformOrigin: 'bottom center'
+                  transformOrigin: 'bottom center',
+                  ...(menuRow === idx ? FOCUS_RING : {})
                 }}
               >
                 {/* Photo cutout containing animated sprite */}
                 <div style={{ width: '100%', height: '110px', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #222', position: 'relative' }}>
                   <div style={{ width: '64px', height: '64px' }}>
-                    <Sprite direction="down" frame={Math.floor(Date.now() / 250) % 4} customColors={visitor.colors} />
+                    <Sprite direction="down" frame={previewFrame} customColors={visitor.colors} />
                   </div>
                   <div style={{ position: 'absolute', top: '5px', left: '5px', background: 'rgba(255,255,255,0.15)', width: '3px', height: '3px', borderRadius: '50%' }} />
                 </div>
@@ -2741,7 +3679,7 @@ export default function InteractiveAvatar() {
               {/* Large Sprite preview frame */}
               <div className="rpg-box" style={{ width: '110px', height: '110px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000', border: '3px solid var(--rpg-highlight)' }}>
                 <div style={{ width: '72px', height: '72px' }}>
-                  <Sprite direction="down" frame={Math.floor(Date.now() / 250) % 4} customColors={selectedGalleryProfile.colors} />
+                  <Sprite direction="down" frame={previewFrame} customColors={selectedGalleryProfile.colors} />
                 </div>
               </div>
 
@@ -2860,33 +3798,16 @@ export default function InteractiveAvatar() {
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <button
-                onClick={() => {
-                  const station = activeGameStation;
-                  setActiveGameStation(null);
-                  if (station === 'football') handleInspect('football');
-                  if (station === 'bike') handleInspect('trekking');
-                  if (station === 'arcade') handleInspect('anime');
-                }}
+                onClick={() => stationChoose(0)}
                 className="pixel-text"
-                style={{ background: '#000', color: 'var(--rpg-text)', border: '2px solid var(--rpg-text)', padding: '10px', fontSize: '1.3rem', cursor: 'pointer', textAlign: 'left' }}
+                style={{ background: '#000', color: 'var(--rpg-text)', border: '2px solid var(--rpg-text)', padding: '10px', fontSize: '1.3rem', cursor: 'pointer', textAlign: 'left', ...(menuRow === 0 ? FOCUS_RING : {}) }}
               >
                 [1] Inspect Landmark Spec (Read Lore)
               </button>
               <button
-                onClick={() => {
-                  const station = activeGameStation;
-                  setActiveGameStation(null);
-                  if (station === 'football') setShowFullscreenSoccer(true);
-                  if (station === 'bike') setShowFullscreenBiking(true);
-                  if (station === 'arcade') {
-                    setShowTrivia(true);
-                    setCurrentQuestionIdx(0);
-                    setCorrectStreak(0);
-                    setTriviaResult(null);
-                  }
-                }}
+                onClick={() => stationChoose(1)}
                 className="pixel-text"
-                style={{ background: 'var(--rpg-highlight)', color: '#000', border: '2px solid #000', padding: '10px', fontSize: '1.3rem', cursor: 'pointer', fontWeight: 'bold', textAlign: 'left' }}
+                style={{ background: 'var(--rpg-highlight)', color: '#000', border: '2px solid #000', padding: '10px', fontSize: '1.3rem', cursor: 'pointer', fontWeight: 'bold', textAlign: 'left', ...(menuRow === 1 ? FOCUS_RING : {}) }}
               >
                 [2] Play Minigame (Launch Fullscreen)
               </button>
@@ -2894,10 +3815,13 @@ export default function InteractiveAvatar() {
             <button
               onClick={() => setActiveGameStation(null)}
               className="pixel-header"
-              style={{ alignSelf: 'flex-end', background: 'var(--rpg-accent)', color: '#fff', border: '2px solid #000', padding: '5px 12px', cursor: 'pointer', fontSize: '0.75rem' }}
+              style={{ alignSelf: 'flex-end', background: 'var(--rpg-accent)', color: '#fff', border: '2px solid #000', padding: '5px 12px', cursor: 'pointer', fontSize: '0.75rem', ...(menuRow === 2 ? FOCUS_RING : {}) }}
             >
               CANCEL [B]
             </button>
+            <p className="pixel-text" style={{ fontSize: '0.95rem', color: '#666', margin: 0, textAlign: 'center' }}>
+              ▲▼ navigate · A select · B back
+            </p>
           </div>
         </div>
       )}
@@ -2962,13 +3886,19 @@ export default function InteractiveAvatar() {
             </button>
           </div>
 
-          <div style={{ flex: 1, position: 'relative', background: '#123015', overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', top: '10%', bottom: '10%', left: '5%', right: '5%', border: '2.5px solid rgba(255,255,255,0.2)' }} />
-            <div style={{ position: 'absolute', top: '10%', bottom: '10%', left: '50%', borderLeft: '2px dashed rgba(255,255,255,0.2)' }} />
-            <div style={{ position: 'absolute', top: '40%', left: '44%', width: '12%', height: '20%', border: '2.5px solid rgba(255,255,255,0.2)', borderRadius: '50%' }} />
-            
-            <div style={{ position: 'absolute', top: '30%', bottom: '30%', left: '5%', width: '12%', border: '2.5px solid rgba(255,255,255,0.2)', borderLeft: 'none' }} />
-            <div style={{ position: 'absolute', top: '30%', bottom: '30%', right: '5%', width: '12%', border: '2.5px solid rgba(255,255,255,0.2)', borderRight: 'none' }} />
+          <div style={{ flex: 1, position: 'relative', background: '#123015 url(/grassturf.png) center/cover', imageRendering: 'pixelated', overflow: 'hidden' }}>
+            {/* Field outline */}
+            <div style={{ position: 'absolute', top: '10%', bottom: '10%', left: '5%', right: '5%', border: '3px solid rgba(255,255,255,0.85)', boxShadow: '0 0 4px rgba(0,0,0,0.5)' }} />
+            {/* Halfway line */}
+            <div style={{ position: 'absolute', top: '10%', bottom: '10%', left: '50%', borderLeft: '3px solid rgba(255,255,255,0.85)' }} />
+            {/* Centre circle */}
+            <div style={{ position: 'absolute', top: '40%', left: '44%', width: '12%', height: '20%', border: '3px solid rgba(255,255,255,0.85)', borderRadius: '50%' }} />
+            {/* Centre spot */}
+            <div style={{ position: 'absolute', top: '49.2%', left: '49.6%', width: '0.8%', height: '1.4%', background: 'rgba(255,255,255,0.9)', borderRadius: '50%' }} />
+
+            {/* Penalty boxes */}
+            <div style={{ position: 'absolute', top: '30%', bottom: '30%', left: '5%', width: '12%', border: '3px solid rgba(255,255,255,0.85)', borderLeft: 'none' }} />
+            <div style={{ position: 'absolute', top: '30%', bottom: '30%', right: '5%', width: '12%', border: '3px solid rgba(255,255,255,0.85)', borderRight: 'none' }} />
             
             {/* LEFT GOAL Net (PLAYER GOAL) */}
             <div style={{ position: 'absolute', top: '35%', bottom: '35%', left: '0.5%', width: '5%', display: 'flex', flexDirection: 'column' }}>
@@ -3412,15 +4342,8 @@ export default function InteractiveAvatar() {
                   overflowY: 'auto',
                   paddingRight: '4px'
                 }}>
-                  {[
-                    { id: 'popcorn', type: 'dbt-popcorn', title: 'DBT Popcorn', desc: 'Warm, airy kernels puffed with tandoori butter!', effect: '+25 Stamina' },
-                    { id: 'shwarma', type: 'shwarma', title: 'Lebanese Shwarma', desc: 'Spicy wraps full of garlic-mustard goodness!', effect: '+25 Stamina' },
-                    { id: 'chaap', type: 'chaap', title: 'Soya Chaap Skewer', desc: 'Flame-grilled spicy protein pieces!', effect: '+25 Stamina' },
-                    { id: 'garlic-bread', type: 'garlic-bread', title: 'Garlic Bread', desc: 'Warm, toasted golden garlic butter slices!', effect: '+25 Stamina' },
-                    { id: 'thumbs-up', type: 'thumbs-up', title: 'Thumbs Up Bottle', desc: 'Cold glass bottle cola with fizzy tingle!', effect: '+25 Stamina' },
-                    { id: 'coffee', type: 'coffee', title: 'Hot Coffee Mug', desc: 'Espresso shot. Grants 15s CAFFEINE SPEED surge!', effect: '+25 Stamina & Speedup' }
-                  ].map((item, idx) => (
-                    <div 
+                  {KITCHEN_MENU.map((item, idx) => (
+                    <div
                       key={idx}
                       className="rpg-box"
                       style={{
@@ -3429,7 +4352,8 @@ export default function InteractiveAvatar() {
                         display: 'flex',
                         gap: '12px',
                         alignItems: 'center',
-                        borderColor: '#222'
+                        borderColor: '#222',
+                        ...(menuRow === idx ? FOCUS_RING : {})
                       }}
                     >
                       <div style={{ width: '48px', height: '48px', flexShrink: 0 }}>
@@ -3777,7 +4701,7 @@ export default function InteractiveAvatar() {
           <div className="rpg-box" style={{ width: '95%', maxWidth: '580px', background: '#0a100a', borderColor: '#4caf50', boxShadow: '0 0 25px rgba(76, 175, 80, 0.3)' }}>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '3px solid #4caf50', paddingBottom: '8px', marginBottom: '15px' }}>
-              <span className="pixel-header" style={{ fontSize: '0.85rem', color: '#4caf50' }}>📋 TACTICAL CHALKBOARD BLUEPRINTS</span>
+              <span className="pixel-header" style={{ fontSize: '0.85rem', color: '#4caf50' }}>📋 RAGHAV'S FOOTBALL CHALKBOARD</span>
               <button 
                 onClick={() => setShowTacticalBlueprints(false)}
                 className="pixel-header"
@@ -3789,15 +4713,15 @@ export default function InteractiveAvatar() {
 
             {/* Chalkboard styling */}
             <div style={{ background: '#1c361e', border: '5px solid #8d6e63', padding: '15px', color: '#eceff1', borderRadius: '4px', boxShadow: 'inset 0 0 20px rgba(0,0,0,0.8)' }}>
-              
+
               <div style={{ borderBottom: '2px dashed rgba(255,255,255,0.2)', paddingBottom: '8px', marginBottom: '12px', textAlign: 'center' }}>
                 <h3 className="pixel-header" style={{ fontSize: '0.8rem', color: '#ffeb3b', margin: 0 }}>
-                  CHAMPIONS LEAGUE ARCHITECTURE MAP
+                  FC BARCELONA — MÉS QUE UN CLUB
                 </h3>
-                <span style={{ fontSize: '0.62rem', fontFamily: 'monospace', color: '#81c784' }}>Mapping Soccer Tactics to Clean Code Structures</span>
+                <span style={{ fontSize: '0.62rem', fontFamily: 'monospace', color: '#81c784' }}>Raghav's one and only football religion</span>
               </div>
 
-              {/* Diagrams columns */}
+              {/* Fandom columns */}
               <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
                 {/* Chalkboard Drawing */}
                 <div style={{ flex: '1 1 200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -3806,24 +4730,33 @@ export default function InteractiveAvatar() {
                   </div>
                 </div>
 
-                {/* Tactical mapping details */}
+                {/* Club / Player / Loyalty details */}
                 <div style={{ flex: '1.2 1 240px', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '1.2rem', fontFamily: 'monospace' }}>
                   <div>
-                    <span style={{ color: '#ffeb3b', fontWeight: 'bold' }}>🛡️ DEFENSE (Entities & Core):</span><br/>
-                    The defensive backline. Written in pure decoupled logic. Absorbs database payloads and shields application rules from dynamic framework updates.
+                    <span style={{ color: '#4fc3f7', fontWeight: 'bold' }}>🔵🔴 CLUB — FC Barcelona (FCB):</span><br/>
+                    The Blaugrana. Tiki-taka purists raised on the La Masia academy and the Camp Nou faithful. Possession is the philosophy — style over everything.
                   </div>
                   <div>
-                    <span style={{ color: '#4fc3f7', fontWeight: 'bold' }}>🏃 MIDFIELD (Use Case Dispatchers):</span><br/>
-                    Controls game flow. Converts REST, WebSockets, or UI payloads into clean business flows, maintaining rigorous decoupled transitions.
+                    <span style={{ color: '#ffeb3b', fontWeight: 'bold' }}>🐐 PLAYER — Lionel Messi:</span><br/>
+                    The GOAT. The number 10 whose left foot rewrote football. Every dribble, free-kick and impossible angle is pure inspiration.
                   </div>
                   <div>
-                    <span style={{ color: '#ffd54f', fontWeight: 'bold' }}>⚡ ATTACK (Dynamic Viewports):</span><br/>
-                    The goal-scorers. Rich premium responsive UI widgets, dynamic scanline overlays, and fast game loops designed to WOW the end-user.
+                    <span style={{ color: '#ffd54f', fontWeight: 'bold' }}>💛 LOYALTY — Visca Barça, sempre:</span><br/>
+                    Through trebles and heartbreaks, Champions League nights and El Clásico wars — a culer for life. No glory-hunting, no switching sides. One club, forever.
                   </div>
                 </div>
               </div>
 
             </div>
+
+            {/* Play Match call-to-action — launches the 1v1 soccer minigame */}
+            <button
+              onClick={() => { setShowTacticalBlueprints(false); setShowFullscreenSoccer(true); }}
+              className="pixel-header"
+              style={{ marginTop: '15px', width: '100%', background: 'var(--rpg-highlight)', color: '#000', border: '3px solid #000', padding: '12px', fontSize: '0.9rem', fontWeight: 'bold', cursor: 'pointer', boxShadow: '3px 3px 0 #000' }}
+            >
+              ⚽ PLAY A MATCH — 1V1 SOCCER DUEL
+            </button>
 
           </div>
         </div>
@@ -3860,42 +4793,10 @@ export default function InteractiveAvatar() {
               {/* Left Column: Project Selection Terminal */}
               <div style={{ flex: '1 1 220px', display: 'flex', flexDirection: 'column', gap: '8px', background: '#111', padding: '10px', borderRadius: '4px', border: '2px solid #333' }}>
                 <span className="pixel-header" style={{ fontSize: '0.52rem', color: '#888', marginBottom: '4px', display: 'block' }}>📁 ACTIVE PROJECTS DICTIONARY:</span>
-                {[
-                  { id: 'scraper', title: '🔮 Jujutsu Stock Scraper', desc: 'Node.js web scraper indexing fandom stock prices.' },
-                  { id: 'rpg', title: '🏡 Cozy RPG Room Engine', desc: 'React single page game engine. Layout shifts: 0!' },
-                  { id: 'tactics', title: '⚽ UEFA Tactics Backtracker', desc: 'Graph algorithm mapping Champions League formations.' }
-                ].map(project => (
+                {PC_PROJECTS.map(project => (
                   <button
                     key={project.id}
-                    onClick={() => {
-                      playSound('chime');
-                      setPcActiveProject(project.id);
-                      if (project.id === 'scraper') {
-                        setSimulatedLogs([
-                          "🚀 Initiating Jujutsu Stock Tracker Scraper Daemon v1.0.4...",
-                          "📡 Spawning cluster workers at Kyoto School and Tokyo School endpoints...",
-                          "🔑 Authentication handshake: SUCCESS. Node cluster active.",
-                          "📊 Fetching baseline Cursed Energy Indexes...",
-                          "⚡ Cursed Energy Index: 2,450.40 (+1.25%) | Gojo Satoru Market Cap: ∞"
-                        ]);
-                      } else if (project.id === 'rpg') {
-                        setSimulatedLogs([
-                          "🏡 Cozy RPG Space Engine Bootstrapping...",
-                          "🧱 Bounding collision maps (SOLID_TILES loaded: 36 nodes)...",
-                          "🎭 Character sprite custom colors injected successfully.",
-                          "🔊 Audio Web Synths: READY (Triangle & Square waves bound).",
-                          "🚀 Dev Server status: RUNNING. Layout shift counts: 0."
-                        ]);
-                      } else if (project.id === 'tactics') {
-                        setSimulatedLogs([
-                          "⚽ Loading UEFA Backtrack Tactics matrix...",
-                          "🧬 Parsing Graph vertex configurations (4-3-3 inverted)...",
-                          "📐 Core defense entities layered: decoupled from UI viewports.",
-                          "🏃 Midfield dispatchers compiled. Attack routines: bound.",
-                          "🔥 Tactical analysis optimal: System decoupled."
-                        ]);
-                      }
-                    }}
+                    onClick={() => selectPcProject(project.id)}
                     className="pixel-text"
                     style={{
                       background: pcActiveProject === project.id ? '#1a233a' : '#050508',
