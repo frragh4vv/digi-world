@@ -9,6 +9,10 @@ Think *"about me"* meets *Stardew Valley* meets a Game Boy.
 
 ![Raghav's Digital World](public/og-image.png)
 
+### 🎯 Final Design Goal (1:1 Reference Layout)
+![Final Design Goal](reference-design.jpg)
+
+
 ---
 
 ## ✨ Features
