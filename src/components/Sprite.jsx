@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 // Helper to convert RGB integer values to Hex colors for customizer
 const rgbToHex = (r, g, b) => {
@@ -9,7 +9,28 @@ const rgbToHex = (r, g, b) => {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 };
 
-export default function Sprite({ direction, frame, customColors }) {
+export default function Sprite({ direction = 'down', frame = 0, customColors }) {
+  const [imgError, setImgError] = useState(false);
+  const rowMap = { down: 0, left: 1, right: 2, up: 3 };
+  const r = rowMap[direction] ?? 0;
+  const c = Math.max(0, Math.min(3, frame || 0));
+  const pngPath = `/sprites/raghav_r${r}_c${c}.png`;
+
+  const isCustomized = customColors && (customColors.gender === 'female' || customColors.faceStyle === 'visor');
+
+  if (!isCustomized && !imgError) {
+    return (
+      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+        <img
+          src={pngPath}
+          alt={`raghav_${direction}_${frame}`}
+          style={{ width: '100%', height: '100%', objectFit: 'contain', imageRendering: 'pixelated' }}
+          onError={() => setImgError(true)}
+        />
+      </div>
+    );
+  }
+
   const defaultColors = {
     hat: '#8a2be2',
     skin: '#ffb6c1',
@@ -19,6 +40,7 @@ export default function Sprite({ direction, frame, customColors }) {
     gender: 'male',
     faceStyle: 'classic'
   };
+
 
   const colors = { ...defaultColors, ...customColors };
   const gender = colors.gender || 'male';

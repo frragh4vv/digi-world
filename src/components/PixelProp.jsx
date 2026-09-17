@@ -1,4 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
+
+const PROP_IMAGE_MAP = {
+  'bed': '/props/bed.png',
+  'bike': '/props/bike.png',
+  'bouldering-wall': '/props/bouldering-wall.png',
+  'climbing_wall': '/props/bouldering-wall.png',
+  'hangboard': '/props/hangboard.png',
+  'computerglowing': '/props/computerglowing.png',
+  'computer_desk': '/props/computerglowing.png',
+  'arcade': '/props/arcade.png',
+  'manga_arcade': '/props/arcade.png',
+  'tacticboard': '/props/tacticboard.png',
+  'tactics_board': '/props/tacticboard.png',
+  'travel-table': '/props/travel-table.png',
+  'travel_desk': '/props/travel-table.png',
+  'bookshelf': '/props/bookshelf.png',
+  'bookshelf-top': '/props/bookshelf.png',
+  'bookshelf-bottom': '/props/bookshelf.png',
+  'fridge': '/props/fridge.png',
+  'stove': '/props/stove.png',
+  'kitchen-counter': '/props/kitchen-counter.png',
+  'kitchen_prep': '/props/kitchen-counter.png',
+  'beanbag': '/props/beanbag.png',
+  'projector': '/props/projector.png',
+  'anime_pedestal': '/props/projector.png',
+  'bulletin': '/props/bulletin.png',
+  'hall_of_fame': '/props/bulletin.png',
+  'suitcase': '/props/suitcase.png',
+  'tent': '/props/tent.png',
+  'campfire': '/props/campfire.png',
+  'tyre': '/props/tyre.png',
+  'tire': '/props/tyre.png',
+};
 
 // ───────────────────────────────────────────────────────────────────────────
 // PixelProp — one cohesive warm "cozy 16-bit" pixel-art sprite set.
@@ -86,6 +119,22 @@ function GoalPosts({ top = false, bottom = false }) {
 }
 
 export default function PixelProp({ type }) {
+  const [imgError, setImgError] = useState(false);
+  const imgSrc = PROP_IMAGE_MAP[type];
+
+  if (imgSrc && !imgError) {
+    return (
+      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+        <img
+          src={imgSrc}
+          alt={type}
+          style={{ width: '100%', height: '100%', objectFit: 'contain', imageRendering: 'pixelated' }}
+          onError={() => setImgError(true)}
+        />
+      </div>
+    );
+  }
+
 
   // ── BED — honey-wood frame, cream pillow, teal duvet + coral stripe ──────
   if (type === 'bed') {
