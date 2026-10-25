@@ -577,7 +577,7 @@ body {
   height: 100%;
   position: relative;
   background-color: #2a1c10;
-  background-image: url('/room-overworld.png');
+  background-image: url('/room-overworld.webp');
   background-size: 100% 100%;
   background-repeat: no-repeat;
   image-rendering: pixelated;
@@ -586,7 +586,7 @@ body {
 
 /* Dialogue Box Parchment Scroll */
 .dialogue-parchment {
-  background-image: url('/parchment-scroll.png');
+  background-image: url('/parchment-scroll.webp');
   background-size: 100% 100%;
   background-repeat: no-repeat;
   image-rendering: pixelated;

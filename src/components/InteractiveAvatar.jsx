@@ -432,22 +432,22 @@ export default function InteractiveAvatar() {
 
   const travelSlides = [
     {
-      src: '/trekking.png',
+      src: '/trekking.webp',
       title: "🏔️ GR20 Expedition, Corsica",
       desc: "Successfully traversed 180km of the most grueling alpine granite trails in Europe. High altitude ridge walking, heavy packing, and stormy summits."
     },
     {
-      src: '/bouldering.png',
+      src: '/bouldering.webp',
       title: "Conquered V5 Granite block, Hampi",
       desc: "High-friction sandstone block climbing under historical ruins. Slopers, technical toe hooks, and high-ball sends under the blazing sun."
     },
     {
-      src: '/trekking_2.png',
+      src: '/trekking_2.webp',
       title: "🌲 Monsoon Valley Hikes, Western Ghats",
       desc: "Navigated deep tropical valleys, scaled misty peaks in peak rainstorms, and stood at the edge of glorious waterfall valleys."
     },
     {
-      src: '/anime_2.png',
+      src: '/anime_2.webp',
       title: "🏯 Kyoto & Akihabara Sanctuary, Japan",
       desc: "Explored retro game archives, historic temple trails, and vintage weeb libraries, absorbing the pure 16-bit creative soul."
     }
@@ -995,11 +995,11 @@ export default function InteractiveAvatar() {
 
   // Real-world photography images for projector carousel
   const polaroids = [
-    { src: '/bouldering.png', caption: "Scaling local V5 block walls in high friction rubber." },
-    { src: '/trekking.png', caption: "Surviving GR20 nature hikes with heavy packs." },
-    { src: '/anime.png', caption: "Cataloging the ancient weeb archives." },
-    { src: '/football.png', caption: "Champions League tactical backseat backseat driver boards." },
-    { src: '/profile.png', caption: "Main Spawning Spooky Workspace command deck." }
+    { src: '/bouldering.webp', caption: "Scaling local V5 block walls in high friction rubber." },
+    { src: '/trekking.webp', caption: "Surviving GR20 nature hikes with heavy packs." },
+    { src: '/anime.webp', caption: "Cataloging the ancient weeb archives." },
+    { src: '/football.webp', caption: "Champions League tactical backseat backseat driver boards." },
+    { src: '/profile.webp', caption: "Main Spawning Spooky Workspace command deck." }
   ];
 
   // Manga Multiple Choice questions

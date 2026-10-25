@@ -120,7 +120,7 @@ const inventoryItems = [
   {
     id: 'profile',
     title: 'Character: Raghav',
-    mainImg: '/profile.png',
+    mainImg: '/profile.webp',
     desc: 'The developer candidate NPC. Class: Chaotic Co-Pilot. Stats: +15 Hyperfixation, +80 Bouldering Enthusiasm, -10 Sleep Discipline. A software engineer who loves converting normal web components into immersive retro games.',
     attributes: [
       { name: 'HP (Social Battery)', val: '75 / 100' },
@@ -128,55 +128,55 @@ const inventoryItems = [
       { name: 'Archetype', val: 'Highly Lonely Yearner' },
       { name: 'Active Buffs', val: 'Caffeine Surge, Code Flow' }
     ],
-    gallery: ['/profile.png']
+    gallery: ['/profile.webp']
   },
   {
     id: 'bouldering',
     title: 'Bouldering Shoes',
-    mainImg: '/bouldering.png',
+    mainImg: '/bouldering.webp',
     desc: 'Equippable Item. +10 Wall Grip, -5 Finger Skin. Restores passion when solving physical puzzles on walls. Grants a passive ability to point at random cliffs and say "I can climb that" (usually can\'t).',
     attributes: [
       { name: 'Item Rarity', val: 'Rare Artifact' },
       { name: 'Grip Power', val: '+10' },
       { name: 'Chalk Consumption', val: 'Extreme' }
     ],
-    gallery: ['/bouldering.png', '/bouldering_2.png']
+    gallery: ['/bouldering.webp', '/bouldering_2.webp']
   },
   {
     id: 'anime',
     title: 'Ancient Tome of Lore',
-    mainImg: '/anime.png',
+    mainImg: '/anime.webp',
     desc: 'Quest Item. A deep, unyielding well of anime and manga knowledge. Grants +15 Charisma to fellow weebs. Prepare for an intense, highly energetic 40-minute analysis of a series you have never heard of.',
     attributes: [
       { name: 'Lore Depth', val: 'Infinite' },
       { name: 'Spoken Speed', val: '1.5x' },
       { name: 'Weeb Factor', val: '99%' }
     ],
-    gallery: ['/anime.png', '/anime_2.png']
+    gallery: ['/anime.webp', '/anime_2.webp']
   },
   {
     id: 'trekking',
     title: 'Travel Diary & Scrapbook',
-    mainImg: '/trekking.png',
+    mainImg: '/trekking.webp',
     desc: 'Raghav\'s personal travel scrapbook detailing alpine treks, historical temple trails in Kyoto, high-friction sandstone blocks in Hampi, and monsoons in the Western Ghats. A living collection of travel memories and climbing logs.',
     attributes: [
       { name: 'Travel Journeys', val: 'Corsica, Hampi, Tokyo' },
       { name: 'Altitude Scaled', val: '2,700m+ Peaks' },
       { name: 'Passions Detailed', val: 'Climbing, Hiking, Lore' }
     ],
-    gallery: ['/trekking.png', '/trekking_2.png']
+    gallery: ['/trekking.webp', '/trekking_2.webp']
   },
   {
     id: 'football',
     title: 'The Orb of Chaos',
-    mainImg: '/football.png',
+    mainImg: '/football.webp',
     desc: 'Artifact. The beautiful game. I spend 50% of my time playing it on the pitch and 50% providing completely unsolicited tactical analyses of Champions League matches as if I were a UEFA manager.',
     attributes: [
       { name: 'Agility Boost', val: '+8' },
       { name: 'Tactical Backseat Driver', val: '+99' },
       { name: 'Stamina battery', val: 'Low' }
     ],
-    gallery: ['/football.png']
+    gallery: ['/football.webp']
   }
 ];
 
