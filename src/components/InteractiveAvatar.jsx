@@ -1236,8 +1236,16 @@ export default function InteractiveAvatar() {
   useEffect(() => {
     if (!gameStarted) return;
     let animId;
+    let lastTime = performance.now();
 
     const gameLoop = () => {
+      // Speeds below are tuned per 60fps frame; scale by real elapsed time so
+      // walking pace is the same on 30fps phones and 120Hz screens. Capped at
+      // 3 frames so a long hitch can't step the player through a wall.
+      const now = performance.now();
+      const dt = Math.min(3, (now - lastTime) / (1000 / 60));
+      lastTime = now;
+
       // Pause character when reading or in any modal
       if (isModalOpen) {
         keysPressed.current = {};
@@ -1259,7 +1267,7 @@ export default function InteractiveAvatar() {
       if (isRiding) {
         baseSpeed = (caffeineTimer > 0 ? 0.20 : 0.16) * reflexMult; // Even faster if caffeinated!
         // Drains energyLevel faster when biking!
-        if (Math.random() < 0.008 * drainMult) {
+        if (Math.random() < 0.008 * drainMult * dt) {
           setEnergyLevel(prev => {
             const next = Math.max(0, prev - 1);
             if (next === 0) {
@@ -1272,10 +1280,11 @@ export default function InteractiveAvatar() {
         }
       } else {
         // slow normal walking energyLevel drain (💪 Stamina makes it slower)
-        if (Math.random() < 0.002 * drainMult) {
+        if (Math.random() < 0.002 * drainMult * dt) {
           setEnergyLevel(prev => Math.max(0, prev - 1));
         }
       }
+      baseSpeed *= dt;
 
       let dx = 0;
       let dy = 0;
