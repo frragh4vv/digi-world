@@ -198,7 +198,9 @@ export function getFurnitureDialogue(col, row) {
   if (col >= 1 && col <= 2 && row >= 1 && row <= 3) {
     return "🛏️ [Spawning Bed]: Cozy gold diamond quilt bed. Restores 100% Social Battery.";
   }
-  if (col === 0 && row >= 1 && row <= 13) {
+  // Climbing wall is the solid column 1 (column 0 is the outer border); checked
+  // before the campground so bumping the wall at rows 8-13 names the wall
+  if ((col === 0 || col === 1) && row >= 1 && row <= 13) {
     return "🧗 [Bouldering Wall]: 10-foot climbing slab covered in colorful grip holds. Finger strength required!";
   }
   if (col >= 6 && col <= 8 && row === 1) {
@@ -207,7 +209,7 @@ export function getFurnitureDialogue(col, row) {
   if (col >= 13 && col <= 17 && row >= 1 && row <= 4) {
     return "📚 [Manga Lounge]: Cozy anime books, retro CRT, and soft beanbags. Press E to test your trivia lore!";
   }
-  if (col >= 8 && col <= 10 && row === 5) {
+  if (col >= 9 && col <= 11 && row === 5) { // the solid desk tiles (8,5 is walkable)
     return "💻 [Command Deck]: Triple-monitor terminal running code. Talk to Raghav or press E to inspect projects!";
   }
   if (col >= 1 && col <= 5 && row >= 8 && row <= 13) {

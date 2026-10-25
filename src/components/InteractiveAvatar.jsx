@@ -7,8 +7,6 @@ import {
   MAP_ROWS, 
   isTileSolid,
   getTileType,
-  getFloorType,
-  INTERACTABLE_OBJECTS,
   getFurnitureDialogue
 } from '../mapConfig';
 
