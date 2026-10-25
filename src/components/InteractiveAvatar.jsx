@@ -1165,17 +1165,21 @@ export default function InteractiveAvatar() {
     const handleKeyDown = (e) => {
       const key = e.key.toLowerCase();
       
+      // Game keys must not scroll the page underneath the console — while
+      // walking or inside any popup (e.g. the football chalkboard has no
+      // arrow navigation, so arrows fell through and scrolled the page).
+      // Text fields keep their arrows; focused buttons keep Space.
+      const tag = e.target && e.target.tagName;
+      const typing = tag === 'INPUT' || tag === 'TEXTAREA';
+      const onControl = typing || tag === 'BUTTON' || tag === 'SELECT';
+      if ((e.key.startsWith('Arrow') && !typing) || (e.key === ' ' && !onControl)) e.preventDefault();
+
       if (isModalOpen) {
         // Paused: arrows & WASD navigate selection menus, never move character
         keysPressed.current = {};
         clickTarget.current = null;
         return;
       }
-
-      // Walking keys must not scroll the page underneath the console
-      // (leave Space alone on focused controls so it can still press a button)
-      const onControl = ['BUTTON', 'INPUT', 'TEXTAREA', 'SELECT'].includes(e.target && e.target.tagName);
-      if (e.key.startsWith('Arrow') || (e.key === ' ' && !onControl)) e.preventDefault();
 
       if (e.key === 'ArrowUp') keysPressed.current['w'] = true;
       if (e.key === 'ArrowDown') keysPressed.current['s'] = true;
@@ -1715,6 +1719,7 @@ export default function InteractiveAvatar() {
     const handleDown = (e) => {
       const k = e.key.toLowerCase();
       if (['w','a','s','d','arrowup','arrowleft','arrowdown','arrowright'].includes(k)) {
+        e.preventDefault(); // arrows must steer, not scroll the page
         keys[k] = true;
       }
       if (e.key === 'Escape' || k === 'b') {
@@ -1955,6 +1960,7 @@ export default function InteractiveAvatar() {
     const handleDown = (e) => {
       const k = e.key.toLowerCase();
       if (['w','a','s','d','arrowup','arrowleft','arrowdown','arrowright'].includes(k)) {
+        e.preventDefault(); // arrows must steer, not scroll the page
         keys[k] = true;
       }
       if (e.key === 'Escape' || k === 'b') setShowFullscreenBiking(false);
