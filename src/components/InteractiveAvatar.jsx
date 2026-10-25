@@ -558,6 +558,13 @@ export default function InteractiveAvatar() {
     globalAudioEnabled = isAudioEnabled;
   }, [isAudioEnabled]);
 
+  // START menu pause, readable from the soccer / bike race loops and timers
+  // (they live in long-running effects, so they can't read state directly)
+  const isPausedRef = useRef(false);
+  useEffect(() => {
+    isPausedRef.current = isPaused;
+  }, [isPaused]);
+
   // Drive idle sprite-preview animation (creation screen + gallery cards)
   useEffect(() => {
     const tick = setInterval(() => setPreviewFrame(f => (f + 1) % 4), 220);
@@ -1629,6 +1636,7 @@ export default function InteractiveAvatar() {
       if (countdownTimer) clearInterval(countdownTimer);
       
       countdownTimer = setInterval(() => {
+        if (isPausedRef.current) return;
         kickoffCountdown -= 1;
         if (kickoffCountdown === 2) {
           setFsSoccerCountdown(2);
@@ -1665,7 +1673,7 @@ export default function InteractiveAvatar() {
           
           // Match timer ticks down every second
           timerInterval = setInterval(() => {
-            if (!inKickoff && !isMatchEnded) {
+            if (!inKickoff && !isMatchEnded && !isPausedRef.current) {
               setFsSoccerTimer(t => {
                 if (t <= 1) {
                   clearInterval(timerInterval);
@@ -1713,8 +1721,9 @@ export default function InteractiveAvatar() {
     window.addEventListener('keyup', handleUp);
     
     const tick = () => {
-      // Check if loading or game ended or in kickoff countdown
-      if (!isLoaded || isMatchEnded || inKickoff) {
+      // Check if loading or game ended or in kickoff countdown (or START-paused)
+      if (!isLoaded || isMatchEnded || inKickoff || isPausedRef.current) {
+        if (isPausedRef.current) for (const k in keys) keys[k] = false;
         animId = requestAnimationFrame(tick);
         return;
       }
@@ -1952,6 +1961,7 @@ export default function InteractiveAvatar() {
     let countdownSec = 3;
     setDialogueText(`🚦 RACE STARTING IN: ${countdownSec}...`);
     const countdownInterval = setInterval(() => {
+      if (isPausedRef.current) return;
       countdownSec -= 1;
       if (countdownSec <= 0) {
         clearInterval(countdownInterval);
@@ -1960,6 +1970,7 @@ export default function InteractiveAvatar() {
         
         // Start stopwatch ticking
         timerInterval = setInterval(() => {
+          if (isPausedRef.current) return;
           setLapTimer(t => Number((t + 0.1).toFixed(1)));
         }, 100);
       } else {
@@ -1967,10 +1978,24 @@ export default function InteractiveAvatar() {
       }
     }, 1000);
 
+    let pausedAt = 0;
     const tick = () => {
       if (isRaceEnded) {
         animId = requestAnimationFrame(tick);
         return;
+      }
+
+      // START-paused: freeze the race, and on resume shift the lap start
+      // forward so the paused time doesn't count toward the lap
+      if (isPausedRef.current) {
+        if (!pausedAt) pausedAt = Date.now();
+        for (const k in keys) keys[k] = false;
+        animId = requestAnimationFrame(tick);
+        return;
+      }
+      if (pausedAt) {
+        lapStart += Date.now() - pausedAt;
+        pausedAt = 0;
       }
 
       // Check if race has started
