@@ -82,8 +82,9 @@ export default function RPGStats() {
             className="pixel-header"
             style={{
               flex: 1,
-              padding: '6px 4px',
-              fontSize: '0.65rem',
+              minWidth: 0, // let the pixel-font labels shrink on phones
+              padding: '6px 2px',
+              fontSize: 'clamp(0.45rem, 2vw, 0.65rem)',
               background: activeTab === tab.id ? '#9de2c8' : 'transparent',
               color: activeTab === tab.id ? '#152520' : '#c8bedc',
               border: 'none',

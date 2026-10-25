@@ -465,6 +465,14 @@ body {
   gap: 12px;
 }
 
+/* Panels inside the menu are width:100% + padding — count the padding inside
+   the width so they don't spill past the right edge */
+.start-menu-scrollable > * {
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+}
+
 /* ── Mobile Layout Refinements (Clean Rectangular Console on Phones) ── */
 @media (max-width: 768px) {
   .console-layout {
