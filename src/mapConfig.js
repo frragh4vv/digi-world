@@ -6,172 +6,186 @@ const SOLID_TILES = new Set();
 
 // 1. Borders (Top, Bottom, Left, Right)
 for (let c = 0; c < MAP_COLS; c++) {
-  SOLID_TILES.add(`${c},0`);          
-  SOLID_TILES.add(`${c},${MAP_ROWS - 1}`); 
+  SOLID_TILES.add(`${c},0`);          // Top wall
+  SOLID_TILES.add(`${c},${MAP_ROWS - 1}`); // Bottom wall baseboard
 }
 for (let r = 0; r < MAP_ROWS; r++) {
-  SOLID_TILES.add(`0,${r}`);          
-  SOLID_TILES.add(`${MAP_COLS - 1},${r}`); 
+  SOLID_TILES.add(`0,${r}`);          // Left edge wall
+  SOLID_TILES.add(`${MAP_COLS - 1},${r}`); // Right wall
 }
 
-// 2. 🧗 Bouldering Gym Wall (Solid left wall block columns 1, rows 4 to 9)
-for (let r = 4; r <= 9; r++) {
+// 2. Top wall furniture row (tiles 20 to 39: row 1 across the whole room)
+for (let c = 0; c < MAP_COLS; c++) {
+  SOLID_TILES.add(`${c},1`);
+}
+
+// 3. 🧗 Bouldering / Climbing wall along Column 1 (tiles 21, 61..281)
+for (let r = 1; r < MAP_ROWS - 1; r++) {
   SOLID_TILES.add(`1,${r}`);
 }
 
-// 3. 🍔 Raghav's Cyber Diner Counter — made walkable (was a solid block at 7,12)
-
-// 4. 📚 Manga Lounge Obstacles (top-right bookshelf, pedestal, and arcade machine)
-SOLID_TILES.add("13,1"); // Bookshelf (tall — body spans rows 1-2, base hangs to row 3)
-SOLID_TILES.add("13,2"); // Bookshelf (lower half)
-SOLID_TILES.add("16,1"); // 🕹️ Manga Arcade Trivia Cabinet!
-SOLID_TILES.add("15,2"); // 📽️ Slide projector
-
-// Camping / trekking corner + garage spare tyre
-SOLID_TILES.add("2,11");  // Tent
-SOLID_TILES.add("4,12");  // Campfire
-SOLID_TILES.add("5,11");  // Travel suitcase
-SOLID_TILES.add("12,13"); // Spare tyre
-
-// 5. ⚽ Soccer corner — left as open, walkable grass turf (no goal / no collisions).
-//    The soccer match is launched from the Tactical Chalkboard instead.
-
-// 6. Bedroom Spawning Pad (Bed at top-left corner)
-SOLID_TILES.add("1,1");
+// 4. 🛏️ Spawning Bed (cols 1-2, rows 1-3)
 SOLID_TILES.add("2,1");
-SOLID_TILES.add("1,2");
 SOLID_TILES.add("2,2");
 
-// 7. 🖼️ Hall of Fame Photo Frame Board
-SOLID_TILES.add("10,1"); 
+// Explicit tile accessibility rules per user specifications:
+// - Square 41 (col 1, row 2) and square 62 (col 2, row 3) must NOT be blocked
+SOLID_TILES.delete("1,2"); // Square 41 accessible
+SOLID_TILES.delete("2,3"); // Square 62 accessible
 
-// 8. 🚲 Red Bicycle Rack
-SOLID_TILES.add("9,12");
+// 5. 🖥️ Command Deck Desk (center: cols 9-11, row 5)
+// - Square 108 (col 8, row 5) must be ACCESSIBLE
+// - Square 111 (col 11, row 5) must be INACCESSIBLE
+SOLID_TILES.delete("8,5"); // Square 108 accessible
+SOLID_TILES.add("9,5");    // Square 109 solid
+SOLID_TILES.add("10,5");   // Square 110 solid
+SOLID_TILES.add("11,5");   // Square 111 INACCESSIBLE
 
-// 9. Manual solid coordinates for visual props that are not interactable
-SOLID_TILES.add("6,1"); // Stove (left kitchen block)
-SOLID_TILES.add("8,1"); // Fridge (right kitchen block)
-SOLID_TILES.add("4,4"); // Desk (left profile block)
-SOLID_TILES.add("2,6"); // Upper climbing wall hold block
-
-// 10. Interactive NPC Objects (Single cell interaction points)
+// 6. Interactive Objects
 export const INTERACTABLE_OBJECTS = [
   {
     id: "profile",
-    title: "Raghav NPC",
-    desc: "The elite developer and highly lonely yearner candidate.",
+    title: "Raghav (Developer)",
+    desc: "The creator and developer. Chaotic Co-Pilot, builder of this digital overworld.",
     symbol: "🖥️",
     color: "#ff007f",
     cells: [
-      { col: 5, row: 4 }
+      { col: 9, row: 6 },
+      { col: 9, row: 7 }
     ],
-    dialogue: "Welcome to my overworld base! I am Raghav. Walk next to my desk or any styled corner to inspect my items!",
-    inspectPrompt: "INSPECT DEVELOPER"
+    dialogue: "👋 [Raghav]: Welcome to my overworld base! Feel free to explore every corner, play mini-games, or test my weeb lore!",
+    inspectPrompt: "TALK TO RAGHAV"
   },
   {
     id: "bouldering",
-    title: "Bouldering Wall",
-    desc: "A vertical pixelated climbing structure with tiny holds.",
+    title: "Bouldering & Hangboard Wall",
+    desc: "10-foot climbing slab with technical holds and wooden pull-up hangboard for grip conditioning.",
     symbol: "🧗",
     color: "#ff8c00",
     cells: [
-      { col: 2, row: 7 }
+      { col: 1, row: 4 }, { col: 1, row: 5 }, { col: 1, row: 6 }, { col: 1, row: 7 },
+      { col: 2, row: 4 }, { col: 2, row: 5 }, { col: 2, row: 6 }, { col: 2, row: 7 },
+      { col: 3, row: 4 }, { col: 3, row: 5 }, { col: 3, row: 6 }, { col: 3, row: 7 }
     ],
-    dialogue: "🧗 [Bouldering Wall]: A 10-foot climbing slab covered in colorful grip holds. Press E to start the retro QTE climbing game!",
-    inspectPrompt: "CLIMB WALL"
-  },
-  {
-    id: "hangboard",
-    title: "Pull-up Hangboard",
-    desc: "A wooden fingerboard mounted above the wall for bicep pull-ups and finger grip conditioning.",
-    symbol: "💪",
-    color: "#ff8c00",
-    cells: [
-      { col: 3, row: 5 }
-    ],
-    dialogue: "💪 [Hangboard]: A wooden fingerboard. Press E to inspect Raghav's climbing and bicep stats!",
-    inspectPrompt: "INSPECT STRENGTH"
-  },
-  {
-    id: "anime",
-    title: "Ancient Pedestal",
-    desc: "An ornate stone stand glowing with magical energy, holding a manga volume.",
-    symbol: "📚",
-    color: "#8a2be2",
-    cells: [
-      { col: 16, row: 2 }
-    ],
-    dialogue: "📚 [Manga Corner]: Pedestal glowing with magical energy. Prepare to learn about retro weeb lore!",
-    inspectPrompt: "INSPECT TOME"
-  },
-  {
-    id: "computerglowing",
-    title: "Glowing Development PC",
-    desc: "A premium dual-monitor command deck glowing in the dark, showing stock indices and web scraping terminals.",
-    symbol: "🖥️",
-    color: "#8a2be2",
-    cells: [
-      { col: 9, row: 5 }
-    ],
-    dialogue: "🖥️ [Command Deck]: Dual monitors displaying Jujutsu stock crawler codes. Press E to showcase Raghav's actual software projects!",
-    inspectPrompt: "OPEN PC"
-  },
-  {
-    id: "trekking",
-    title: "Travel Diary Table",
-    desc: "A wooden table holding an opened scrapbook detailing Raghav's travel diaries and photographs.",
-    symbol: "📔",
-    color: "#d2b48c",
-    cells: [
-      { col: 3, row: 12 }
-    ],
-    dialogue: "📔 [Travel Diary Table]: Raghav's personal scrapbook detailing high-friction boulder climbs, snowy summits, and global travel journals. Press E to open!",
-    inspectPrompt: "READ DIARY"
+    dialogue: "🧗 [Bouldering & Hangboard]: Technical climbing slab & grip conditioning board. Press E or Action [A] to view stats & climb!",
+    inspectPrompt: "CLIMB & STATS"
   },
   {
     id: "kitchen",
     title: "Cyber Bistro Kitchen",
-    desc: "A warm neon cooking stove and high-tech fridge counter.",
+    desc: "Retro fridge, stainless sink, and sizzling stove cooking delicious street treats.",
     symbol: "🍳",
     color: "#ffc107",
     cells: [
-      { col: 7, row: 1 }
+      { col: 5, row: 2 }, { col: 6, row: 2 }, { col: 7, row: 2 }, { col: 8, row: 2 }, { col: 9, row: 2 },
+      { col: 5, row: 3 }, { col: 6, row: 3 }, { col: 7, row: 3 }, { col: 8, row: 3 }, { col: 9, row: 3 }
     ],
-    dialogue: "🍳 [Cyber Bistro Kitchen]: The grill is sizzling hot! Press E to open the Kitchen Menu and cook delicious treats!",
+    dialogue: "🍳 [Cyber Bistro Kitchen]: The grill is sizzling hot! Press E or Action [A] to cook food and restore stamina!",
     inspectPrompt: "COOK FOOD"
   },
   {
-    id: "tacticboard",
-    title: "Football Chalkboard",
-    desc: "A chalkboard celebrating FC Barcelona and Messi, with the line-up ready to kick off a match.",
-    symbol: "📋",
-    color: "#00ffff",
+    id: "bulletin",
+    title: "Hall of Fame Portraits",
+    desc: "Four framed explorer portraits hanging on the wall celebrating visitors and guestbook reviews.",
+    symbol: "🖼️",
+    color: "#ffd700",
     cells: [
-      { col: 15, row: 10 }
+      { col: 10, row: 1 }, { col: 11, row: 1 }, { col: 12, row: 1 },
+      { col: 10, row: 2 }, { col: 11, row: 2 }, { col: 12, row: 2 },
+      { col: 10, row: 3 }, { col: 11, row: 3 }, { col: 12, row: 3 }
     ],
-    dialogue: "📋 [Football Chalkboard]: FC Barcelona tactics, Messi tributes, and a ⚽ Play Match button. Press E to open!",
-    inspectPrompt: "OPEN CHALKBOARD"
+    dialogue: "🖼️ [Hall of Fame]: Gilded portrait gallery of overworld explorers. Press E to leave your review in the Guestbook!",
+    inspectPrompt: "VIEW GUESTBOOK"
   },
   {
-    id: "toolbox",
-    title: "Red Rolling Toolbox",
-    desc: "A sleek red rolling cabinet containing Raghav's software development stack.",
-    symbol: "🧰",
+    id: "anime",
+    title: "Manga & Anime Lounge",
+    desc: "Cozy shelves packed with manga volumes, retro CRT monitor, and plush beanbags.",
+    symbol: "📚",
+    color: "#8a2be2",
+    cells: [
+      { col: 13, row: 2 }, { col: 14, row: 2 }, { col: 15, row: 2 }, { col: 16, row: 2 },
+      { col: 13, row: 3 }, { col: 14, row: 3 }, { col: 15, row: 3 }, { col: 16, row: 3 },
+      { col: 13, row: 4 }, { col: 14, row: 4 }, { col: 15, row: 4 }, { col: 16, row: 4 },
+      { col: 14, row: 5 }, { col: 15, row: 5 }
+    ],
+    dialogue: "📚 [Manga Lounge]: Raghav's all-time favorites, current watchlist, and retro anime lore. Press E or Action [A] to enter!",
+    inspectPrompt: "OPEN LOUNGE"
+  },
+  {
+    id: "computerglowing",
+    title: "Command Deck PC",
+    desc: "Triple-monitor development command deck displaying live code, terminals, and charts.",
+    symbol: "💻",
+    color: "#00ffff",
+    cells: [
+      { col: 7, row: 4 }, { col: 8, row: 4 }, { col: 9, row: 4 }, { col: 10, row: 4 }, { col: 11, row: 4 },
+      { col: 7, row: 5 }, { col: 8, row: 5 }, { col: 9, row: 5 }, { col: 10, row: 5 }, { col: 11, row: 5 },
+      { col: 7, row: 6 }, { col: 8, row: 6 }, { col: 9, row: 6 }, { col: 10, row: 6 }, { col: 11, row: 6 },
+      { col: 8, row: 7 }, { col: 9, row: 7 }, { col: 10, row: 7 }
+    ],
+    dialogue: "💻 [Command Deck]: Triple monitors running Vite, React, and Python crawlers. Press E to inspect developer project files!",
+    inspectPrompt: "OPEN PC"
+  },
+  {
+    id: "trekking",
+    title: "Trek & Travel Campground",
+    desc: "Cozy dome tent, campfire, sleeping bags, and travel scrapbook detailing alpine expeditions.",
+    symbol: "⛺",
+    color: "#2e7d32",
+    cells: [
+      { col: 1, row: 8 }, { col: 2, row: 8 }, { col: 3, row: 8 }, { col: 4, row: 8 }, { col: 5, row: 8 },
+      { col: 1, row: 9 }, { col: 2, row: 9 }, { col: 3, row: 9 }, { col: 4, row: 9 }, { col: 5, row: 9 },
+      { col: 1, row: 10 }, { col: 2, row: 10 }, { col: 3, row: 10 }, { col: 4, row: 10 }, { col: 5, row: 10 },
+      { col: 1, row: 11 }, { col: 2, row: 11 }, { col: 3, row: 11 }, { col: 4, row: 11 }, { col: 5, row: 11 },
+      { col: 2, row: 12 }, { col: 3, row: 12 }, { col: 4, row: 12 }
+    ],
+    dialogue: "⛺ [Trek Campground]: Raghav's travel scrapbook detailing Corsica GR20, Kyoto temple trails, and Hampi boulders. Press E to open!",
+    inspectPrompt: "READ DIARY"
+  },
+  {
+    id: "bike",
+    title: "Red Motorcycle & Bike Garage",
+    desc: "Sleek red cafe-racer motorcycle, rolling tool cabinet, and spare tyres.",
+    symbol: "🏍️",
     color: "#e53935",
     cells: [
-      { col: 11, row: 13 }
+      { col: 8, row: 10 }, { col: 9, row: 10 }, { col: 10, row: 10 }, { col: 11, row: 10 },
+      { col: 7, row: 11 }, { col: 8, row: 11 }, { col: 9, row: 11 }, { col: 10, row: 11 }, { col: 11, row: 11 },
+      { col: 8, row: 12 }, { col: 9, row: 12 }, { col: 10, row: 12 }, { col: 11, row: 12 }
     ],
-    dialogue: "🧰 [Tech Toolbox]: A professional rolling tool cabinet. Press E to inspect Raghav's coding tech stack!",
-    inspectPrompt: "OPEN TOOLBOX"
+    dialogue: "🏍️ [Garage]: Red motorcycle tuned and ready! Press E or Action [A] to mount the vehicle and start the lap time trial!",
+    inspectPrompt: "START TIME TRIAL"
+  },
+  {
+    id: "tacticboard",
+    title: "Soccer Stadium Pitch",
+    desc: "Regulation turf pitch, tactical board, and full goal net celebrating FC Barcelona and Messi.",
+    symbol: "⚽",
+    color: "#00e676",
+    cells: [
+      { col: 14, row: 9 }, { col: 15, row: 9 }, { col: 16, row: 9 }, { col: 17, row: 9 },
+      { col: 14, row: 10 }, { col: 15, row: 10 }, { col: 16, row: 10 }, { col: 17, row: 10 },
+      { col: 14, row: 11 }, { col: 15, row: 11 }, { col: 16, row: 11 }, { col: 17, row: 11 },
+      { col: 14, row: 12 }, { col: 15, row: 12 }, { col: 16, row: 12 }, { col: 17, row: 12 }
+    ],
+    dialogue: "⚽ [Soccer Pitch]: The turf is freshly cut! Press E or Action [A] to start the 1v1 Penalty Shootout Match!",
+    inspectPrompt: "PLAY MATCH"
+  },
+  {
+    id: "bed",
+    title: "Cozy Spawning Bed",
+    desc: "Warm honey-wood bed with gold diamond quilt. Fully restores energy and social battery.",
+    symbol: "🛏️",
+    color: "#fbc02d",
+    cells: [
+      { col: 1, row: 4 }, { col: 2, row: 4 },
+      { col: 3, row: 1 }, { col: 3, row: 2 }, { col: 3, row: 3 }, { col: 3, row: 4 }
+    ],
+    dialogue: "🛏️ [Spawning Bed]: Cozy quilt bed. Restores 100% Social Battery and resets your spawn point.",
+    inspectPrompt: "REST"
   }
 ];
-
-// Add interactable object cells into solid cells set
-INTERACTABLE_OBJECTS.forEach(obj => {
-  obj.cells.forEach(cell => {
-    SOLID_TILES.add(`${cell.col},${cell.row}`);
-  });
-});
 
 // Helper check to see if a cell is solid
 export function isTileSolid(col, row) {
@@ -181,113 +195,70 @@ export function isTileSolid(col, row) {
 
 // Furniture dialogue helper for collision hits
 export function getFurnitureDialogue(col, row) {
-  if (col === 1 && row === 1 || col === 2 && row === 1 || col === 1 && row === 2 || col === 2 && row === 2) {
-    return "🛏️ [Spawning Pad]: Cozy red velvet bed. Restores 100% Social Battery.";
+  if (col >= 1 && col <= 2 && row >= 1 && row <= 3) {
+    return "🛏️ [Spawning Bed]: Cozy gold diamond quilt bed. Restores 100% Social Battery.";
   }
-  if (col === 1 && row >= 4 && row <= 9) {
-    return "🧗 [Bouldering Wall]: 10-foot climbing wall covered in tiny colorful holds. Finger grip required!";
+  if (col === 0 && row >= 1 && row <= 13) {
+    return "🧗 [Bouldering Wall]: 10-foot climbing slab covered in colorful grip holds. Finger strength required!";
   }
-  if (col === 13 && row === 1) {
-    return "📚 [Manga Shelf]: Packed with volumes of Hunter-X-Hunter and ancient game developer magazines.";
+  if (col >= 6 && col <= 8 && row === 1) {
+    return "🍳 [Bistro Kitchen]: Multi-burner cooking stove, sink, and retro fridge. Press E to cook street eats!";
   }
-  if (col === 16 && row === 1) {
-    return "🕹️ [Manga Trivia Arcade]: A glowing retro arcade cabinet! Stand in front of it and press E to test your Manga Lore.";
+  if (col >= 13 && col <= 17 && row >= 1 && row <= 4) {
+    return "📚 [Manga Lounge]: Cozy anime books, retro CRT, and soft beanbags. Press E to test your trivia lore!";
   }
-  if (col === 10 && row === 1) {
-    return "🖼️ [Gallery of Explorers]: A gilded golden photo frame hanging on the wall. Walk up and press E to view the retro visitor reviews!";
+  if (col >= 8 && col <= 10 && row === 5) {
+    return "💻 [Command Deck]: Triple-monitor terminal running code. Talk to Raghav or press E to inspect projects!";
   }
-  if (col === 9 && row === 12) {
-    return "🚲 [Bicycle Rack]: Raghav\'s red pixel cruiser. Stand next to it and press E to mount the bike and double your speed!";
+  if (col >= 1 && col <= 5 && row >= 8 && row <= 13) {
+    return "⛺ [Trek Campground]: Alpine tent, campfire, and travel scrapbook detailing mountain expeditions.";
   }
-  if (col === 3 && row === 12) {
-    return "📔 [Travel Diary Table]: Raghav\'s personal scrapbook detailing high-friction boulder climbs, GR20 alpine trekking, and travel photography. Press E to open the scrapbook!";
+  if (col >= 8 && col <= 12 && row >= 10 && row <= 12) {
+    return "🏍️ [Garage]: Red motorcycle and rolling tool chest. Press E to start the lap trial or inspect tech stack!";
   }
-  if ((col === 6 || col === 7 || col === 8) && row === 1) {
-    return "🍳 [Bistro Kitchen]: Multi-burner cooking stoves and high-tech refrigeration units. Walk up and press E to cook delicious street eats!";
-  }
-  if (col === 7 && row === 12) {
-    return "🍽️ [Bistro Dining Table]: A wood diner counter in the Cyber Diner bistro. Restores tranquility and serves hot street eats!";
+  if (col >= 14 && col <= 18 && row >= 8 && row <= 13) {
+    return "⚽ [Soccer Pitch]: Fresh grass turf and goal net. Press E to play a 1v1 penalty match!";
   }
   return null;
 }
 
-// Generate the full grid tilemap representation (pathways, grass, decorative elements)
-export function getTileType(col, row) {
-  if (SOLID_TILES.has(`${col},${row}`)) {
-    const match = INTERACTABLE_OBJECTS.find(obj => 
-      obj.cells.some(cell => cell.col === col && cell.row === row)
-    );
-    if (match) return `obstacle-${match.id}`;
-    
-    // Check specific furniture types
-    if (col === 1 && row === 1 || col === 2 && row === 1 || col === 1 && row === 2 || col === 2 && row === 2) return "bed";
-    if (col === 1 && row >= 4 && row <= 9) return "bouldering-wall";
-    if (col === 13 && (row === 1 || row === 2)) return "bookshelf";
-
-    // Camping / trekking corner props (bottom-left forest)
-    if (col === 2 && row === 11) return "tent";
-    if (col === 4 && row === 12) return "campfire";
-    if (col === 5 && row === 11) return "suitcase";
-    // Garage spare tyre + manga-lounge slide projector
-    if (col === 12 && row === 13) return "tyre";
-    if (col === 15 && row === 2) return "projector";
-
-    if (col === 7 && row === 12) return "diner-table";
-
-    if (col === 10 && row === 1) return "bulletin";
-    if (col === 9 && row === 12) return "bike";
-
-    // Borders
-    if (row === 0) return "wall-top";
-    if (row === MAP_ROWS - 1) return "wall-bottom";
-    if (col === 0 || col === MAP_COLS - 1) return "wall-side";
-    return "solid-prop";
+// Floor zone getter
+export function getFloorType(col, row) {
+  if (col >= 1 && col <= 5 && row >= 8 && row <= 13) {
+    return "forest-floor"; // Camping
   }
-  
-  return getFloorType(col, row);
+  if (col >= 8 && col <= 12 && row >= 10 && row <= 13) {
+    return "garage-floor"; // Concrete garage
+  }
+  if (col >= 14 && col <= 18 && row >= 8 && row <= 13) {
+    return "soccer-turf";  // Green soccer turf
+  }
+  if (col >= 13 && col <= 18 && row >= 1 && row <= 4) {
+    return "manga-lounge"; // Tatami / rug lounge
+  }
+  if (col >= 7 && col <= 11 && row >= 5 && row <= 7) {
+    return "rug";          // Persian rug under desk
+  }
+  return "wood";           // Base wood plank floor
 }
 
-// Returns the floor zone a cell belongs to, ignoring whether it's solid.
-// Used so that prop / obstacle tiles can paint the SAME floor as their
-// surroundings instead of a dark box, letting the art sit on the floor.
-export function getFloorType(col, row) {
-  // New Floor Mats: Climbing Crash Pad (cols 1-3, rows 4-9) & Garage Mat (cols 10-12, rows 12-13)
-  if (col >= 1 && col <= 3 && row >= 4 && row <= 9) {
-    return "climbing-pad";
-  }
-  if (col >= 10 && col <= 12 && row >= 12 && row <= 13) {
-    return "garage-floor";
-  }
+export function getTileType(col, row) {
+  // 1. Boundary Walls
+  if (row === 0) return "wall-top";
+  if (row === MAP_ROWS - 1) return "wall-bottom";
+  if (col === 0 || col === MAP_COLS - 1) return "wall-side";
 
-  // 1. 🌲 Bottom-left Forest Corner (cols 1-5, rows 10-13)
-  if (col >= 1 && col <= 5 && row >= 10 && row <= 13) {
-    return "forest-floor";
-  }
+  // 2. Fixed Major Furniture Props
+  if ((col === 1 || col === 2) && (row === 1 || row === 2)) return "bed";
+  if (col === 1 && row >= 3 && row <= 9) return "bouldering-wall";
+  if (col === 17 && row === 1) return "bookshelf";
+  if (col === 11 && row === 1) return "bulletin";
+  if (col === 6 && row === 1) return "stove";
+  if (col === 7 && row === 1) return "kitchen-counter";
+  if (col === 8 && row === 1) return "fridge";
+  if (col === 18 && (row === 10 || row === 11 || row === 12)) return "goalpost";
 
-  // 2. ⚽ Soccer Field Zone (Bottom-right turf: expanded to cols 14-18, rows 9-13)
-  if (col >= 14 && col <= 18 && row >= 9 && row <= 13) {
-    return "soccer-turf";
-  }
-
-  // 3. 📚 Manga Lounge floor (Top-right Tatami: cols 15-18, rows 1-3)
-  if (col >= 15 && col <= 18 && row >= 1 && row <= 3) {
-    return "manga-lounge";
-  }
-
-  // 4. 🍔 "Raghav's Diner" cyber bistro (bottom-left checkered floor: cols 6-9, rows 11-13)
-  if (col >= 6 && col <= 9 && row >= 11 && row <= 13) {
-    return "restaurant-floor";
-  }
-
-  // 5. Cozy Bedroom central rug carpet
-  if (col >= 5 && col <= 13 && row >= 5 && row <= 9) {
-    return "rug";
-  }
-
-  // Gravel pathway
-  if (row === 10 || col === 11) {
-    return "path";
-  }
-
-  return "grass";
+  // 3. Zone Floors
+  if (isTileSolid(col, row)) return "solid";
+  return getFloorType(col, row);
 }

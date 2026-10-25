@@ -188,8 +188,11 @@ function GameConsole() {
   } = useGameState();
 
   // Keyboard Event Dispatcher for Console D-Pad and Buttons (Mobile Touch Support!)
-  const simulateKeyEvent = (key, type) => {
-    const code = key === 'e' ? 'KeyE' : key === 'b' ? 'KeyB' : key === 'Escape' ? 'Escape' : '';
+  const simulateKeyEvent = (key, type, e) => {
+    if (e && e.cancelable && type === 'keydown') {
+      e.preventDefault();
+    }
+    const code = key === 'e' ? 'KeyE' : key === 'b' ? 'KeyB' : key === 'Escape' ? 'Escape' : key;
     const event = new KeyboardEvent(type, {
       key: key,
       code: code,
@@ -201,14 +204,27 @@ function GameConsole() {
 
   const selectedItem = inventoryItems.find(item => item.id === activeItemId);
 
+  const [showStartMenu, setShowStartMenu] = useState(false);
+  const [startTab, setStartTab] = useState('stats'); // 'stats' | 'guide'
+
+  useEffect(() => {
+    const handleGlobalKey = (e) => {
+      const tag = e.target && e.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (e.key === 'p' || e.key === 'P') {
+        setShowStartMenu(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKey);
+    return () => window.removeEventListener('keydown', handleGlobalKey);
+  }, []);
+
   return (
     <div className="console-layout">
-      {/* Starry Space Parallax Grid Background (Handled in CSS) */}
-      
       {/* Handheld Console Screen Chassis */}
-      <div className="handheld-container" style={{ flex: 1 }}>
+      <div className="handheld-container">
         
-        <header style={{ textAlign: 'center', marginBottom: '18px', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+        <header style={{ textAlign: 'center', marginBottom: '14px', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
           {/* Reference-style status title bar */}
           <div className="title-bar pixel-header">
             <span className="title-bar-dot" />
@@ -216,8 +232,8 @@ function GameConsole() {
               RAGHAV'S DIGITAL WORLD <span className="title-bar-sep">//</span> <span className="title-bar-online">ONLINE</span> <span className="title-bar-sep">//</span> V2.0
             </span>
           </div>
-          <p className="pixel-text" style={{ fontSize: 'clamp(1rem, 3.4vw, 1.25rem)', color: '#9aa0b0', margin: 0, lineHeight: 1.4 }}>
-            Walk around my bedroom overworld! <br className="hide-desktop" />[WASD / Arrows to walk · Click tiles · E to inspect]
+          <p className="pixel-text" style={{ fontSize: 'clamp(0.95rem, 3.2vw, 1.2rem)', color: '#9aa0b0', margin: 0, lineHeight: 1.4 }}>
+            Walk around my bedroom overworld! <br className="hide-desktop" />[WASD / Arrows to walk · E to inspect · START for menu]
           </p>
         </header>
 
@@ -271,32 +287,50 @@ function GameConsole() {
               </button>
             </div>
 
-            {/* Handheld brand label */}
-            <div className="pixel-header" style={{ fontSize: '0.8rem', color: '#555', letterSpacing: '2px', textAlign: 'center' }}>
-              ANTIGRAVITY<br/>
-              <span style={{ fontSize: '0.6rem', color: '#333' }}>8-BIT EDITION</span>
+            {/* Center: System SELECT & START Pill Buttons + Retro Brand Label */}
+            <div className="console-center-cluster">
+              <div className="pixel-header console-brand-badge">
+                ANTIGRAVITY<br/>
+                <span style={{ fontSize: '0.58rem', color: '#8d7ba3', letterSpacing: '1px' }}>RETRO COLOR</span>
+              </div>
+
+              <div className="select-start-cluster">
+                <div className="system-pill-btn-wrap">
+                  <button 
+                    onClick={() => setShowStartMenu(prev => !prev)}
+                    className="system-pill-btn"
+                    title="START [Pause Menu / Stats]"
+                  />
+                  <span className="system-pill-label">START</span>
+                </div>
+              </div>
             </div>
 
             {/* Action Buttons A & B */}
-            <div className="action-buttons">
-              <button 
-                onMouseDown={() => simulateKeyEvent('e', 'keydown')}
-                onMouseUp={() => simulateKeyEvent('e', 'keyup')}
-                onTouchStart={() => simulateKeyEvent('e', 'keydown')}
-                onTouchEnd={() => simulateKeyEvent('e', 'keyup')}
-                className="action-btn btn-b"
-              >
-                A
-              </button>
-              <button
-                onMouseDown={() => simulateKeyEvent('b', 'keydown')}
-                onMouseUp={() => simulateKeyEvent('b', 'keyup')}
-                onTouchStart={() => simulateKeyEvent('b', 'keydown')}
-                onTouchEnd={() => simulateKeyEvent('b', 'keyup')}
-                className="action-btn btn-a"
-              >
-                B
-              </button>
+            <div className="action-buttons-wrap">
+              <div className="action-buttons">
+                <button 
+                  onMouseDown={(e) => simulateKeyEvent('e', 'keydown', e)}
+                  onMouseUp={(e) => simulateKeyEvent('e', 'keyup', e)}
+                  onTouchStart={(e) => simulateKeyEvent('e', 'keydown', e)}
+                  onTouchEnd={(e) => simulateKeyEvent('e', 'keyup', e)}
+                  className="action-btn btn-a"
+                  title="Action / Inspect [A]"
+                >
+                  A
+                </button>
+                <button
+                  onMouseDown={(e) => simulateKeyEvent('b', 'keydown', e)}
+                  onMouseUp={(e) => simulateKeyEvent('b', 'keyup', e)}
+                  onTouchStart={(e) => simulateKeyEvent('b', 'keydown', e)}
+                  onTouchEnd={(e) => simulateKeyEvent('b', 'keyup', e)}
+                  className="action-btn btn-b"
+                  title="Back / Cancel [B]"
+                >
+                  B
+                </button>
+              </div>
+              <span className="sparkle-icon">✦</span>
             </div>
           </div>
 
@@ -310,26 +344,95 @@ function GameConsole() {
         </div>
       </div>
 
-      {/* Realtime Stats HUD Sidebar */}
-      <aside className="hud-sidebar">
-        <RPGStats />
-        
-        {/* Helper quick tips panel */}
-        <div className="rpg-box" style={{ width: '100%' }}>
-          <h2 className="pixel-header" style={{ fontSize: '1rem', borderBottom: '2px solid var(--rpg-text)', paddingBottom: '8px', marginBottom: '10px' }}>
-            📜 Guide Book
-          </h2>
-          <p className="pixel-text" style={{ fontSize: '1.3rem', margin: '4px 0', lineHeight: '1.4' }}>
-            - Open the Football Chalkboard (bottom-right) to read Raghav's Barça/Messi lore & play a 1v1 match.
-          </p>
-          <p className="pixel-text" style={{ fontSize: '1.3rem', margin: '4px 0', lineHeight: '1.4' }}>
-            - Grab energy drinks / pizza for active buffs and stamina restoration.
-          </p>
-          <p className="pixel-text" style={{ fontSize: '1.3rem', margin: '4px 0', lineHeight: '1.4', color: 'var(--rpg-highlight)' }}>
-            - Cheat Code: Type <strong style={{ color: 'var(--rpg-accent)' }}>wwssadadba</strong> in the overworld!
-          </p>
-        </div>
-      </aside>
+      {/* START Button Pause Menu Overlay */}
+      <AnimatePresence>
+        {showStartMenu && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="start-menu-backdrop"
+            onClick={() => setShowStartMenu(false)}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 15 }}
+              className="start-menu-modal rpg-box"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="start-menu-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '1.2rem' }}>🎮</span>
+                  <h2 className="pixel-header" style={{ fontSize: '0.95rem', margin: 0, color: 'var(--rpg-highlight)' }}>
+                    PAUSE MENU // START
+                  </h2>
+                </div>
+                <button 
+                  onClick={() => setShowStartMenu(false)}
+                  className="pixel-header"
+                  style={{
+                    background: '#c53030',
+                    color: '#fff',
+                    border: '2px solid #000',
+                    padding: '5px 12px',
+                    fontSize: '0.72rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  ✕ RESUME [B]
+                </button>
+              </div>
+
+              {/* Menu Tabs */}
+              <div className="start-menu-nav">
+                <button
+                  onClick={() => setStartTab('stats')}
+                  className={`pixel-header start-tab-btn ${startTab === 'stats' ? 'active' : ''}`}
+                >
+                  📊 EXPLORER VITALS & LOG
+                </button>
+                <button
+                  onClick={() => setStartTab('guide')}
+                  className={`pixel-header start-tab-btn ${startTab === 'guide' ? 'active' : ''}`}
+                >
+                  📜 GUIDE BOOK & CHEATS
+                </button>
+              </div>
+
+              {/* Tab Contents */}
+              <div className="start-menu-scrollable">
+                {startTab === 'stats' ? (
+                  <RPGStats />
+                ) : (
+                  <div className="rpg-box" style={{ background: '#0a0a14', padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    <h3 className="pixel-header" style={{ fontSize: '0.85rem', color: '#ffd166', margin: '0 0 8px 0', borderBottom: '2px dashed #4b415e', paddingBottom: '8px' }}>
+                      📜 OVERWORLD EXPLORATION FIELD GUIDE
+                    </h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <p className="pixel-text" style={{ fontSize: '1.25rem', margin: 0, lineHeight: 1.4, color: '#e0e0e8' }}>
+                        ⚽ <strong>Football Pitch & Tactics:</strong> Head to the bottom-right chalkboard to inspect Raghav's tactical analysis or play a fast-paced 1v1 soccer duel.
+                      </p>
+                      <p className="pixel-text" style={{ fontSize: '1.25rem', margin: 0, lineHeight: 1.4, color: '#e0e0e8' }}>
+                        🧗 <strong>Bouldering Wall:</strong> Head along the left climbing wall to test finger grip on the hangboard and log high-friction sends.
+                      </p>
+                      <p className="pixel-text" style={{ fontSize: '1.25rem', margin: 0, lineHeight: 1.4, color: '#e0e0e8' }}>
+                        🍳 <strong>Cyber Bistro Cafe:</strong> Cook snacks (DBT popcorn, shawarma, coffee) at the stove to gain speed buffs and stamina recovery.
+                      </p>
+                      <p className="pixel-text" style={{ fontSize: '1.25rem', margin: 0, lineHeight: 1.4, color: '#e0e0e8' }}>
+                        💻 <strong>Developer Terminal:</strong> Walk right to Raghav's desk to inspect live coding scrapers, portfolios, and blueprints.
+                      </p>
+                      <p className="pixel-text" style={{ fontSize: '1.25rem', margin: 0, lineHeight: 1.4, color: 'var(--rpg-highlight)' }}>
+                        🎮 <strong>Secret Konami Code:</strong> Type <code style={{ color: '#ffd166', background: '#000', padding: '2px 6px', border: '1px solid #333' }}>wwssadadba</code> anywhere in the room!
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Details Inspection Modal Overlay */}
       <AnimatePresence>

@@ -16,14 +16,13 @@ import {
 // Walkable standing tiles next to each activity, the way Raghav should face once
 // there, and what he "thinks"/does. He wanders between these, acting out his life.
 const RAGHAV_STATIONS = [
-  { col: 9,  row: 6,  dir: 'up',   thought: '⌨️ shipping code…' },
-  { col: 3,  row: 6,  dir: 'left', thought: '🧗 sending a V5!' },
-  { col: 7,  row: 2,  dir: 'up',   thought: '🍳 cooking shawarma' },
-  { col: 16, row: 11, dir: 'down', thought: '⚽ top-corner finish!' },
-  { col: 10, row: 12, dir: 'down', thought: '🚲 going for a ride' },
-  { col: 17, row: 3,  dir: 'up',   thought: '📚 re-reading HxH' },
-  { col: 3,  row: 11, dir: 'down', thought: '🗺️ planning a trek' },
-  { col: 2,  row: 3,  dir: 'up',   thought: '😴 power nap…' },
+  { col: 9,  row: 6,  dir: 'up',    thought: '⌨️ shipping code…' },
+  { col: 2,  row: 6,  dir: 'left',  thought: '🧗 sending a V5!' },
+  { col: 7,  row: 2,  dir: 'up',    thought: '🍳 cooking street eats' },
+  { col: 15, row: 11, dir: 'right', thought: '⚽ top-corner finish!' },
+  { col: 9,  row: 12, dir: 'up',    thought: '🏍️ tuning the motorcycle' },
+  { col: 14, row: 2,  dir: 'up',    thought: '📚 re-reading HxH' },
+  { col: 4,  row: 10, dir: 'down',  thought: '🗺️ planning a trek' },
 ];
 
 // Breadth-first path over walkable tiles. Returns the list of step cells from
@@ -72,28 +71,54 @@ const KITCHEN_MENU = [
   { id: 'coffee', type: 'coffee', title: 'Hot Coffee Mug', desc: 'Espresso shot. Grants 15s CAFFEINE SPEED surge!', effect: '+25 Stamina & Speedup' }
 ];
 
-// Character-creation option rows (navigated with the D-pad, row by row)
-const GENDERS = ['male', 'female'];
-const FACE_STYLES = [
+// Character-creation option rows (Option A: Layered Procedural Customizer)
+export const HAIR_STYLES = [
+  { id: 'spiky', label: '⚡ Spiky' },
+  { id: 'afro', label: '☁️ Afro' },
+  { id: 'messy', label: '🌊 Curtains' },
+  { id: 'cap', label: '🧢 Cap/Beanie' },
+  { id: 'long', label: '✨ Long' }
+];
+
+export const OUTFIT_TYPES = [
+  { id: 'hoodie', label: '🧥 Hoodie' },
+  { id: 'tshirt', label: '👕 Graphic Tee' },
+  { id: 'jersey', label: '⚽ Sport Jersey' },
+  { id: 'jacket', label: '🕶️ Cyber Jacket' }
+];
+
+export const PANTS_TYPES = [
+  { id: 'jeans', label: '👖 Denim Jeans' },
+  { id: 'cargo', label: '🪖 Cargo Pants' },
+  { id: 'trackpants', label: '🏃 Joggers' },
+  { id: 'shorts', label: '🩳 Shorts' }
+];
+
+export const FACE_STYLES = [
   { id: 'classic', label: '😊 Classic' },
   { id: 'glasses', label: '👓 Specs' },
   { id: 'visor', label: '🕶️ Visor' },
   { id: 'cute', label: '🌸 Blush' }
 ];
-const SKIN_COLORS = ['#ffdbac', '#ffb6c1', '#e0ac69', '#c68642', '#8d5524'];
-const HAIR_COLORS = ['#8a2be2', '#000000', '#ffffff', '#e53935', '#ff8c00', '#ffd700', '#43a047', '#1e88e5', '#ff69b4'];
-const SHIRT_COLORS = ['#1e88e5', '#e53935', '#43a047', '#ffd700', '#8a2be2', '#00e5ff', '#ff8c00', '#ffffff', '#222222'];
-const PANTS_COLORS = ['#ffd700', '#1e88e5', '#777777', '#8b4513', '#222222', '#e53935'];
-const STAT_KEYS = ['stamina', 'curiosity', 'reflexes', 'intellect'];
-const STAT_INFO = {
+
+// Curated high-contrast aesthetic colors (4-5 distinct tones)
+export const SKIN_COLORS = ['#ffd8b8', '#e8a87c', '#a56336', '#5c3826'];
+export const HAIR_COLORS = ['#181820', '#f4c542', '#7c3f1d', '#00f0ff', '#ff4d8d'];
+export const SHIRT_COLORS = ['#e63946', '#06d6a0', '#2a6fdb', '#22223b', '#fca311'];
+export const PANTS_COLORS = ['#2b4162', '#6c584c', '#1a1a24', '#dcd6cd', '#4f5d2f'];
+
+export const STAT_KEYS = ['stamina', 'curiosity', 'reflexes', 'intellect'];
+export const STAT_INFO = {
   stamina:   { icon: '💪', label: 'Stamina',   perk: 'bigger energy tank, slower drain' },
-  curiosity: { icon: '🔍', label: 'Curiosity', perk: 'inspect things from further away' },
+  curiosity: { icon: '🔍', label: 'Curiosity', perk: 'inspect things from 1 tile away' },
   reflexes:  { icon: '⚡', label: 'Reflexes',  perk: 'walk & bike faster' },
   intellect: { icon: '🧠', label: 'Intellect', perk: 'trivia hints, faster cooking' },
 };
-// Creation-screen row map for the D-pad: 0 gender · 1 face · 2 skin · 3 hair
-// · 4 shirt · 5 pants · 6-9 stat rows (◀ takes / ▶ gives a point) · 10 START
-const CREATION_ROW_SIZES = [2, 4, 5, 9, 9, 6, 1, 1, 1, 1, 1];
+
+// D-pad row map: 
+// 0: hairStyle (5) · 1: outfitType (4) · 2: pantsType (4) · 3: faceStyle (4) · 4: skin (4) 
+// · 5: hairCol (5) · 6: shirtCol (5) · 7: pantsCol (5) · 8-11: stats · 12: START
+const CREATION_ROW_SIZES = [5, 4, 4, 4, 4, 5, 5, 5, 1, 1, 1, 1, 1];
 
 // Background colour for each floor zone, so prop/obstacle tiles can paint the
 // SAME floor as their surroundings instead of a dark box. Keep in sync with the
@@ -117,16 +142,27 @@ const floorBgFor = (type, col, row) => {
 };
 
 // 🔧 DEV-ONLY TILE NUMBERS ───────────────────────────────────────────────────
-// Overlays a tiny index number on every tile so issues can be reported by number
-// ("tile 152 looks wrong"). idx → grid position: col = idx % MAP_COLS, row = Math.floor(idx / MAP_COLS).
-// TO REMOVE BEFORE GOING LIVE: set this to false (or delete this const + the
-// `{SHOW_TILE_NUMBERS && (...)}` block in the tile render below).
 const SHOW_TILE_NUMBERS = false;
 
 // Web Audio Synth Sound Engine
-const playSound = (type) => {
+let globalAudioEnabled = false;
+let audioCtxInstance = null;
+const getAudioCtx = () => {
+  if (!audioCtxInstance) {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (AudioCtx) audioCtxInstance = new AudioCtx();
+  }
+  if (audioCtxInstance && audioCtxInstance.state === 'suspended') {
+    audioCtxInstance.resume().catch(() => {});
+  }
+  return audioCtxInstance;
+};
+
+const playSound = (type, force = false) => {
+  if (!globalAudioEnabled && !force) return;
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = getAudioCtx();
+    if (!ctx) return;
     
     if (type === 'thump') {
       const osc = ctx.createOscillator();
@@ -240,14 +276,29 @@ const playSound = (type) => {
   }
 };
 
-// Helper to convert RGB integer values to Hex colors for customizer
-const rgbToHex = (r, g, b) => {
-  const toHex = (c) => {
-    const hex = Math.max(0, Math.min(255, c)).toString(16);
-    return hex.length === 1 ? '0' + hex : hex;
-  };
-  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-};
+// Exact standing targets for interactables (only triggers when standing directly on target)
+const ACTIVITY_TARGETS = [
+  { id: 'bouldering', target: { col: 2, row: 5 }, title: 'Bouldering & Hangboard Wall', dialogue: "🧗 [Bouldering & Hangboard]: Technical climbing slab & grip conditioning board. Press E or Action [A] to view stats & climb!", inspectPrompt: 'CLIMB & STATS', symbol: '🧗' },
+  { id: 'kitchen', target: { col: 7, row: 2 }, title: 'Cyber Bistro Kitchen', dialogue: "🍳 [Cyber Bistro Kitchen]: The grill is sizzling hot! Press E or Action [A] to cook food and restore stamina!", inspectPrompt: 'COOK FOOD', symbol: '🍳' },
+  { id: 'bulletin', target: { col: 11, row: 2 }, title: 'Hall of Fame Portraits', dialogue: "🖼️ [Hall of Fame]: Gilded portrait gallery of overworld explorers. Press E to view the Explorer Log & Guestbook!", inspectPrompt: 'EXPLORER LOG', symbol: '🖼️' },
+  { id: 'anime', target: { col: 14, row: 2 }, title: 'Manga & Anime Lounge', dialogue: "📚 [Manga Lounge]: Volumes of Hunter x Hunter & anime lore. Press E or Action [A] to test your trivia lore!", inspectPrompt: 'MANGA TRIVIA', symbol: '📚' },
+  { id: 'computerglowing', target: { col: 8, row: 5 }, title: 'Command Deck PC', dialogue: "💻 [Command Deck]: Triple monitors running code. Press E to inspect developer project files!", inspectPrompt: 'OPEN PC', symbol: '💻' },
+  { id: 'trekking', target: { col: 3, row: 9 }, title: 'Trek & Travel Campground', dialogue: "⛺ [Trek Campground]: Raghav's travel scrapbook detailing Corsica GR20 and Hampi boulders. Press E to open!", inspectPrompt: 'READ DIARY', symbol: '⛺' },
+  { id: 'bike', target: { col: 9, row: 10 }, title: 'Red Motorcycle & Bike Garage', dialogue: "🏍️ [Garage]: Red motorcycle tuned and ready! Press E or Action [A] to mount the vehicle and start the lap time trial!", inspectPrompt: 'START TIME TRIAL', symbol: '🏍️' },
+  { id: 'tacticboard', target: { col: 16, row: 10 }, title: 'Soccer Pitch & Tactical Board', dialogue: "⚽ [Soccer Field]: Tactical analysis board and mini ball. Press E or Action [A] to start the 1v1 match!", inspectPrompt: 'PLAY SOCCER', symbol: '⚽' },
+  { id: 'bed', target: { col: 2, row: 2 }, title: 'Cozy Spawning Bed', dialogue: "🛏️ [Spawning Bed]: Cozy gold quilt bed. Press E to rest and restore 100% Social Battery.", inspectPrompt: 'REST IN BED', symbol: '🛏️' }
+];
+
+// Room Sections for the 3-second entrance popup with 10-second re-entry cooldown
+const ROOM_SECTIONS = [
+  { id: 'garage', name: 'MOTORCYCLE GARAGE', icon: '🏍️', inZone: (c, r) => c >= 8 && c <= 12 && r >= 9 && r <= 13 },
+  { id: 'pitch', name: 'SOCCER PITCH & FIELD', icon: '⚽', inZone: (c, r) => c >= 13 && c <= 18 && r >= 8 && r <= 13 },
+  { id: 'camp', name: 'TREK & CAMPGROUND', icon: '⛺', inZone: (c, r) => c >= 1 && c <= 6 && r >= 8 && r <= 13 },
+  { id: 'climb', name: 'BOULDERING & HANGWALL', icon: '🧗', inZone: (c, r) => c >= 1 && c <= 4 && r >= 3 && r <= 7 },
+  { id: 'kitchen', name: 'CYBER BISTRO KITCHEN', icon: '🍳', inZone: (c, r) => c >= 5 && c <= 9 && r >= 1 && r <= 3 },
+  { id: 'deck', name: 'COMMAND DECK & LOUNGE', icon: '💻', inZone: (c, r) => c >= 7 && c <= 12 && r >= 4 && r <= 7 },
+  { id: 'manga', name: 'MANGA & RETRO LOUNGE', icon: '📚', inZone: (c, r) => c >= 13 && c <= 18 && r >= 1 && r <= 4 }
+];
 
 export default function InteractiveAvatar() {
   const {
@@ -271,9 +322,9 @@ export default function InteractiveAvatar() {
   const [customName, setCustomName] = useState("Wanderer");
   const [raghavDirection, setRaghavDirection] = useState('down');
   // Raghav NPC "mini-AI" — autonomous position + current thought bubble
-  const [raghavPos, setRaghavPos] = useState({ col: 5, row: 6 });
+  const [raghavPos, setRaghavPos] = useState({ col: 9, row: 6 });
   const [raghavThought, setRaghavThought] = useState(null);
-  const raghavBrain = useRef({ pos: { col: 5, row: 6 }, path: [], mode: 'idle', actUntil: 0, stationIdx: -1 });
+  const raghavBrain = useRef({ pos: { col: 9, row: 6 }, path: [], mode: 'idle', actUntil: 0, stationIdx: 0 });
   const [gameStarted, setGameStarted] = useState(false);
   const [pointsPool, setPointsPool] = useState(20);
   const [statsAlloc, setStatsAlloc] = useState({ stamina: 5, curiosity: 5, reflexes: 5, intellect: 5 });
@@ -343,14 +394,15 @@ export default function InteractiveAvatar() {
 
   const [fsBikingCheckpoint, setFsBikingCheckpoint] = useState(1);
 
-  // Custom Colors (RGB Sliders!)
-  // Custom Character Styling Options
-  const [spriteGender, setSpriteGender] = useState('male');
+  // Option A: Layered Character Styling Options
+  const [hairStyle, setHairStyle] = useState('spiky');
+  const [outfitType, setOutfitType] = useState('hoodie');
+  const [pantsType, setPantsType] = useState('jeans');
   const [faceStyle, setFaceStyle] = useState('classic');
-  const [selectedSkinColor, setSelectedSkinColor] = useState('#ffdbac');
-  const [selectedHatColor, setSelectedHatColor] = useState('#8a2be2');
-  const [selectedShirtColor, setSelectedShirtColor] = useState('#1e88e5');
-  const [selectedPantsColor, setSelectedPantsColor] = useState('#ffd700');
+  const [selectedSkinColor, setSelectedSkinColor] = useState('#ffd8b8');
+  const [selectedHatColor, setSelectedHatColor] = useState('#181820');
+  const [selectedShirtColor, setSelectedShirtColor] = useState('#e63946');
+  const [selectedPantsColor, setSelectedPantsColor] = useState('#2b4162');
 
   // Travel Diary Modal State
   const [showTravelDiary, setShowTravelDiary] = useState(false);
@@ -358,14 +410,11 @@ export default function InteractiveAvatar() {
 
   // Dynamic Thematic Corner Modals & Climbing QTE states
   const [showClimbingQTE, setShowClimbingQTE] = useState(false);
+  const [boulderingTab, setBoulderingTab] = useState('climb'); // 'climb' | 'hangboard'
   const [qteKey, setQteKey] = useState('');
   const [qteProgress, setQteProgress] = useState(0);
   const [qteStatus, setQteStatus] = useState('playing'); // 'playing' | 'success' | 'fail'
   
-  const [showTechStack, setShowTechStack] = useState(false);
-  const [activeStackDrawer, setActiveStackDrawer] = useState('frontend'); // 'frontend' | 'backend' | 'devops' | 'core'
-  
-  const [showFitnessStats, setShowFitnessStats] = useState(false);
   const [showTacticalBlueprints, setShowTacticalBlueprints] = useState(false);
   const [showPCProjects, setShowPCProjects] = useState(false);
   const [pcActiveProject, setPcActiveProject] = useState('scraper'); // 'scraper' | 'rpg' | 'tactics'
@@ -395,13 +444,19 @@ export default function InteractiveAvatar() {
   ];
 
   // Player continuous coordinates and direction
-  const [playerPos, setPlayerPos] = useState({ col: 11, row: 10 }); 
+  const [playerPos, setPlayerPos] = useState({ col: 3, row: 4 }); 
   const [direction, setDirection] = useState('down');
   const [frame, setFrame] = useState(0);
   const [dialogueText, setDialogueText] = useState("Welcome to my cozy overworld space! Walk up to items to inspect, or click tiles.");
   const [displayedText, setDisplayedText] = useState("");
   const [nearObject, setNearObject] = useState(null);
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
+
+  // 📍 Section discovery popup states (3s show, 10s re-entry cooldown)
+  const [activeSectionBanner, setActiveSectionBanner] = useState(null);
+  const sectionBannerTimerRef = useRef(null);
+  const currentSectionIdRef = useRef(null);
+  const lastSectionTimesRef = useRef({});
 
   // ⚽ Soccer Ball continuous physics state
   const [ballPos, setBallPos] = useState({ col: 15.0, row: 11.0 });
@@ -430,7 +485,8 @@ export default function InteractiveAvatar() {
   const [showVisitorGallery, setShowVisitorGallery] = useState(false);
   const [selectedGalleryProfile, setSelectedGalleryProfile] = useState(null);
 
-  // Manga Trivia Cabinet Game States
+  // Manga Lounge & Trivia Cabinet Game States
+  const [showMangaLounge, setShowMangaLounge] = useState(false);
   const [showTrivia, setShowTrivia] = useState(false);
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [correctStreak, setCorrectStreak] = useState(0);
@@ -449,7 +505,7 @@ export default function InteractiveAvatar() {
   const [selectedVisitorReview, setSelectedVisitorReview] = useState(null); // to read a past guest NPC review
 
   const keysPressed = useRef({});
-  const playerCoords = useRef({ col: 11, row: 10 });
+  const playerCoords = useRef({ col: 3, row: 4 });
   const lastStepSound = useRef(0);
   const clickTarget = useRef(null);
   const konamiKeyHistory = useRef([]);
@@ -467,15 +523,17 @@ export default function InteractiveAvatar() {
     shoes: '#ffffff'
   };
 
-  // Convert custom specs back into custom color specs for Sprite
+  // Convert custom specs back into custom color & style specs for Sprite
   const customColors = {
     hat: selectedHatColor,
     skin: selectedSkinColor,
     shirt: selectedShirtColor,
     pants: selectedPantsColor,
     shoes: '#ffffff',
-    gender: spriteGender,
-    faceStyle: faceStyle
+    hairStyle,
+    outfitType,
+    pantsType,
+    faceStyle
   };
 
   // Coordinated loop references
@@ -487,6 +545,7 @@ export default function InteractiveAvatar() {
 
   useEffect(() => {
     isAudioEnabledRef.current = isAudioEnabled;
+    globalAudioEnabled = isAudioEnabled;
   }, [isAudioEnabled]);
 
   // Drive idle sprite-preview animation (creation screen + gallery cards)
@@ -499,7 +558,7 @@ export default function InteractiveAvatar() {
   useEffect(() => {
     setMenuRow(0);
     setMenuCol(0);
-  }, [activeGameStation, showTrivia, showKitchen, showVisitorGallery, showTechStack, showPCProjects, currentQuestionIdx, gameStarted]);
+  }, [activeGameStation, showTrivia, showKitchen, showVisitorGallery, showPCProjects, currentQuestionIdx, gameStarted]);
 
   // New trivia question → fresh hint
   useEffect(() => {
@@ -526,7 +585,10 @@ export default function InteractiveAvatar() {
     setActiveGameStation(null);
     if (idx === 0) {
       if (station === 'football') handleInspect('football');
-      if (station === 'bike') handleInspect('trekking');
+      if (station === 'bike') {
+        setIsRiding(r => !r);
+        playSound('chime');
+      }
       if (station === 'arcade') handleInspect('anime');
     } else if (idx === 1) {
       if (station === 'football') setShowFullscreenSoccer(true);
@@ -578,12 +640,14 @@ export default function InteractiveAvatar() {
 
   // Apply a creation-screen choice for (row, col) — used by clicks AND the D-pad
   const applyCreationChoice = (row, col) => {
-    if (row === 0) setSpriteGender(GENDERS[col]);
-    else if (row === 1) setFaceStyle(FACE_STYLES[col].id);
-    else if (row === 2) setSelectedSkinColor(SKIN_COLORS[col]);
-    else if (row === 3) setSelectedHatColor(HAIR_COLORS[col]);
-    else if (row === 4) setSelectedShirtColor(SHIRT_COLORS[col]);
-    else if (row === 5) setSelectedPantsColor(PANTS_COLORS[col]);
+    if (row === 0) setHairStyle(HAIR_STYLES[col].id);
+    else if (row === 1) setOutfitType(OUTFIT_TYPES[col].id);
+    else if (row === 2) setPantsType(PANTS_TYPES[col].id);
+    else if (row === 3) setFaceStyle(FACE_STYLES[col].id);
+    else if (row === 4) setSelectedSkinColor(SKIN_COLORS[col]);
+    else if (row === 5) setSelectedHatColor(HAIR_COLORS[col]);
+    else if (row === 6) setSelectedShirtColor(SHIRT_COLORS[col]);
+    else if (row === 7) setSelectedPantsColor(PANTS_COLORS[col]);
   };
 
   // ── GLOBAL GAME BOY CONTROLS ──────────────────────────────────────────────
@@ -627,6 +691,8 @@ export default function InteractiveAvatar() {
       // B / Esc — close the topmost overlay, strictly one per press
       if (isBack) {
         let closed = true;
+        keysPressed.current = {};
+        clickTarget.current = null;
         if (showGuestbookSubmit) setShowGuestbookSubmit(false);
         else if (selectedGalleryProfile) setSelectedGalleryProfile(null);
         else if (selectedVisitorReview) setSelectedVisitorReview(null);
@@ -635,9 +701,8 @@ export default function InteractiveAvatar() {
         else if (showCarousel) setShowCarousel(false);
         else if (showKitchen) { setShowKitchen(false); setCookingItem(null); setCookingProgress(0); }
         else if (showTrivia) setShowTrivia(false);
+        else if (showMangaLounge) setShowMangaLounge(false);
         else if (showClimbingQTE) setShowClimbingQTE(false);
-        else if (showTechStack) setShowTechStack(false);
-        else if (showFitnessStats) setShowFitnessStats(false);
         else if (showTacticalBlueprints) setShowTacticalBlueprints(false);
         else if (showPCProjects) setShowPCProjects(false);
         else if (activeGameStation) setActiveGameStation(null);
@@ -702,16 +767,6 @@ export default function InteractiveAvatar() {
         return;
       }
 
-      if (showTechStack) {
-        if (k === 'arrowup' || k === 'arrowdown') {
-          e.preventDefault();
-          const ids = ['frontend', 'backend', 'devops', 'core'];
-          const cur = ids.indexOf(activeStackDrawer);
-          playSound('chime');
-          setActiveStackDrawer(ids[(cur + (k === 'arrowdown' ? 1 : 3)) % 4]);
-        }
-        return;
-      }
 
       if (showPCProjects) {
         if (k === 'arrowup' || k === 'arrowdown') {
@@ -728,6 +783,19 @@ export default function InteractiveAvatar() {
           playSound('chime');
           setShowTacticalBlueprints(false);
           setShowFullscreenSoccer(true);
+        }
+        return;
+      }
+
+      if (showMangaLounge) {
+        if (isConfirm) {
+          e.preventDefault();
+          playSound('chime');
+          setShowMangaLounge(false);
+          setShowTrivia(true);
+          setCurrentQuestionIdx(0);
+          setCorrectStreak(0);
+          setTriviaResult(null);
         }
         return;
       }
@@ -777,11 +845,11 @@ export default function InteractiveAvatar() {
             });
           } else {
             const dir = k === 'arrowright' ? 1 : -1;
-            if (menuRow >= 6 && menuRow <= 9) {
+            if (menuRow >= 8 && menuRow <= 11) {
               // stat rows: ◀ takes a point back, ▶ spends one
-              adjustStat(STAT_KEYS[menuRow - 6], dir);
+              adjustStat(STAT_KEYS[menuRow - 8], dir);
               playSound(dir > 0 ? 'chime' : 'thump');
-            } else if (menuRow <= 5) {
+            } else if (menuRow <= 7) {
               playSound('step');
               const size = CREATION_ROW_SIZES[menuRow];
               const next = (menuCol + dir + size) % size;
@@ -792,8 +860,8 @@ export default function InteractiveAvatar() {
         } else if (isConfirm) {
           if (typing && e.key !== 'Enter') return;
           e.preventDefault();
-          if (menuRow === 10 || e.key === 'Enter') handleStartGame();
-          else if (menuRow <= 5) applyCreationChoice(menuRow, menuCol);
+          if (menuRow === 12 || e.key === 'Enter') handleStartGame();
+          else if (menuRow <= 7) applyCreationChoice(menuRow, menuCol);
         }
         return;
       }
@@ -803,8 +871,8 @@ export default function InteractiveAvatar() {
     return () => window.removeEventListener('keydown', handler);
   }, [gameStarted, menuRow, menuCol, activeGameStation, showTrivia, triviaResult, triviaHidden, triviaHintUsed,
       showKitchen, cookingItem, showCarousel, showTravelDiary, showVisitorGallery, selectedGalleryProfile,
-      selectedVisitorReview, showGuestbookSubmit, showTechStack, activeStackDrawer, showPCProjects, pcActiveProject,
-      showFitnessStats, showTacticalBlueprints, showClimbingQTE, showFullscreenSoccer, showFullscreenBiking,
+      selectedVisitorReview, showGuestbookSubmit, showPCProjects, pcActiveProject,
+      showTacticalBlueprints, showMangaLounge, showClimbingQTE, showFullscreenSoccer, showFullscreenBiking,
       bikeSelected, activeItemId, guestbookEntries, currentQuestionIdx, playerStats, statsAlloc, pointsPool]);
 
   // ── Raghav NPC brain: wander → act → repeat ──────────────────────────────
@@ -947,15 +1015,14 @@ export default function InteractiveAvatar() {
     }
   };
 
-  // Typewriter effect
+  // Typewriter effect (deterministic slice so first character 'W' is never dropped)
   useEffect(() => {
-    let index = 0;
+    let currentLen = 0;
     setDisplayedText("");
     const typingInterval = setInterval(() => {
-      if (index < dialogueText.length) {
-        setDisplayedText((prev) => prev + dialogueText.charAt(index));
-        index++;
-      } else {
+      currentLen++;
+      setDisplayedText(dialogueText.slice(0, currentLen));
+      if (currentLen >= dialogueText.length) {
         clearInterval(typingInterval);
       }
     }, 18);
@@ -965,108 +1032,57 @@ export default function InteractiveAvatar() {
   // Proximity triggers and Raghav NPC AI
   const checkProximity = (col, row) => {
     let foundNearby = null;
-    // 🔍 Curiosity perk: each point above 5 widens the inspect radius.
-    let minDistance = 2.0 + (playerStats.curiosity - 5) * 0.1;
+    // Strictly standing on target per user request ("make it so that when standing on target only then it shows the popup")
+    let minDistance = 0.65;
 
-    // Check portfolio interactable objects.
-    // 'profile' (Raghav himself) is NOT pinned to a tile — he roams, so we attach
-    // his inspect to his live NPC position further below instead.
-    INTERACTABLE_OBJECTS.forEach(obj => {
-      if (obj.id === 'profile') return;
-      obj.cells.forEach(cell => {
-        const dx = cell.col - col;
-        const dy = cell.row - row;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        if (distance < minDistance) {
-          foundNearby = obj;
-          minDistance = distance;
-        }
-      });
+    // Check specific activity targets
+    ACTIVITY_TARGETS.forEach(item => {
+      const dist = Math.hypot(item.target.col - col, item.target.row - row);
+      if (dist <= minDistance) {
+        foundNearby = item;
+        minDistance = dist;
+      }
     });
 
-    // Check past visitor photo frame board
-    const boardDx = 10 - col;
-    const boardDy = 1 - row;
-    if (Math.sqrt(boardDx*boardDx + boardDy*boardDy) < 1.8) {
-      foundNearby = {
-        id: 'gallery',
-        title: "Gallery of Explorers",
-        dialogue: "🖼️ [Photo Frame]: Gilded frame displaying custom personalized cards of past visitors. Press E to open the Gallery!",
-        inspectPrompt: "OPEN GALLERY"
-      };
-    }
-
-    // Check red bike
-    const bikeDx = 9 - col;
-    const bikeDy = 12 - row;
-    if (Math.sqrt(bikeDx*bikeDx + bikeDy*bikeDy) < 1.8) {
-      foundNearby = {
-        id: 'bike',
-        title: "Bicycle cruiser",
-        dialogue: isRiding ? "🚲 [Cruiser]: Press E to dismount your bike and return to walking speed." : "🚲 [Cruiser]: Stand next to the bike and press E to ride! Doubles speed, drains stamina.",
-        inspectPrompt: isRiding ? "DISMOUNT BIKE" : "RIDE BICYCLE"
-      };
-    }
-
-    // Check manga cabinet
-    const cabinetDx = 16 - col;
-    const cabinetDy = 1 - row;
-    if (Math.sqrt(cabinetDx*cabinetDx + cabinetDy*cabinetDy) < 1.8) {
-      foundNearby = {
-        id: 'arcade',
-        title: "Manga Cabinet",
-        dialogue: "🕹️ [Manga Trivia Arcade]: Multiple choice lore machine. Press E to start the cabinet game!",
-        inspectPrompt: "PLAY ARCADE"
-      };
-    }
-
-    // 🐈 Easter egg: the wandering cat
+    // 🐈 Easter egg: the wandering cat (standing on cat tile)
     const cat = CAT_SPOTS[catSpot];
-    const catDx = cat.col - col, catDy = cat.row - row;
-    if (Math.sqrt(catDx * catDx + catDy * catDy) < 1.4) {
+    const catDist = Math.hypot(cat.col - col, cat.row - row);
+    if (catDist <= minDistance) {
       foundNearby = {
         id: 'cat',
         title: '??? · A Cat',
+        symbol: '🐈',
         dialogue: "🐈 A soft orange cat is loafing here, slowly blinking at you. It seems to own this room. Press E to pet.",
         inspectPrompt: 'PET THE CAT'
       };
+      minDistance = catDist;
     }
 
-    // 🔥 Easter egg: roast a marshmallow at the campfire (4,12)
-    const cfDx = 4 - col, cfDy = 12 - row;
-    if (Math.sqrt(cfDx * cfDx + cfDy * cfDy) < 1.7) {
-      foundNearby = {
-        id: 'campfire-roast',
-        title: 'Cozy Campfire',
-        dialogue: isRoasting
-          ? "🔥 [Campfire]: The marshmallow is browning nicely… don't drop it!"
-          : "🔥 [Campfire]: The flames crackle invitingly. Press E to roast a marshmallow (+10 energy).",
-        inspectPrompt: 'ROAST MARSHMALLOW'
-      };
-    }
-
-    // 🥪 Easter egg: midnight fridge raid (left fridge at 6,1)
-    const frDx = 6 - col, frDy = 1 - row;
-    if (Math.sqrt(frDx * frDx + frDy * frDy) < 1.4) {
+    // 🥪 Easter egg: midnight fridge raid (standing in front of fridge at 6, 2)
+    const frDist = Math.hypot(6 - col, 2 - row);
+    if (frDist <= minDistance) {
       foundNearby = {
         id: 'fridge-raid',
         title: 'Suspicious Fridge',
+        symbol: '🧊',
         dialogue: "🧊 [Fridge]: A faint glow comes from inside. Raghav labelled everything 'DO NOT EAT'. Press E anyway.",
         inspectPrompt: 'RAID FRIDGE'
       };
+      minDistance = frDist;
     }
 
-    // Inspect the roaming developer himself — follows Raghav's live NPC position.
+    // Inspect the roaming developer himself (standing adjacent/touching Raghav)
     const rp = raghavBrain.current.pos;
-    const rdx = rp.col - col, rdy = rp.row - row;
-    if (Math.sqrt(rdx * rdx + rdy * rdy) < 1.6) {
+    const rDist = Math.hypot(rp.col - col, rp.row - row);
+    if (rDist <= 0.85 && rDist < minDistance) {
       foundNearby = {
         id: 'profile',
         title: 'Raghav · The Developer',
+        symbol: '🧑‍💻',
         dialogue: "🧑‍💻 [Raghav]: Oh hey — you caught me! Press E to inspect the developer (stats, story & projects).",
         inspectPrompt: 'INSPECT DEVELOPER'
       };
+      minDistance = rDist;
     }
 
     if (foundNearby) {
@@ -1074,7 +1090,6 @@ export default function InteractiveAvatar() {
         setDialogueText(foundNearby.dialogue);
         nearObjectRef.current = foundNearby;
         setNearObject(foundNearby);
-        if (isAudioEnabledRef.current) playSound('chime');
       }
     } else {
       if (nearObjectRef.current !== null) {
@@ -1083,7 +1098,38 @@ export default function InteractiveAvatar() {
         setNearObject(null);
       }
     }
+
+    // 📍 Section discovery notification: shows for 3s, reappears only after 10s cooldown upon re-entering
+    const roundedCol = Math.round(col);
+    const roundedRow = Math.round(row);
+    const currentSection = ROOM_SECTIONS.find(s => s.inZone(roundedCol, roundedRow));
+    const newSectionId = currentSection ? currentSection.id : null;
+
+    if (newSectionId !== currentSectionIdRef.current) {
+      currentSectionIdRef.current = newSectionId;
+      if (currentSection) {
+        const lastTime = lastSectionTimesRef.current[currentSection.id] || 0;
+        const now = Date.now();
+        if (now - lastTime >= 10000) {
+          lastSectionTimesRef.current[currentSection.id] = now;
+          setActiveSectionBanner(currentSection);
+          if (sectionBannerTimerRef.current) clearTimeout(sectionBannerTimerRef.current);
+          sectionBannerTimerRef.current = setTimeout(() => {
+            setActiveSectionBanner(null);
+          }, 3000);
+        }
+      }
+    }
   };
+
+  const isModalOpen = !gameStarted || showFullscreenSoccer || showFullscreenBiking || showTravelDiary || showCarousel || showVisitorGallery || showKitchen || showTrivia || showMangaLounge || showGuestbookSubmit || showClimbingQTE || showTacticalBlueprints || showPCProjects || Boolean(activeGameStation) || Boolean(selectedGalleryProfile) || Boolean(selectedVisitorReview) || Boolean(activeItemId);
+
+  // Clear any stuck inputs when modal opens or closes
+  useEffect(() => {
+    keysPressed.current = {};
+    clickTarget.current = null;
+    setFrame(0);
+  }, [isModalOpen]);
 
   // Keyboard controls listener
   useEffect(() => {
@@ -1092,14 +1138,25 @@ export default function InteractiveAvatar() {
     const handleKeyDown = (e) => {
       const key = e.key.toLowerCase();
       
+      if (isModalOpen) {
+        // Paused: arrows & WASD navigate selection menus, never move character
+        keysPressed.current = {};
+        clickTarget.current = null;
+        return;
+      }
+
       if (e.key === 'ArrowUp') keysPressed.current['w'] = true;
       if (e.key === 'ArrowDown') keysPressed.current['s'] = true;
       if (e.key === 'ArrowLeft') keysPressed.current['a'] = true;
       if (e.key === 'ArrowRight') keysPressed.current['d'] = true;
       
-      if (['w', 'a', 's', 'd', 'e', ' ', 'b'].includes(key)) {
+      if (['w', 'a', 's', 'd'].includes(key)) {
         keysPressed.current[key] = true;
         clickTarget.current = null;
+      }
+      
+      if (['e', ' ', 'b'].includes(key)) {
+        keysPressed.current[key] = true;
       }
 
       // Konami wwssadadba
@@ -1133,7 +1190,7 @@ export default function InteractiveAvatar() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [gameStarted]);
+  }, [gameStarted, isModalOpen]);
 
   // Continuous game loop
   useEffect(() => {
@@ -1141,8 +1198,8 @@ export default function InteractiveAvatar() {
     let animId;
 
     const gameLoop = () => {
-      // Ignore overworld updates when any modal overlay is active to prevent input leak
-      if (showFullscreenSoccer || showFullscreenBiking || showTravelDiary || showCarousel || showVisitorGallery || showKitchen || showTrivia || showGuestbookSubmit || showClimbingQTE || showTechStack || showFitnessStats || showTacticalBlueprints || showPCProjects) {
+      // Pause character when reading or in any modal
+      if (isModalOpen) {
         keysPressed.current = {};
         clickTarget.current = null;
         animId = requestAnimationFrame(gameLoop);
@@ -1202,19 +1259,28 @@ export default function InteractiveAvatar() {
             keysPressed.current['e'] = false;
             keysPressed.current[' '] = false;
           }
-          else if (type === 'football') {
-            setActiveGameStation('football');
+          else if (type === 'football' || type === 'tacticboard') {
+            setShowTacticalBlueprints(true);
             keysPressed.current['e'] = false;
             keysPressed.current[' '] = false;
           }
-          else if (type === 'arcade') {
-            setActiveGameStation('arcade');
+          else if (type === 'arcade' || type === 'anime') {
+            setShowMangaLounge(true);
             keysPressed.current['e'] = false;
             keysPressed.current[' '] = false;
           }
-          else if (type === 'gallery') {
-            // Open Photo Frame Wall Gallery
+          else if (type === 'gallery' || type === 'bulletin') {
+            // Open Photo Frame Wall Gallery & Guestbook
             setShowVisitorGallery(true);
+            keysPressed.current['e'] = false;
+            keysPressed.current[' '] = false;
+          }
+          else if (type === 'bed') {
+            // Spawning bed: restore energy & stamina
+            playSound('chime');
+            setEnergyLevel(100);
+            setDialogueText("🛏️ [Spawning Bed]: Fully rested! Social battery & energy restored to 100%.");
+            pushToast("🛏️ Rested: 100% Energy restored!", "#ffd166");
             keysPressed.current['e'] = false;
             keysPressed.current[' '] = false;
           }
@@ -1232,25 +1298,14 @@ export default function InteractiveAvatar() {
             keysPressed.current[' '] = false;
           }
           else if (type === 'bouldering') {
-            // Start QTE Climbing minigame!
+            // Start QTE Climbing minigame / Hangboard stats
             setQteProgress(0);
             setQteStatus('playing');
             const keysList = ['w', 'a', 's', 'd', 'e', 'space'];
             const initialRandom = keysList[Math.floor(Math.random() * keysList.length)];
             setQteKey(initialRandom);
+            setBoulderingTab('climb');
             setShowClimbingQTE(true);
-            keysPressed.current['e'] = false;
-            keysPressed.current[' '] = false;
-          }
-          else if (type === 'hangboard') {
-            // Open Fitness stats panel!
-            setShowFitnessStats(true);
-            keysPressed.current['e'] = false;
-            keysPressed.current[' '] = false;
-          }
-          else if (type === 'tacticboard') {
-            // Open Tactical chalk board!
-            setShowTacticalBlueprints(true);
             keysPressed.current['e'] = false;
             keysPressed.current[' '] = false;
           }
@@ -1258,6 +1313,11 @@ export default function InteractiveAvatar() {
             // Open PC live showcase!
             setShowPCProjects(true);
             selectPcProject('scraper');
+            keysPressed.current['e'] = false;
+            keysPressed.current[' '] = false;
+          }
+          else if (type === 'profile') {
+            handleInspect('profile');
             keysPressed.current['e'] = false;
             keysPressed.current[' '] = false;
           }
@@ -1284,26 +1344,6 @@ export default function InteractiveAvatar() {
             keysPressed.current['e'] = false;
             keysPressed.current[' '] = false;
           }
-          else if (type === 'campfire-roast') {
-            // 🔥 Roast a marshmallow: short cozy ritual, +10 energy
-            if (!isRoasting) {
-              setIsRoasting(true);
-              setDialogueText("🔥 Roasting a marshmallow… hold it steady… almost golden…");
-              setTimeout(() => {
-                setIsRoasting(false);
-                playSound('gulp');
-                setEnergyLevel(en => Math.min(100, en + 10));
-                const nextRoast = roastCount + 1;
-                setRoastCount(nextRoast);
-                setDialogueText(nextRoast >= 3
-                  ? "🍡 Perfectly toasted! You've mastered the campfire arts. (+10 energy)"
-                  : "🍡 Crispy outside, molten inside. Heavenly. (+10 energy)");
-                if (nextRoast === 3) unlockBadge('Fireside Chef');
-              }, 1800);
-            }
-            keysPressed.current['e'] = false;
-            keysPressed.current[' '] = false;
-          }
           else if (type === 'fridge-raid') {
             // 🥪 Fridge raid: random loot, mild guilt
             playSound('gulp');
@@ -1318,13 +1358,6 @@ export default function InteractiveAvatar() {
             const nextRaid = raidCount + 1;
             setRaidCount(nextRaid);
             if (nextRaid === 3) unlockBadge('Midnight Snacker');
-            keysPressed.current['e'] = false;
-            keysPressed.current[' '] = false;
-          }
-          else if (type === 'toolbox') {
-            // Open Tech stack drawers!
-            setShowTechStack(true);
-            setActiveStackDrawer('frontend');
             keysPressed.current['e'] = false;
             keysPressed.current[' '] = false;
           }
@@ -1677,21 +1710,21 @@ export default function InteractiveAvatar() {
       pCol = Math.max(7, Math.min(88, pCol + dx));
       pRow = Math.max(12, Math.min(88, pRow + dy));
 
-      // 2. Opponent Sprite (Raghav in red/black jersey) chases ball (slower deliberately & with decision latency)
-      let aiSpeed = 0.43; // reduced from 0.48 to make his movement less aggressive
+      // 2. Opponent Sprite (Raghav in red/black jersey) chases ball (slower & relaxed reaction latency)
+      let aiSpeed = 0.25; // Reduced AI speed per user request
 
       aiThinkFrames += 1;
-      // recalculate target only every 20 frames (~333ms) to simulate human reaction delay
-      if (aiThinkFrames >= 20) {
+      // recalculate target only every 38 frames (~630ms) to simulate slower reaction delay
+      if (aiThinkFrames >= 38) {
         aiThinkFrames = 0;
         decidedAiDx = 0;
         decidedAiDy = 0;
         decidedAiMoving = false;
 
-        if (bCol > aiCol + 1.5) { decidedAiDx = aiSpeed; decidedAiDir = 'right'; decidedAiMoving = true; }
-        else if (bCol < aiCol - 1.5) { decidedAiDx = -aiSpeed; decidedAiDir = 'left'; decidedAiMoving = true; }
-        if (bRow > aiRow + 1.5) { decidedAiDy = aiSpeed; decidedAiDir = 'down'; decidedAiMoving = true; }
-        else if (bRow < aiRow - 1.5) { decidedAiDy = -aiSpeed; decidedAiDir = 'up'; decidedAiMoving = true; }
+        if (bCol > aiCol + 2.5) { decidedAiDx = aiSpeed; decidedAiDir = 'right'; decidedAiMoving = true; }
+        else if (bCol < aiCol - 2.5) { decidedAiDx = -aiSpeed; decidedAiDir = 'left'; decidedAiMoving = true; }
+        if (bRow > aiRow + 2.5) { decidedAiDy = aiSpeed; decidedAiDir = 'down'; decidedAiMoving = true; }
+        else if (bRow < aiRow - 2.5) { decidedAiDy = -aiSpeed; decidedAiDir = 'up'; decidedAiMoving = true; }
       }
 
       aiCol = Math.max(7, Math.min(88, aiCol + decidedAiDx));
@@ -1778,10 +1811,10 @@ export default function InteractiveAvatar() {
       const distRow = bRow - pRow;
       const dist = Math.sqrt(distCol*distCol + distRow*distRow);
       
-      if (dist < 6.2) {
+      if (dist < 6.5) {
         const approach = Math.sqrt(dx*dx + dy*dy);
-        // Slightly higher force to overcome higher friction, giving a satisfying "hard" kick response
-        const force = 1.05 + approach * 1.15;
+        // Boosted player kick power to make scoring satisfying and accessible
+        const force = 1.30 + approach * 1.30;
         bVelCol = (distCol / (dist || 1)) * force;
         bVelRow = (distRow / (dist || 1)) * force;
         playSound('step');
@@ -1792,19 +1825,23 @@ export default function InteractiveAvatar() {
       const aiDistRow = bRow - aiRow;
       const aiDist = Math.sqrt(aiDistCol*aiDistCol + aiDistRow*aiDistRow);
 
-      if (aiDist < 6.2) {
-        // Raghav kicks ball towards Left Goal (Player Goal at 5, 50)
+      if (aiDist < 6.0) {
+        // Raghav kicks ball towards Left Goal, but with human inaccuracy & spread!
+        const aimSpread = (Math.random() - 0.5) * 65; // Wide spread makes many kicks miss wide or hit side walls
         const targetGoalC = 5;
-        const targetGoalR = 50;
+        const targetGoalR = 50 + aimSpread;
         const kickDirC = targetGoalC - bCol;
         const kickDirR = targetGoalR - bRow;
         const kickDist = Math.sqrt(kickDirC*kickDirC + kickDirR*kickDirR);
 
-        // Slightly reduced Raghav kick force to make him less dominant
-        bVelCol = (kickDirC / (kickDist || 1)) * 1.15;
-        bVelRow = (kickDirR / (kickDist || 1)) * 1.15;
+        // 35% chance of miskick / soft touch
+        const miskick = Math.random() < 0.35;
+        const kickPower = miskick ? 0.38 : 0.56;
+
+        bVelCol = (kickDirC / (kickDist || 1)) * kickPower;
+        bVelRow = (kickDirR / (kickDist || 1)) * kickPower;
         playSound('step');
-        setDialogueText("🧠 Raghav kicks the ball back!");
+        setDialogueText(miskick ? "🧠 Raghav scuffs the kick!" : "🧠 Raghav takes a shot!");
       }
       
       setFsPlayerPos({ col: pCol, row: pRow });
@@ -2281,7 +2318,7 @@ export default function InteractiveAvatar() {
   };
 
   const handleTileClick = (col, row) => {
-    if (!gameStarted) return;
+    if (!gameStarted || isModalOpen) return;
     if (isTileSolid(col, row)) {
       const adjacents = [
         { col: col - 1, row },
@@ -2329,45 +2366,42 @@ export default function InteractiveAvatar() {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
-          padding: '20px',
+          justifyContent: 'flex-start',
+          padding: '16px 14px 28px',
           boxSizing: 'border-box',
           position: 'relative',
           overflowY: 'auto'
         }}
       >
-        <div style={{ textAlign: 'center', marginBottom: '18px' }}>
-          <h2 className="pixel-header" style={{ fontSize: '1.15rem', color: 'var(--rpg-highlight)', margin: '0 0 8px 0', textShadow: '0 0 12px rgba(0,255,255,0.45)' }}>
+        <div style={{ textAlign: 'center', marginBottom: '14px' }}>
+          <h2 className="pixel-header" style={{ fontSize: '1.15rem', color: 'var(--rpg-highlight)', margin: '0 0 6px 0', textShadow: '0 0 12px rgba(0,255,255,0.45)' }}>
             🏠 DESIGN YOUR EXPLORER
           </h2>
-          <p className="pixel-text" style={{ fontSize: '1.2rem', color: '#7a7a8a', margin: 0 }}>
+          <p className="pixel-text" style={{ fontSize: '1.15rem', color: '#7a7a8a', margin: 0 }}>
             Create an avatar, then step into Raghav's pixel world.
           </p>
         </div>
 
         <div style={{ display: 'flex', gap: '20px', width: '100%', maxWidth: '780px', flexWrap: 'wrap', justifyContent: 'center' }}>
           
-          {/* Left panel: Live Sprite Preview */}
-          <div style={{ width: '220px', display: 'flex', flexDirection: 'column', gap: '14px', alignItems: 'center' }}>
-            <div className="rpg-box" style={{ width: '160px', height: '160px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'radial-gradient(circle at 50% 40%, #11241a 0%, #000 75%)', border: '3px solid var(--rpg-text)', boxShadow: '0 0 18px rgba(0,255,102,0.45)' }}>
-              <div style={{ width: '96px', height: '96px' }}>
+          {/* Left panel: Live Sprite Preview, Name & Quick Enter Button */}
+          <div style={{ width: '220px', display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
+            <div className="rpg-box" style={{ width: '150px', height: '150px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'radial-gradient(circle at 50% 40%, #11241a 0%, #000 75%)', border: '3px solid var(--rpg-text)', boxShadow: '0 0 18px rgba(0,255,102,0.45)' }}>
+              <div style={{ width: '92px', height: '92px' }}>
                 <Sprite direction="down" frame={previewFrame} customColors={customColors} />
               </div>
             </div>
 
-            <p className="pixel-text" style={{ fontSize: '1.35rem', color: 'var(--rpg-highlight)', textAlign: 'center', margin: 0, fontWeight: 'bold' }}>
+            <p className="pixel-text" style={{ fontSize: '1.3rem', color: 'var(--rpg-highlight)', textAlign: 'center', margin: 0, fontWeight: 'bold' }}>
               {customName.trim() || 'Wanderer'}
             </p>
-            <p className="pixel-text" style={{ fontSize: '1.05rem', color: '#888', textAlign: 'center', margin: 0 }}>
+            <p className="pixel-text" style={{ fontSize: '0.95rem', color: '#888', textAlign: 'center', margin: 0 }}>
               Live preview · animates as you walk
             </p>
-          </div>
 
-          {/* Right panel: Name, Gender, Face, Skin, Clothes Presets */}
-          <div style={{ flex: 1, minWidth: '290px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {/* Explorer Name */}
-            <div>
-              <label className="pixel-header" style={{ fontSize: '0.72rem', color: 'var(--rpg-text)', display: 'block', marginBottom: '6px' }}>
+            {/* Explorer Name Input */}
+            <div style={{ width: '100%' }}>
+              <label className="pixel-header" style={{ fontSize: '0.68rem', color: 'var(--rpg-text)', display: 'block', marginBottom: '4px', textAlign: 'center' }}>
                 ✍️ EXPLORER NAME:
               </label>
               <input 
@@ -2378,45 +2412,120 @@ export default function InteractiveAvatar() {
                 placeholder="Enter Name..."
                 style={{
                   background: '#000',
-                  border: '3px solid var(--rpg-text)',
+                  border: '2px solid var(--rpg-text)',
                   color: '#fff',
-                  fontSize: '1.4rem',
-                  padding: '5px 10px',
+                  fontSize: '1.3rem',
+                  padding: '5px 8px',
                   width: '100%',
                   textAlign: 'center',
                   outline: 'none',
-                  boxSizing: 'border-box'
+                  boxSizing: 'border-box',
+                  borderRadius: '4px'
                 }}
               />
             </div>
 
-            {/* Gender choices */}
+            {/* Quick Action Start Button */}
+            <button
+              onClick={handleStartGame}
+              className="pixel-header animate-bob"
+              style={{
+                width: '100%',
+                marginTop: '4px',
+                background: 'var(--rpg-accent)',
+                color: '#fff',
+                border: '3px solid #000',
+                padding: '10px 14px',
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+                boxShadow: '0 3px 0 #000',
+                outline: 'none',
+                ...(menuRow === 12 ? FOCUS_RING : {})
+              }}
+            >
+              🎮 ENTER ROOM [A]
+            </button>
+          </div>
+
+          {/* Right panel: Customization Presets */}
+          <div style={{ flex: 1, minWidth: '290px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+
+            {/* 1. Hairstyle choices (Row 0) */}
             <div className="rpg-box" style={{ padding: '8px 12px', background: '#050508' }}>
-              <span className="pixel-header" style={{ fontSize: '0.62rem', display: 'block', marginBottom: '6px', color: 'var(--rpg-highlight)' }}>🙋 SELECT SPRITE GENDER / HAIR:</span>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                {GENDERS.map((g, idx) => (
+              <span className="pixel-header" style={{ fontSize: '0.62rem', display: 'block', marginBottom: '6px', color: 'var(--rpg-highlight)' }}>✂️ HAIRSTYLE & CUT:</span>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(88px, 1fr))', gap: '6px' }}>
+                {HAIR_STYLES.map((h, idx) => (
                   <button
-                    key={g}
-                    onClick={() => setSpriteGender(g)}
+                    key={h.id}
+                    onClick={() => setHairStyle(h.id)}
                     className="pixel-header"
                     style={{
-                      flex: 1,
-                      background: spriteGender === g ? 'var(--rpg-text)' : '#111',
-                      color: spriteGender === g ? '#000' : '#fff',
+                      background: hairStyle === h.id ? 'var(--rpg-text)' : '#111',
+                      color: hairStyle === h.id ? '#000' : '#fff',
                       border: '2px solid var(--rpg-text)',
-                      padding: '6px 0',
+                      padding: '5px 2px',
                       cursor: 'pointer',
-                      fontSize: '0.65rem',
+                      fontSize: '0.6rem',
                       ...ring(0, idx)
                     }}
                   >
-                    {g === 'male' ? '♂️ Male (Short Spikes)' : '♀️ Female (Long locks)'}
+                    {h.label}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Face Styles / Accessories */}
+            {/* 2. Outfit / Top choices (Row 1) */}
+            <div className="rpg-box" style={{ padding: '8px 12px', background: '#050508' }}>
+              <span className="pixel-header" style={{ fontSize: '0.62rem', display: 'block', marginBottom: '6px', color: 'var(--rpg-highlight)' }}>🧥 TOP / OUTFIT TYPE:</span>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
+                {OUTFIT_TYPES.map((o, idx) => (
+                  <button
+                    key={o.id}
+                    onClick={() => setOutfitType(o.id)}
+                    className="pixel-header"
+                    style={{
+                      background: outfitType === o.id ? 'var(--rpg-text)' : '#111',
+                      color: outfitType === o.id ? '#000' : '#fff',
+                      border: '2px solid var(--rpg-text)',
+                      padding: '5px 0',
+                      cursor: 'pointer',
+                      fontSize: '0.6rem',
+                      ...ring(1, idx)
+                    }}
+                  >
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 3. Pants / Jeans choices (Row 2) */}
+            <div className="rpg-box" style={{ padding: '8px 12px', background: '#050508' }}>
+              <span className="pixel-header" style={{ fontSize: '0.62rem', display: 'block', marginBottom: '6px', color: 'var(--rpg-highlight)' }}>👖 PANTS / BOTTOMS TYPE:</span>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
+                {PANTS_TYPES.map((p, idx) => (
+                  <button
+                    key={p.id}
+                    onClick={() => setPantsType(p.id)}
+                    className="pixel-header"
+                    style={{
+                      background: pantsType === p.id ? 'var(--rpg-text)' : '#111',
+                      color: pantsType === p.id ? '#000' : '#fff',
+                      border: '2px solid var(--rpg-text)',
+                      padding: '5px 0',
+                      cursor: 'pointer',
+                      fontSize: '0.6rem',
+                      ...ring(2, idx)
+                    }}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 4. Face Styles / Accessories (Row 3) */}
             <div className="rpg-box" style={{ padding: '8px 12px', background: '#050508' }}>
               <span className="pixel-header" style={{ fontSize: '0.62rem', display: 'block', marginBottom: '6px', color: 'var(--rpg-highlight)' }}>🕶️ FACE STYLE / ACCESSORY:</span>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
@@ -2432,7 +2541,7 @@ export default function InteractiveAvatar() {
                       padding: '4px 0',
                       cursor: 'pointer',
                       fontSize: '0.62rem',
-                      ...ring(1, idx)
+                      ...ring(3, idx)
                     }}
                   >
                     {style.label}
@@ -2441,10 +2550,10 @@ export default function InteractiveAvatar() {
               </div>
             </div>
 
-            {/* Skin Colors grid */}
+            {/* 5. Skin Colors grid (Row 4) */}
             <div className="rpg-box" style={{ padding: '8px 12px', background: '#050508' }}>
               <span className="pixel-header" style={{ fontSize: '0.62rem', display: 'block', marginBottom: '6px', color: 'var(--rpg-highlight)' }}>🤚 SKIN COMPLEXION TONE:</span>
-              <div style={{ display: 'flex', gap: '10px' }}>
+              <div style={{ display: 'flex', gap: '12px' }}>
                 {SKIN_COLORS.map((color, idx) => (
                   <div
                     key={color}
@@ -2457,58 +2566,58 @@ export default function InteractiveAvatar() {
                       cursor: 'pointer',
                       borderRadius: '50%',
                       boxShadow: selectedSkinColor === color ? '0 0 8px #fff' : 'none',
-                      ...ring(2, idx)
+                      ...ring(4, idx)
                     }}
                   />
                 ))}
               </div>
             </div>
 
-            {/* Apparel Colors presets */}
+            {/* 6. Curated Color Presets (Rows 5, 6, 7) */}
             <div className="rpg-box" style={{ padding: '8px 12px', background: '#050508', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <span className="pixel-header" style={{ fontSize: '0.62rem', display: 'block', color: 'var(--rpg-highlight)' }}>👗 APPAREL COLOR PRESETS:</span>
+              <span className="pixel-header" style={{ fontSize: '0.62rem', display: 'block', color: 'var(--rpg-highlight)' }}>🎨 CURATED COLOR PALETTES:</span>
               
               <div>
                 <span className="pixel-header" style={{ fontSize: '0.52rem', color: '#888', display: 'block', marginBottom: '4px' }}>• Hair & Cap Color:</span>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                <div style={{ display: 'flex', gap: '8px' }}>
                   {HAIR_COLORS.map((color, idx) => (
                     <div
                       key={color}
                       onClick={() => setSelectedHatColor(color)}
-                      style={{ width: '16px', height: '16px', background: color, border: selectedHatColor === color ? '2px solid #fff' : '1px solid #000', cursor: 'pointer', ...ring(3, idx) }}
+                      style={{ width: '22px', height: '22px', borderRadius: '4px', background: color, border: selectedHatColor === color ? '2px solid #fff' : '1px solid #000', cursor: 'pointer', ...ring(5, idx) }}
                     />
                   ))}
                 </div>
               </div>
 
               <div>
-                <span className="pixel-header" style={{ fontSize: '0.52rem', color: '#888', display: 'block', marginBottom: '4px' }}>• Shirt & Coat Color:</span>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                <span className="pixel-header" style={{ fontSize: '0.52rem', color: '#888', display: 'block', marginBottom: '4px' }}>• Shirt & Jacket Color:</span>
+                <div style={{ display: 'flex', gap: '8px' }}>
                   {SHIRT_COLORS.map((color, idx) => (
                     <div
                       key={color}
                       onClick={() => setSelectedShirtColor(color)}
-                      style={{ width: '16px', height: '16px', background: color, border: selectedShirtColor === color ? '2px solid #fff' : '1px solid #000', cursor: 'pointer', ...ring(4, idx) }}
+                      style={{ width: '22px', height: '22px', borderRadius: '4px', background: color, border: selectedShirtColor === color ? '2px solid #fff' : '1px solid #000', cursor: 'pointer', ...ring(6, idx) }}
                     />
                   ))}
                 </div>
               </div>
 
               <div>
-                <span className="pixel-header" style={{ fontSize: '0.52rem', color: '#888', display: 'block', marginBottom: '4px' }}>• Pants & Skirt Color:</span>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                <span className="pixel-header" style={{ fontSize: '0.52rem', color: '#888', display: 'block', marginBottom: '4px' }}>• Pants & Jeans Color:</span>
+                <div style={{ display: 'flex', gap: '8px' }}>
                   {PANTS_COLORS.map((color, idx) => (
                     <div
                       key={color}
                       onClick={() => setSelectedPantsColor(color)}
-                      style={{ width: '16px', height: '16px', background: color, border: selectedPantsColor === color ? '2px solid #fff' : '1px solid #000', cursor: 'pointer', ...ring(5, idx) }}
+                      style={{ width: '22px', height: '22px', borderRadius: '4px', background: color, border: selectedPantsColor === color ? '2px solid #fff' : '1px solid #000', cursor: 'pointer', ...ring(7, idx) }}
                     />
                   ))}
                 </div>
               </div>
             </div>
 
-            {/* ⚔️ Attribute Point Allocator — these stats have REAL in-game effects */}
+            {/* ⚔️ Attribute Point Allocator (Rows 8..11) */}
             <div className="rpg-box" style={{ padding: '8px 12px', background: '#050508' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                 <span className="pixel-header" style={{ fontSize: '0.62rem', color: 'var(--rpg-highlight)' }}>⚔️ ALLOCATE ATTRIBUTES:</span>
@@ -2523,7 +2632,7 @@ export default function InteractiveAvatar() {
                     style={{
                       display: 'flex', alignItems: 'center', gap: '8px', padding: '3px 6px',
                       background: '#0a0a12', border: '1px solid #222',
-                      ...(menuRow === 6 + idx ? FOCUS_RING : {})
+                      ...(menuRow === 8 + idx ? FOCUS_RING : {})
                     }}
                   >
                     <span className="pixel-text" style={{ fontSize: '1.15rem', width: '110px', color: '#fff' }}>
@@ -2547,8 +2656,8 @@ export default function InteractiveAvatar() {
                 ))}
               </div>
               <p className="pixel-text" style={{ fontSize: '0.95rem', color: '#777', margin: '8px 0 0 0', lineHeight: 1.4 }}>
-                {menuRow >= 6 && menuRow <= 9
-                  ? `▶ ${STAT_INFO[STAT_KEYS[menuRow - 6]].perk}`
+                {menuRow >= 8 && menuRow <= 11
+                  ? `▶ ${STAT_INFO[STAT_KEYS[menuRow - 8]].perk}`
                   : '💡 These change how the game plays: speed, energy, inspect range, hints.'}
               </p>
             </div>
@@ -2557,7 +2666,7 @@ export default function InteractiveAvatar() {
 
         </div>
 
-        {/* Start Game Action Button */}
+        {/* Start Game Action Button (Row 12) */}
         <button
           onClick={handleStartGame}
           className="pixel-header animate-bob"
@@ -2571,7 +2680,7 @@ export default function InteractiveAvatar() {
             cursor: 'pointer',
             boxShadow: '3px 3px 0 #000',
             outline: 'none',
-            ...(menuRow === 10 ? FOCUS_RING : {})
+            ...(menuRow === 12 ? FOCUS_RING : {})
           }}
         >
           🎮 ENTER COZY ROOM [A]
@@ -2593,24 +2702,39 @@ export default function InteractiveAvatar() {
       <button 
         onClick={(e) => {
           e.stopPropagation();
-          setIsAudioEnabled(!isAudioEnabled);
-          playSound('chime');
+          const next = !isAudioEnabled;
+          setIsAudioEnabled(next);
+          globalAudioEnabled = next;
+          isAudioEnabledRef.current = next;
+          const ctx = getAudioCtx();
+          if (next) {
+            if (ctx && ctx.state === 'suspended') {
+              ctx.resume().then(() => playSound('chime', true)).catch(() => playSound('chime', true));
+            } else {
+              playSound('chime', true);
+            }
+            pushToast("🔊 Sound Unmuted", "#4caf50");
+          } else {
+            pushToast("🔇 Sound Muted", "#f44336");
+          }
         }}
-        className="pixel-text"
+        className="pixel-header"
         style={{
           position: 'absolute',
           top: '10px',
           right: '10px',
-          zIndex: 15,
-          background: 'var(--rpg-box-bg)',
-          color: isAudioEnabled ? 'var(--rpg-text)' : '#777',
-          border: '2px solid var(--rpg-text)',
+          zIndex: 500,
+          background: isAudioEnabled ? 'rgba(0, 40, 20, 0.95)' : 'rgba(20, 20, 30, 0.95)',
+          color: isAudioEnabled ? '#4caf50' : '#888',
+          border: `2px solid ${isAudioEnabled ? '#4caf50' : '#555'}`,
           padding: '4px 8px',
-          fontSize: '1.2rem',
-          cursor: 'pointer'
+          fontSize: '0.68rem',
+          cursor: 'pointer',
+          borderRadius: '4px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.6)'
         }}
       >
-        🔊 {isAudioEnabled ? "SOUND: ON" : "SOUND: MUTED"}
+        {isAudioEnabled ? "🔊 SOUND: ON" : "🔇 SOUND: MUTED"}
       </button>
 
       {/* 🍞 Quest / badge toast stack (top-center popups) */}
@@ -2699,342 +2823,55 @@ export default function InteractiveAvatar() {
           flex: 1
         }}
       >
+        {/* Floating 3-second Section Discovery Banner */}
+        {activeSectionBanner && (
+          <div 
+            className="pixel-header animate-bob"
+            style={{
+              position: 'absolute',
+              top: '12px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 35,
+              background: 'rgba(10, 10, 16, 0.94)',
+              border: '2px solid var(--rpg-highlight)',
+              borderRadius: '20px',
+              padding: '5px 16px',
+              color: '#fff',
+              fontSize: '0.74rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: '0 4px 16px rgba(0, 255, 255, 0.4)',
+              pointerEvents: 'none'
+            }}
+          >
+            <span style={{ fontSize: '1rem' }}>{activeSectionBanner.icon}</span>
+            <span style={{ color: 'var(--rpg-highlight)', letterSpacing: '1px' }}>
+              {activeSectionBanner.name}
+            </span>
+          </div>
+        )}
+
         {tiles.map((t, idx) => {
-          // Default every tile to the floor of its zone, so prop / obstacle tiles
-          // blend into the floor instead of showing a dark box.
-          let bg = floorBgFor(getFloorType(t.col, t.row), t.col, t.row);
-          let content = null;
-          let glow = 'none';
-          let tileZOverride = null;
-          const borderStyle = {};
-
-          // Base indoor floor → transparent so the wood-plank grid background shows through.
-          if (t.type === 'grass') bg = 'transparent';
-          else if (t.type === 'path') bg = 'transparent';
-          else if (t.type === 'dirt') bg = 'transparent';
-          // Cozy central rug — a translucent tint over the wood so it reads as a rug
-          // laid on the floor, plus the dotted border further below.
-          else if (t.type === 'rug') bg = 'rgba(27, 23, 51, 0.55)';
-          // 🌲 Camping corner — green grass (cols 1-5, rows 10-13) stitched from grassturf.
-          else if (t.type === 'forest-floor') {
-            const localCol = t.col - 1; // 0..4
-            const localRow = t.row - 10; // 0..3
-            borderStyle.backgroundImage = 'url(/grassturf.png)';
-            borderStyle.backgroundSize = '500% 400%';
-            borderStyle.backgroundPosition = `${(localCol / 4) * 100}% ${(localRow / 3) * 100}%`;
-            borderStyle.imageRendering = 'pixelated';
-          }
-          else if (t.type === 'climbing-pad') {
-            // Col 2 sits under the wall sprite's overflow — keep it transparent so the
-            // sprite isn't cut by the blue floor painting on top of it (higher z).
-            if (t.col === 2) {
-              bg = 'transparent';
-              borderStyle.border = 'none';
-            } else {
-              bg = '#0d47a1'; // Deep gym blue crash pad floor
-              borderStyle.border = '1.5px solid rgba(255,255,255,0.06)';
-            }
-          }
-          // 🔧 Garage — concrete floor (cols 10-12, rows 12-13) stitched from garagefloor.png.
-          else if (t.type === 'garage-floor') {
-            const localCol = t.col - 10; // 0..2
-            const localRow = t.row - 12; // 0..1
-            borderStyle.backgroundImage = 'url(/garagefloor.png)';
-            borderStyle.backgroundSize = '300% 200%';
-            borderStyle.backgroundPosition = `${(localCol / 2) * 100}% ${localRow * 100}%`;
-            borderStyle.imageRendering = 'pixelated';
-          }
-          
-          // Outer boundary walls — warm dark-wood panelling with honey trim,
-          // matching the cozy reference (framed art hangs along the top wall).
-          else if (t.type === 'wall-top') {
-            bg = '#503a2e';
-            borderStyle.borderBottom = '4px solid #c89b4a';
-            borderStyle.boxShadow = 'inset 0 -3px 8px rgba(0,0,0,0.8)';
-            const WALL_ART = { 3: 'frame-landscape', 4: 'frame-photo', 9: 'poster-band', 12: 'frame-landscape', 14: 'poster-anime', 17: 'poster-anime' };
-            if (WALL_ART[t.col]) {
-              content = <div style={{ width: '78%', height: '82%', zIndex: 6 }}><PixelProp type={WALL_ART[t.col]} /></div>;
-            }
-          }
-          else if (t.type === 'wall-bottom') {
-            bg = '#2e2118';
-            borderStyle.borderTop = '4px solid #c89b4a';
-            borderStyle.boxShadow = 'inset 0 3px 8px rgba(0,0,0,0.8)';
-            if (t.col === 11) {
-              // Warm wooden hanging sign for the bike garage
-              content = (
-                <div style={{
-                  color: '#f3e6c8',
-                  fontSize: '0.48rem',
-                  fontFamily: 'monospace',
-                  fontWeight: 'bold',
-                  letterSpacing: '1px',
-                  background: '#6e4a28',
-                  padding: '2px 5px',
-                  border: '1.5px solid #3a2419',
-                  borderRadius: '2px',
-                  boxShadow: '0 2px 0 #3a2419'
-                }}>
-                  GARAGE
-                </div>
-              );
-            }
-          }
-          else if (t.type === 'wall-side') {
-            bg = '#3a2a20';
-            if (t.col === 0) borderStyle.borderRight = '4px solid #c89b4a';
-            borderStyle.boxShadow = t.col === 0 ? 'inset -3px 0 8px rgba(0,0,0,0.8)' : 'inset 3px 0 8px rgba(0,0,0,0.8)';
-            if (t.col === MAP_COLS - 1) {
-              borderStyle.borderLeft = '4px solid #c89b4a';
-            }
-          }
-          
-          // ⚽ Soccer turf field — grassturf.png stitched across the 5×5 corner (cols 14-18,
-          // rows 9-13), each tile showing its slice of the single image, plus chalk lines.
-          else if (t.type === 'soccer-turf') {
-            const localCol = t.col - 14; // 0..4
-            const localRow = t.row - 9;  // 0..4
-            borderStyle.backgroundImage = 'url(/grassturf.png)';
-            borderStyle.backgroundSize = '500% 500%';
-            borderStyle.backgroundPosition = `${(localCol / 4) * 100}% ${(localRow / 4) * 100}%`;
-            borderStyle.imageRendering = 'pixelated';
-            if (t.col === 14) borderStyle.borderLeft = '2px solid rgba(255,255,255,0.4)';
-            if (t.col === 18) borderStyle.borderRight = '2px solid rgba(255,255,255,0.4)';
-            if (t.row === 9) borderStyle.borderTop = '2px solid rgba(255,255,255,0.4)';
-            if (t.row === 13) borderStyle.borderBottom = '2px solid rgba(255,255,255,0.4)';
-          }
-          // 📚 Manga tatami lounge floor — tatami mat (cols 15-18, rows 1-3) stitched from tatamifloor.png.
-          else if (t.type === 'manga-lounge') {
-            const localCol = t.col - 15; // 0..3
-            const localRow = t.row - 1;  // 0..2
-            borderStyle.backgroundImage = 'url(/tatamifloor.png)';
-            borderStyle.backgroundSize = '400% 300%';
-            borderStyle.backgroundPosition = `${(localCol / 3) * 100}% ${(localRow / 2) * 100}%`;
-            borderStyle.imageRendering = 'pixelated';
-            if (t.col === 16 && t.row === 3) {
-              // Plop a cozy giant plush bean bag onto the tatami mat!
-              content = <div style={{ width: '52px', height: '52px', position: 'absolute', left: '50%', bottom: '-4px', transform: 'translateX(-50%)', zIndex: 3 }}><PixelProp type="beanbag" /></div>;
-            }
-          }
-          // 3. 🍔 Old diner zone — now plain wooden floor (show the wood-plank base).
-          else if (t.type === 'restaurant-floor') {
-            bg = 'transparent';
-          }
-          // Solid diner table counter table
-          else if (t.type === 'diner-table') {
-            bg = '#5c3a21'; // rich mahogany wood counter
-            borderStyle.border = '2px solid #8d6e63';
-            borderStyle.boxShadow = '0 3px 6px rgba(0,0,0,0.6)';
-          }
-          // 🧗 Bouldering Rock Wall — one continuous tall sprite over the 1×6 column.
-          // Draw the full wall once at the TOP cell; keep the rest of the column
-          // transparent so the lower rows' backgrounds (which Y-sort gives a higher
-          // z-index) don't paint over the sprite. The wall sits behind the hangboard /
-          // climb obstacles in col 2, so they read as "mounted on the wall".
-          else if (t.type === 'bouldering-wall') {
-            if (t.col === 1 && t.row === 4) {
-              bg = '#0c1320';
-              borderStyle.border = 'none';
-              content = <div style={{ width: '88px', height: '240px', position: 'absolute', top: 0, left: 0, zIndex: 5 }}><PixelProp type="bouldering-wall" /></div>;
-            } else {
-              bg = 'transparent';
-              borderStyle.border = 'none'; // avoid per-cell border lines painting over the sprite
-            }
-          }
-
-          // 16-Bit Pixel Props Vector Rendering!
-          else if (t.type === 'bed') {
-            // Keep the other 3 bed cells transparent so their floor bg doesn't paint
-            // over the (lower-z) bed sprite anchored at the top-left cell.
-            bg = 'transparent';
-            borderStyle.border = 'none';
-            if (t.col === 1 && t.row === 1) content = <div style={{ width: '116px', height: '116px', position: 'absolute', top: 0, left: 0, zIndex: 5 }}><PixelProp type="bed" /></div>;
-          }
-          else if (t.type === 'bookshelf') {
-            // Relocated to col 13 (rows 1-2 body). Top cell stays transparent + holds the
-            // sprite, drawn one row higher (top:-100%) so the tall shelf stands flush to
-            // the ceiling and its base lands at row 3 (tile 73).
-            borderStyle.border = 'none';
-            if (t.col === 13 && t.row === 1) {
-              bg = 'transparent';
-              content = <div style={{ width: '78px', height: '118px', position: 'absolute', top: '-100%', left: 0, zIndex: 5 }}><PixelProp type="bookshelf" /></div>;
-            } else {
-              // Lower body cell: paint the grass floor (col 13 isn't tatami) and drop it
-              // BELOW the sprite so the bookshelf art still shows over it.
-              bg = '#122012';
-              tileZOverride = 1;
-            }
-          }
-          
-          else if (t.type === 'suitcase') {
-            content = <div style={{ width: '56px', height: '56px', position: 'absolute', left: '50%', bottom: '-6px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="suitcase" /></div>;
-          }
-          else if (t.type === 'campfire') {
-            content = <div style={{ width: '56px', height: '56px', position: 'absolute', left: '50%', bottom: '-6px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="campfire" /></div>;
-          }
-          else if (t.type === 'tent') {
-            content = <div style={{ width: '64px', height: '64px', position: 'absolute', left: '50%', bottom: '-6px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="tent" /></div>;
-          }
-          else if (t.type === 'tyre') {
-            content = <div style={{ width: '48px', height: '48px', position: 'absolute', left: '50%', bottom: '-4px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="tyre" /></div>;
-          }
-          else if (t.type === 'projector') {
-            content = <div style={{ width: '52px', height: '52px', position: 'absolute', left: '50%', bottom: '-4px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="projector" /></div>;
-          }
-          
-          else if (t.type === 'goalpost') {
-            let subtype = 'goalpost-mid';
-            if (t.row === 10) subtype = 'goalpost-top';
-            if (t.row === 12) subtype = 'goalpost-bottom';
-            // Grass behind the net so the goal column matches the rest of the turf corner.
-            borderStyle.backgroundImage = 'url(/grassturf.png)';
-            borderStyle.backgroundSize = '400% 300%';
-            borderStyle.backgroundPosition = `100% ${((t.row - 10) / 2) * 100}%`;
-            borderStyle.imageRendering = 'pixelated';
-            content = <div style={{ width: '56px', height: '56px', position: 'absolute', left: '50%', bottom: '-6px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type={subtype} /></div>;
-          }
-          else if (t.type === 'cone') {
-            content = <div style={{ width: '30px', height: '30px', fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🚩</div>;
-          }
-          
-          else if (t.type === 'bulletin') {
-            content = <div style={{ width: '74px', height: '74px', position: 'absolute', left: '50%', bottom: '-8px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="bulletin" /></div>;
-          }
-          else if (t.type === 'bike') {
-            content = <div style={{ width: '74px', height: '74px', position: 'absolute', left: '50%', bottom: '-8px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="bike" /></div>;
-          }
-
-          else if (t.type.startsWith('obstacle-')) {
-            const objId = t.type.split('-')[1];
-            const obj = INTERACTABLE_OBJECTS.find(o => o.id === objId);
-            // Props sit directly on the zone floor (set as the default bg above) — no
-            // dark box, no glow border, so the art doesn't look boxed-in / out of place.
-            // The pulse-glow when the player is nearby still signals interactivity.
-            borderStyle.border = 'none';
-            
-            if (objId === 'kitchen') {
-              if (t.col === 6) content = <div style={{ width: '56px', height: '56px', position: 'absolute', left: '50%', bottom: '-6px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="stove" /></div>;
-              else if (t.col === 7) content = <div style={{ width: '56px', height: '56px', position: 'absolute', left: '50%', bottom: '-6px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="kitchen-counter" /></div>;
-              else if (t.col === 8) content = <div style={{ width: '56px', height: '56px', position: 'absolute', left: '50%', bottom: '-6px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="fridge" /></div>;
-            }
-            else if (objId === 'trekking') {
-              content = <div style={{ width: '56px', height: '56px', position: 'absolute', left: '50%', bottom: '-6px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="travel-table" /></div>;
-            }
-            else if (objId === 'toolbox') {
-              content = <div style={{ width: '56px', height: '56px', position: 'absolute', left: '50%', bottom: '-6px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="toolbox" /></div>;
-            }
-            else if (objId === 'hangboard') {
-              content = <div style={{ width: '56px', height: '56px', position: 'absolute', left: '50%', bottom: '-6px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="hangboard" /></div>;
-            }
-            else if (objId === 'tacticboard') {
-              content = <div style={{ width: '56px', height: '56px', position: 'absolute', left: '50%', bottom: '-6px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="tacticboard" /></div>;
-            }
-            else if (objId === 'computerglowing') {
-              content = <div style={{ width: '78px', height: '78px', position: 'absolute', left: '50%', bottom: '-8px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="computerglowing" /></div>;
-            }
-            else if (objId === 'bouldering') {
-              // This tile sits under the wall sprite (col 2) — keep it transparent and
-              // empty; the wall is the visual and the proximity pulse signals interaction.
-              bg = 'transparent';
-              content = null;
-            }
-            else {
-              const centerCell = obj?.cells[0];
-              if (centerCell && centerCell.col === t.col && centerCell.row === t.row) {
-                content = (
-                  <div style={{ fontSize: '1.8rem', zIndex: 2, filter: 'drop-shadow(0 0 4px #000)' }}>
-                    {obj.id === 'profile' || obj.id === 'football' || obj.id === 'anime' ? null :
-                     obj.symbol}
-                  </div>
-                );
-              }
-            }
-          }
-
-          // Render Manga Cabinet in Lounge corner
-          if (t.col === 16 && t.row === 1) {
-            content = <div style={{ width: '76px', height: '76px', position: 'absolute', left: '50%', bottom: '-8px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="arcade" /></div>;
-          }
-
-          // Kitchen appliances flanking the interactive counter (7,1). These two tiles
-          // are solid (see mapConfig) but their sprites were never drawn, so they read
-          // as invisible walls — render them here.
-          if (t.col === 6 && t.row === 1) {
-            content = <div style={{ width: '56px', height: '56px', position: 'absolute', left: '50%', bottom: '-6px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="fridge" /></div>;
-          }
-          if (t.col === 8 && t.row === 1) {
-            content = <div style={{ width: '56px', height: '56px', position: 'absolute', left: '50%', bottom: '-6px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type="stove" /></div>;
-          }
-
-          // Decorative mini goal at the right edge of the soccer turf (col 18, rows 10-12).
-          // Non-solid, so the player can walk right up to / through it.
-          if (t.col === 18 && t.row >= 10 && t.row <= 12) {
-            const goalSub = t.row === 10 ? 'goalpost-top' : t.row === 12 ? 'goalpost-bottom' : 'goalpost-mid';
-            content = <div style={{ width: '54px', height: '54px', position: 'absolute', left: '50%', bottom: '-4px', transform: 'translateX(-50%)', zIndex: 5 }}><PixelProp type={goalSub} /></div>;
-          }
-
-          // Climbing-pad column 2 sits under the wall sprite's overflow (the wall is drawn
-          // once at col 1, row 4 and is wider than one tile). Keep this whole column
-          // transparent so no floor / solid-prop box paints over the wall art.
-          if (t.col === 2 && t.row >= 4 && t.row <= 9) {
-            bg = 'transparent';
-            borderStyle.border = 'none';
-            borderStyle.backgroundImage = 'none';
-          }
-
-          const isInteractableNearby = nearObject && t.type === `obstacle-${nearObject.id}`;
-
-          // Y-SORTING DEPTH ENGINE: Dynamic Stacking Contexts
           const isSolidObstacle = isTileSolid(t.col, t.row);
-          const tileZIndex = tileZOverride != null
-            ? tileZOverride
-            : (isSolidObstacle ? (Math.floor(t.row * 10) + 5) : 1);
+          const tileZIndex = isSolidObstacle ? (Math.floor(t.row * 10) + 5) : 1;
 
           return (
             <div 
               key={idx}
               onClick={() => handleTileClick(t.col, t.row)}
               style={{
-                backgroundColor: bg,
-                border: t.type.includes('wall') ? '1px solid #111' : '1px solid rgba(255,255,255,0.02)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
                 position: 'relative',
                 zIndex: tileZIndex,
-                boxShadow: glow,
-                animation: isInteractableNearby ? 'pulse-glow 1.5s infinite alternate' : 'none',
-                ...borderStyle
+                background: 'transparent',
+                boxSizing: 'border-box'
               }}
             >
-              {content}
-
-              {/* 🔧 DEV-ONLY tile number overlay — remove via SHOW_TILE_NUMBERS flag before going live */}
-              {SHOW_TILE_NUMBERS && (
-                <div style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 1,
-                  fontSize: '7px',
-                  lineHeight: 1,
-                  fontFamily: 'monospace',
-                  color: 'rgba(255,255,255,0.9)',
-                  background: 'rgba(0,0,0,0.55)',
-                  padding: '1px 2px',
-                  borderRadius: '2px',
-                  zIndex: 9999,
-                  pointerEvents: 'none'
-                }}>
-                  {idx}
-                </div>
-              )}
-
-              {/* Central Rug custom border design */}
-              {t.type === 'rug' && (t.col === 5 || t.col === 13 || t.row === 5 || t.row === 9) && (
-                <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, border: '2px dotted var(--rpg-highlight)', opacity: 0.3 }} />
-              )}
-
               {/* Render Biking Checkpoint Loop post flags */}
               {isRiding && activeCheckpoint.current === 1 && t.col === 2 && t.row === 10 && (
                 <div style={{ width: '32px', height: '32px', position: 'absolute', zIndex: 6 }}><PixelProp type="checkpoint" /></div>
@@ -3044,6 +2881,28 @@ export default function InteractiveAvatar() {
               )}
               {isRiding && activeCheckpoint.current === 3 && t.col === 17 && t.row === 9 && (
                 <div style={{ width: '32px', height: '32px', position: 'absolute', zIndex: 6 }}><PixelProp type="checkpoint" /></div>
+              )}
+
+              {/* Dev tile number overlay if enabled */}
+              {SHOW_TILE_NUMBERS && (
+                <div style={{
+                  position: 'absolute',
+                  top: 1,
+                  left: 1,
+                  fontSize: '8px',
+                  lineHeight: 1,
+                  fontFamily: 'monospace',
+                  fontWeight: 'bold',
+                  color: '#00ffff',
+                  background: 'rgba(0,0,0,0.75)',
+                  padding: '1px 3px',
+                  borderRadius: '2px',
+                  zIndex: 9999,
+                  pointerEvents: 'none',
+                  border: '1px solid rgba(0,255,255,0.4)'
+                }}>
+                  {idx}
+                </div>
               )}
             </div>
           );
@@ -3102,7 +2961,7 @@ export default function InteractiveAvatar() {
           <PixelProp type="cat" />
         </div>
 
-        {/* Raghav Animated NPC — autonomous "mini-AI" that roams + acts out his hobbies */}
+        {/* Raghav Animated NPC — increased by 15% to 37px x 44px */}
         <div
           style={{
             position: 'absolute',
@@ -3113,8 +2972,8 @@ export default function InteractiveAvatar() {
             display: 'flex',
             alignItems: 'flex-end',
             justifyContent: 'center',
-            width: '32px',
-            height: '38px'
+            width: '37px',
+            height: '44px'
           }}
         >
           {/* Thought bubble while acting at a station */}
@@ -3143,12 +3002,13 @@ export default function InteractiveAvatar() {
             direction={raghavDirection}
             frame={raghavThought ? 0 : previewFrame}
             customColors={raghavColors}
+            isRaghav={true}
           />
         </div>
 
 
 
-        {/* Custom Player Avatar Sprite */}
+        {/* Custom Player Avatar Sprite — increased by 15% to 52px x 52px */}
         <div 
           style={{
             position: 'absolute',
@@ -3160,8 +3020,8 @@ export default function InteractiveAvatar() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            width: '45px',
-            height: '45px',
+            width: '52px',
+            height: '52px',
             transition: 'none'
           }}
         >
@@ -3221,48 +3081,47 @@ export default function InteractiveAvatar() {
             </div>
           )}
           
-          <Sprite direction={direction} frame={frame} customColors={customColors} />
+          <Sprite direction={direction} frame={frame} customColors={customColors} isRaghav={false} />
         </div>
 
       </div>
 
-      {/* Parchment-scroll RPG dialogue box (always visible to prevent layout shifts) */}
+      {/* Parchment-scroll RPG dialogue box matching reference design */}
       <div
+        className="dialogue-parchment"
         style={{
-          height: '100px',
-          background: 'linear-gradient(180deg, #f6e7bd 0%, #eed9a0 100%)',
-          borderTop: '3px solid #8a5a2b',
-          boxShadow: 'inset 0 0 18px rgba(138, 90, 43, 0.28), 0 -2px 10px rgba(0,0,0,0.35)',
-          padding: '12px 20px',
+          height: '116px',
+          position: 'relative',
+          zIndex: 12,
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
-          position: 'relative',
-          zIndex: 12
+          padding: '14px 85px 18px 115px',
+          boxSizing: 'border-box'
         }}
       >
-        {/* stitched inner border for the scroll look */}
-        <div style={{ position: 'absolute', top: '5px', left: '8px', right: '8px', bottom: '5px', border: '2px dashed rgba(138, 90, 43, 0.35)', borderRadius: '4px', pointerEvents: 'none' }} />
         <span
           className="pixel-header"
           style={{
-            fontSize: '0.8rem',
-            color: '#8a3a2a',
-            marginBottom: '6px',
-            textTransform: 'uppercase'
+            fontSize: '0.78rem',
+            color: '#5c2214',
+            marginBottom: '4px',
+            textTransform: 'uppercase',
+            letterSpacing: '1px'
           }}
         >
-          {nearObject ? `📍 ${nearObject.title}` : `🏡 Cozy Space`}
+          {nearObject ? `${nearObject.symbol} ${nearObject.title.toUpperCase()} -` : `⛺ COZY SPACE -`}
         </span>
         <p
           className="pixel-text typing-cursor"
           style={{
             margin: 0,
-            fontSize: '1.4rem',
-            lineHeight: '1.4',
-            color: '#2e2013',
+            fontSize: '1.45rem',
+            lineHeight: '1.25',
+            color: '#2a1708',
             whiteSpace: 'normal',
-            wordWrap: 'break-word'
+            wordWrap: 'break-word',
+            fontWeight: 'bold'
           }}
         >
           {displayedText}
@@ -3276,15 +3135,16 @@ export default function InteractiveAvatar() {
             className="pixel-header"
             style={{
               position: 'absolute',
-              right: '20px',
-              bottom: '15px',
-              background: '#c0392b',
-              color: '#f6e7bd',
-              border: '3px solid #3a2419',
-              padding: '6px 12px',
-              fontSize: '0.8rem',
+              right: '85px',
+              bottom: '18px',
+              background: '#b83226',
+              color: '#fdf3dd',
+              border: '2px solid #3a150c',
+              padding: '5px 12px',
+              fontSize: '0.75rem',
               cursor: 'pointer',
-              boxShadow: '2px 2px 0 #3a2419',
+              boxShadow: '2px 2px 0 #3a150c',
+              borderRadius: '3px',
               zIndex: 1
             }}
           >
@@ -3479,66 +3339,6 @@ export default function InteractiveAvatar() {
         </div>
       )}
 
-      {/* C. 🪧 Guestbook Bulletin Submit review Modal */}
-      {showGuestbookSubmit && (
-        <div style={{
-          position: 'absolute',
-          top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.9)',
-          zIndex: 150,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '20px'
-        }}>
-          <div className="rpg-box" style={{ width: '100%', maxWidth: '500px', display: 'flex', flexDirection: 'column', gap: '15px', borderColor: 'var(--rpg-highlight)' }}>
-            <h3 className="pixel-header" style={{ fontSize: '1rem', color: 'var(--rpg-highlight)', borderBottom: '3px solid var(--rpg-highlight)', paddingBottom: '8px', margin: 0 }}>
-              🪧 SIGN THE WALL OF USERS
-            </h3>
-
-            <p className="pixel-text" style={{ fontSize: '1.4rem', color: '#fff', margin: 0 }}>
-              Welcome, {playerName} ({playerClass}). Submit your review to spawn your custom sprite permanently on our multiplayer bulletin overworld!
-            </p>
-
-            <textarea
-              value={guestbookText}
-              onChange={(e) => setGuestbookText(e.target.value.slice(0, 100))}
-              className="pixel-text"
-              placeholder="Leave a short retro review... (max 100 chars)"
-              style={{
-                background: '#000',
-                border: '3px solid var(--rpg-text)',
-                color: '#fff',
-                fontSize: '1.4rem',
-                padding: '10px',
-                width: '100%',
-                height: '80px',
-                outline: 'none',
-                boxSizing: 'border-box',
-                resize: 'none'
-              }}
-            />
-
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-              <button 
-                onClick={() => setShowGuestbookSubmit(false)}
-                className="pixel-header"
-                style={{ background: '#000', color: '#888', border: '2px solid #555', padding: '8px 15px', cursor: 'pointer', fontSize: '0.75rem' }}
-              >
-                CANCEL
-              </button>
-              <button 
-                onClick={submitGuestbookReview}
-                className="pixel-header"
-                style={{ background: 'var(--rpg-text)', color: '#000', border: '2px solid #000', padding: '8px 15px', cursor: 'pointer', fontSize: '0.75rem' }}
-              >
-                SUBMIT PIN [A]
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* E. 🖼️ Gilded Wall Photo Frame: Visitor Gallery Modal */}
       {showVisitorGallery && (
@@ -3704,6 +3504,67 @@ export default function InteractiveAvatar() {
             <div className="rpg-box" style={{ background: '#111', fontSize: '1.4rem', color: '#fff', padding: '12px', borderColor: 'var(--rpg-text)' }}>
               <div className="pixel-header" style={{ fontSize: '0.55rem', color: 'var(--rpg-text)', marginBottom: '5px' }}>PINNED REVIEW:</div>
               "{selectedGalleryProfile.review}"
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 🪧 Guestbook Bulletin Submit review Modal — renders above the gallery modal with zIndex 350 */}
+      {showGuestbookSubmit && (
+        <div style={{
+          position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.92)',
+          zIndex: 350,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div className="rpg-box" style={{ width: '100%', maxWidth: '500px', display: 'flex', flexDirection: 'column', gap: '15px', borderColor: 'var(--rpg-highlight)', boxShadow: '0 0 30px rgba(0,255,255,0.4)' }}>
+            <h3 className="pixel-header" style={{ fontSize: '1rem', color: 'var(--rpg-highlight)', borderBottom: '3px solid var(--rpg-highlight)', paddingBottom: '8px', margin: 0 }}>
+              🪧 SIGN THE WALL OF USERS
+            </h3>
+
+            <p className="pixel-text" style={{ fontSize: '1.4rem', color: '#fff', margin: 0 }}>
+              Welcome, {playerName} ({playerClass}). Submit your review to spawn your custom sprite permanently on our multiplayer bulletin overworld!
+            </p>
+
+            <textarea
+              value={guestbookText}
+              onChange={(e) => setGuestbookText(e.target.value.slice(0, 100))}
+              className="pixel-text"
+              placeholder="Leave a short retro review... (max 100 chars)"
+              style={{
+                background: '#000',
+                border: '3px solid var(--rpg-text)',
+                color: '#fff',
+                fontSize: '1.4rem',
+                padding: '10px',
+                width: '100%',
+                height: '80px',
+                outline: 'none',
+                boxSizing: 'border-box',
+                resize: 'none'
+              }}
+            />
+
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button 
+                onClick={() => setShowGuestbookSubmit(false)}
+                className="pixel-header"
+                style={{ background: '#000', color: '#888', border: '2px solid #555', padding: '8px 15px', cursor: 'pointer', fontSize: '0.75rem' }}
+              >
+                CANCEL
+              </button>
+              <button 
+                onClick={submitGuestbookReview}
+                className="pixel-header"
+                style={{ background: 'var(--rpg-text)', color: '#000', border: '2px solid #000', padding: '8px 15px', cursor: 'pointer', fontSize: '0.75rem' }}
+              >
+                SUBMIT PIN [A]
+              </button>
             </div>
           </div>
         </div>
@@ -3886,7 +3747,13 @@ export default function InteractiveAvatar() {
             </button>
           </div>
 
-          <div style={{ flex: 1, position: 'relative', background: '#123015 url(/grassturf.png) center/cover', imageRendering: 'pixelated', overflow: 'hidden' }}>
+          <div style={{
+            flex: 1,
+            position: 'relative',
+            background: 'repeating-linear-gradient(90deg, #1b4b22 0px, #1b4b22 36px, #235c2b 36px, #235c2b 72px)',
+            imageRendering: 'pixelated',
+            overflow: 'hidden'
+          }}>
             {/* Field outline */}
             <div style={{ position: 'absolute', top: '10%', bottom: '10%', left: '5%', right: '5%', border: '3px solid rgba(255,255,255,0.85)', boxShadow: '0 0 4px rgba(0,0,0,0.5)' }} />
             {/* Halfway line */}
@@ -3897,21 +3764,47 @@ export default function InteractiveAvatar() {
             <div style={{ position: 'absolute', top: '49.2%', left: '49.6%', width: '0.8%', height: '1.4%', background: 'rgba(255,255,255,0.9)', borderRadius: '50%' }} />
 
             {/* Penalty boxes */}
-            <div style={{ position: 'absolute', top: '30%', bottom: '30%', left: '5%', width: '12%', border: '3px solid rgba(255,255,255,0.85)', borderLeft: 'none' }} />
-            <div style={{ position: 'absolute', top: '30%', bottom: '30%', right: '5%', width: '12%', border: '3px solid rgba(255,255,255,0.85)', borderRight: 'none' }} />
+            <div style={{ position: 'absolute', top: '28%', bottom: '28%', left: '5%', width: '12%', border: '3px solid rgba(255,255,255,0.85)', borderLeft: 'none' }} />
+            <div style={{ position: 'absolute', top: '28%', bottom: '28%', right: '5%', width: '12%', border: '3px solid rgba(255,255,255,0.85)', borderRight: 'none' }} />
             
             {/* LEFT GOAL Net (PLAYER GOAL) */}
-            <div style={{ position: 'absolute', top: '35%', bottom: '35%', left: '0.5%', width: '5%', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ flex: 1 }}><PixelProp type="goalpost-top" /></div>
-              <div style={{ flex: 1 }}><PixelProp type="goalpost-mid" /></div>
-              <div style={{ flex: 1 }}><PixelProp type="goalpost-bottom" /></div>
+            <div style={{
+              position: 'absolute',
+              top: '28%',
+              bottom: '28%',
+              left: '0.6%',
+              width: '6.5%',
+              border: '3px solid #ffffff',
+              borderLeft: '4px solid #fff',
+              background: 'repeating-linear-gradient(45deg, rgba(255,255,255,0.22) 0px, rgba(255,255,255,0.22) 1.5px, transparent 1.5px, transparent 8px), repeating-linear-gradient(-45deg, rgba(255,255,255,0.22) 0px, rgba(255,255,255,0.22) 1.5px, transparent 1.5px, transparent 8px), rgba(0,0,0,0.3)',
+              boxShadow: 'inset 4px 0 10px rgba(0,0,0,0.6)',
+              borderRadius: '2px 0 0 2px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 8
+            }}>
+              <span className="pixel-header" style={{ transform: 'rotate(-90deg)', fontSize: '0.48rem', color: 'rgba(255,255,255,0.75)', letterSpacing: '1px' }}>YOUR GOAL</span>
             </div>
 
             {/* RIGHT GOAL Net (AI GOAL) */}
-            <div style={{ position: 'absolute', top: '35%', bottom: '35%', right: '0.5%', width: '5%', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ flex: 1 }}><PixelProp type="goalpost-top" /></div>
-              <div style={{ flex: 1 }}><PixelProp type="goalpost-mid" /></div>
-              <div style={{ flex: 1 }}><PixelProp type="goalpost-bottom" /></div>
+            <div style={{
+              position: 'absolute',
+              top: '28%',
+              bottom: '28%',
+              right: '0.6%',
+              width: '6.5%',
+              border: '3px solid #ffffff',
+              borderRight: '4px solid #fff',
+              background: 'repeating-linear-gradient(45deg, rgba(255,255,255,0.22) 0px, rgba(255,255,255,0.22) 1.5px, transparent 1.5px, transparent 8px), repeating-linear-gradient(-45deg, rgba(255,255,255,0.22) 0px, rgba(255,255,255,0.22) 1.5px, transparent 1.5px, transparent 8px), rgba(0,0,0,0.3)',
+              boxShadow: 'inset -4px 0 10px rgba(0,0,0,0.6)',
+              borderRadius: '0 2px 2px 0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 8
+            }}>
+              <span className="pixel-header" style={{ transform: 'rotate(90deg)', fontSize: '0.48rem', color: 'rgba(255,255,255,0.75)', letterSpacing: '1px' }}>RAGHAV GOAL</span>
             </div>
 
             {/* Giant Retro Kickoff Countdown Overlay */}
@@ -4403,282 +4296,159 @@ export default function InteractiveAvatar() {
           padding: '20px'
         }}>
           <div className="crt-scanline" style={{ pointerEvents: 'none' }} />
-          <div className="rpg-box" style={{ width: '90%', maxWidth: '480px', background: '#08080f', borderColor: 'var(--rpg-highlight)', boxShadow: '0 0 20px rgba(0, 255, 255, 0.3)' }}>
+          <div className="rpg-box" style={{ width: '92%', maxWidth: '520px', maxHeight: '85%', overflowY: 'auto', background: '#08080f', borderColor: 'var(--rpg-highlight)', boxShadow: '0 0 20px rgba(0, 255, 255, 0.3)', padding: '14px 16px' }}>
             
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '3px solid var(--rpg-highlight)', paddingBottom: '8px', marginBottom: '15px' }}>
-              <span className="pixel-header" style={{ fontSize: '0.85rem', color: 'var(--rpg-highlight)' }}>🧗 BOULDERING QTE CLIMB</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid var(--rpg-highlight)', paddingBottom: '8px', marginBottom: '12px' }}>
+              <span className="pixel-header" style={{ fontSize: '0.78rem', color: 'var(--rpg-highlight)' }}>🧗 BOULDERING & HANGBOARD</span>
               <button 
                 onClick={() => setShowClimbingQTE(false)}
                 className="pixel-header"
-                style={{ background: 'var(--rpg-accent)', color: '#fff', border: '2px solid #000', padding: '2px 8px', fontSize: '0.65rem', cursor: 'pointer' }}
+                style={{ background: 'var(--rpg-accent)', color: '#fff', border: '2px solid #000', padding: '2px 8px', fontSize: '0.62rem', cursor: 'pointer' }}
               >
-                ABANDON [B]
+                CLOSE [B]
               </button>
             </div>
 
-            <div style={{ display: 'flex', gap: '20px', alignItems: 'stretch' }}>
-              {/* Vertical Wall Climbing Progress Bar (Left side) */}
-              <div style={{ width: '60px', background: '#1c1917', border: '3px solid #78716c', position: 'relative', display: 'flex', flexDirection: 'column-reverse', padding: '4px' }}>
-                {[...Array(5)].map((_, i) => {
-                  const filled = qteProgress > i;
-                  return (
-                    <div 
-                      key={i} 
-                      style={{ 
-                        height: '35px', 
-                        margin: '2px 0', 
-                        background: filled ? '#00e5ff' : '#444', 
-                        border: '1.5px solid #222',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '0.9rem',
-                        transition: 'background 0.2s'
+            {/* Segmented tab buttons: Climb Wall vs Grip Stats */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+              <button
+                onClick={() => { playSound('blip'); setBoulderingTab('climb'); }}
+                className="pixel-header"
+                style={{
+                  flex: 1,
+                  background: boulderingTab === 'climb' ? 'var(--rpg-highlight)' : '#1a1a24',
+                  color: boulderingTab === 'climb' ? '#000' : '#aaa',
+                  border: '2px solid ' + (boulderingTab === 'climb' ? 'var(--rpg-highlight)' : '#333'),
+                  padding: '6px 0',
+                  fontSize: '0.68rem',
+                  cursor: 'pointer'
+                }}
+              >
+                🧗 CLIMB WALL
+              </button>
+              <button
+                onClick={() => { playSound('blip'); setBoulderingTab('hangboard'); }}
+                className="pixel-header"
+                style={{
+                  flex: 1,
+                  background: boulderingTab === 'hangboard' ? '#2196f3' : '#1a1a24',
+                  color: boulderingTab === 'hangboard' ? '#fff' : '#aaa',
+                  border: '2px solid ' + (boulderingTab === 'hangboard' ? '#2196f3' : '#333'),
+                  padding: '6px 0',
+                  fontSize: '0.68rem',
+                  cursor: 'pointer'
+                }}
+              >
+                💪 GRIP & STATS
+              </button>
+            </div>
+
+            {boulderingTab === 'climb' ? (
+              <>
+                <div style={{ display: 'flex', gap: '15px', alignItems: 'stretch' }}>
+                  {/* Vertical Wall Climbing Progress Bar (Left side) */}
+                  <div style={{ width: '50px', background: '#1c1917', border: '2px solid #78716c', position: 'relative', display: 'flex', flexDirection: 'column-reverse', padding: '3px' }}>
+                    {[...Array(5)].map((_, i) => {
+                      const filled = qteProgress > i;
+                      return (
+                        <div 
+                          key={i} 
+                          style={{ 
+                            height: '28px', 
+                            margin: '2px 0', 
+                            background: filled ? '#00e5ff' : '#333', 
+                            border: '1px solid #111',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '0.8rem',
+                            transition: 'background 0.2s'
+                          }}
+                        >
+                          {filled ? '🧗' : '◽'}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Action instructions and prompts (Right side) */}
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '10px' }}>
+                    <p className="pixel-text" style={{ fontSize: '1.15rem', color: '#ccc', margin: 0, lineHeight: 1.35 }}>
+                      Conquer the V5 overhang! Press the matching key hold highlighted below when prompted. Hit 5 in a row!
+                    </p>
+
+                    {qteStatus === 'playing' && (
+                      <div style={{ textAlign: 'center', background: '#000', padding: '10px', border: '2px solid var(--rpg-text)', borderRadius: '4px' }}>
+                        <div className="pixel-header" style={{ fontSize: '0.58rem', color: '#ffb700', marginBottom: '4px' }}>NEXT HOLD TO GRAB:</div>
+                        <div className="pixel-header animate-bob" style={{ fontSize: '1.6rem', color: 'var(--rpg-highlight)', textShadow: '0 0 10px var(--rpg-highlight)' }}>
+                          {qteKey.toUpperCase()}
+                        </div>
+                      </div>
+                    )}
+
+                    {qteStatus === 'success' && (
+                      <div style={{ background: '#1b3c1a', border: '2px solid #00ff66', color: '#00ff66', padding: '10px', textAlign: 'center', borderRadius: '4px' }}>
+                        <h4 className="pixel-header" style={{ fontSize: '0.75rem', margin: '0 0 4px 0' }}>🏆 WALL CLIMBED!</h4>
+                        <p className="pixel-text" style={{ fontSize: '1.1rem', margin: 0 }}>
+                          Scaled the slab. Gained +15 Grip Power. Climber Elite active!
+                        </p>
+                      </div>
+                    )}
+
+                    {qteStatus === 'fail' && (
+                      <div style={{ background: '#4a1515', border: '2px solid #ff1744', color: '#ff1744', padding: '10px', textAlign: 'center', borderRadius: '4px' }}>
+                        <h4 className="pixel-header" style={{ fontSize: '0.75rem', margin: '0 0 4px 0' }}>❌ FALLEN!</h4>
+                        <p className="pixel-text" style={{ fontSize: '1.1rem', margin: 0 }}>
+                          Slipped off the sloper. Re-chalking hands...
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #333', marginTop: '12px', paddingTop: '8px' }}>
+                  <span className="pixel-header" style={{ fontSize: '0.55rem', color: '#888' }}>Hold streak: {qteProgress} / 5</span>
+                  {qteStatus !== 'playing' && (
+                    <button
+                      onClick={() => {
+                        setQteProgress(0);
+                        setQteStatus('playing');
                       }}
+                      className="pixel-header"
+                      style={{ background: 'var(--rpg-text)', color: '#000', border: '2px solid #000', padding: '4px 10px', fontSize: '0.62rem', cursor: 'pointer' }}
                     >
-                      {filled ? '🧗' : '◽'}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Action instructions and prompts (Right side) */}
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifySelf: 'center', justifyContent: 'center', gap: '15px' }}>
-                <p className="pixel-text" style={{ fontSize: '1.3rem', color: '#ccc', margin: 0 }}>
-                  Conquer the V5 overhang! Press the matching key hold highlighted below when prompted. Hit 5 in a row!
-                </p>
-
-                {qteStatus === 'playing' && (
-                  <div style={{ textAlign: 'center', background: '#000', padding: '15px', border: '3px solid var(--rpg-text)', borderRadius: '4px' }}>
-                    <div className="pixel-header" style={{ fontSize: '0.62rem', color: '#ffb700', marginBottom: '8px' }}>NEXT HOLD TO GRAB:</div>
-                    <div className="pixel-header animate-bob" style={{ fontSize: '2.0rem', color: 'var(--rpg-highlight)', textShadow: '0 0 10px var(--rpg-highlight)' }}>
-                      {qteKey.toUpperCase()}
-                    </div>
-                  </div>
-                )}
-
-                {qteStatus === 'success' && (
-                  <div style={{ background: '#1b3c1a', border: '3px solid #00ff66', color: '#00ff66', padding: '15px', textAlign: 'center', borderRadius: '4px' }}>
-                    <h4 className="pixel-header" style={{ fontSize: '0.85rem', margin: '0 0 5px 0' }}>🏆 WALL CLIMBED!</h4>
-                    <p className="pixel-text" style={{ fontSize: '1.25rem', margin: 0 }}>
-                      Scaled the slab. Gained +15 Grip Power. Climber Elite badge active!
-                    </p>
-                  </div>
-                )}
-
-                {qteStatus === 'fail' && (
-                  <div style={{ background: '#4a1515', border: '3px solid #ff1744', color: '#ff1744', padding: '15px', textAlign: 'center', borderRadius: '4px', animation: 'shake 0.2s 3' }}>
-                    <h4 className="pixel-header" style={{ fontSize: '0.85rem', margin: '0 0 5px 0' }}>❌ FALLEN!</h4>
-                    <p className="pixel-text" style={{ fontSize: '1.25rem', margin: 0 }}>
-                      Slipped off the sloper. Re-chalking hands...
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '2px solid #333', marginTop: '15px', paddingTop: '10px' }}>
-              <span className="pixel-header" style={{ fontSize: '0.55rem', color: '#888' }}>Hold streak: {qteProgress} / 5</span>
-              {qteStatus !== 'playing' && (
-                <button
-                  onClick={() => {
-                    setQteProgress(0);
-                    setQteStatus('playing');
-                  }}
-                  className="pixel-header"
-                  style={{ background: 'var(--rpg-text)', color: '#000', border: '2px solid #000', padding: '4px 10px', fontSize: '0.62rem', cursor: 'pointer' }}
-                >
-                  RETRY
-                </button>
-              )}
-            </div>
-
-          </div>
-        </div>
-      )}
-
-      {/* 2. 🧰 Tech Stack Toolbox drawer modal */}
-      {showTechStack && (
-        <div style={{
-          position: 'absolute',
-          top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(5, 5, 12, 0.95)',
-          zIndex: 220,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '20px'
-        }}>
-          <div className="crt-scanline" style={{ pointerEvents: 'none' }} />
-          <div className="rpg-box" style={{ width: '95%', maxWidth: '640px', background: '#0a0505', borderColor: '#c62828', boxShadow: '0 0 25px rgba(198, 40, 40, 0.3)' }}>
-            
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '3px solid #c62828', paddingBottom: '8px', marginBottom: '15px' }}>
-              <span className="pixel-header" style={{ fontSize: '0.85rem', color: '#c62828' }}>🧰 RAGHAV'S DEVELOPMENT TOOLBOX</span>
-              <button 
-                onClick={() => setShowTechStack(false)}
-                className="pixel-header"
-                style={{ background: 'var(--rpg-accent)', color: '#fff', border: '2px solid #000', padding: '2px 8px', fontSize: '0.65rem', cursor: 'pointer' }}
-              >
-                CLOSE [B]
-              </button>
-            </div>
-
-            <p className="pixel-text" style={{ fontSize: '1.25rem', color: '#aaa', margin: '0 0 15px 0', textAlign: 'center' }}>
-              Slide open the toolbox drawers to inspect the specific software tools I use to build things!
-            </p>
-
-            <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-              {/* Left Column: Drawers Buttons (Toolbox shape) */}
-              <div style={{ flex: '1 1 180px', display: 'flex', flexDirection: 'column', gap: '8px', background: '#1c1c1c', padding: '8px', borderRadius: '4px', border: '2px solid #333' }}>
-                {[
-                  { id: 'frontend', title: '🟥 Frontend UI', color: '#e53935' },
-                  { id: 'backend', title: '🟨 Backend API', color: '#ffd700' },
-                  { id: 'devops', title: '🟩 Cloud & DB', color: '#43a047' },
-                  { id: 'core', title: '🟪 Core Architecture', color: '#8a2be2' }
-                ].map(drawer => (
-                  <button
-                    key={drawer.id}
-                    onClick={() => {
-                      playSound('chime');
-                      setActiveStackDrawer(drawer.id);
-                    }}
-                    className="pixel-header"
-                    style={{
-                      background: activeStackDrawer === drawer.id ? drawer.color : '#0a0a0f',
-                      color: activeStackDrawer === drawer.id ? '#000' : '#fff',
-                      border: `2px solid ${drawer.color}`,
-                      padding: '10px 8px',
-                      fontSize: '0.68rem',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      boxShadow: activeStackDrawer === drawer.id ? 'inset 0 0 8px rgba(0,0,0,0.5)' : 'none',
-                      transition: 'all 0.15s'
-                    }}
-                  >
-                    {drawer.title}
-                  </button>
-                ))}
-              </div>
-
-              {/* Right Column: Open Drawer Tray Contents */}
-              <div className="rpg-box" style={{ flex: '2 1 320px', minHeight: '220px', background: '#050508', border: '2px solid #444', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <h4 className="pixel-header" style={{ fontSize: '0.72rem', color: '#fff', borderBottom: '1px dotted #444', paddingBottom: '4px', margin: 0, textTransform: 'uppercase' }}>
-                  📂 Cabinet Tray: {activeStackDrawer}
-                </h4>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '1.25rem', overflowY: 'auto', maxHeight: '200px' }}>
-                  {activeStackDrawer === 'frontend' && (
-                    <>
-                      <div>⚡ <strong style={{ color: '#00e5ff' }}>React.js & Vite:</strong> Framework of choice for lightning-fast modern Single Page Apps.</div>
-                      <div>🎨 <strong style={{ color: '#ffb700' }}>Vanilla CSS:</strong> Maximum style customisation with harmonious curated HSL palettes.</div>
-                      <div>📽️ <strong style={{ color: '#ff007f' }}>Framer Motion:</strong> Immersive, spring-based micro-animations and route transitions.</div>
-                      <div>🕹️ <strong style={{ color: '#00ff66' }}>Web Audio Synths:</strong> Custom synth sound generators for absolute browser immersion.</div>
-                    </>
-                  )}
-                  {activeStackDrawer === 'backend' && (
-                    <>
-                      <div>🟢 <strong style={{ color: '#00ff66' }}>Node.js & Express:</strong> High performance RESTful APIs and real-time backend structures.</div>
-                      <div>🔌 <strong style={{ color: '#ff007f' }}>WebSockets:</strong> Secure real-time client-server communication channels.</div>
-                      <div>🕷️ <strong style={{ color: '#00e5ff' }}>Python Scrapers:</strong> Advanced scraping bots (e.g. tracking simulated stock charts).</div>
-                      <div>📦 <strong style={{ color: '#ffd700' }}>REST Client APIs:</strong> Fully rate-limited resilient external API integrations.</div>
-                    </>
-                  )}
-                  {activeStackDrawer === 'devops' && (
-                    <>
-                      <div>🐘 <strong style={{ color: '#00e5ff' }}>PostgreSQL:</strong> Highly structured database schemas, optimized query indices.</div>
-                      <div>🔥 <strong style={{ color: '#ff7043' }}>Firestore & NoSQL:</strong> Document-driven real-time database storage solutions.</div>
-                      <div>☁️ <strong style={{ color: '#ffd700' }}>GCP & Cloud Run:</strong> Secure virtual instances, containerized application hosting.</div>
-                      <div>🐙 <strong style={{ color: '#eeeeee' }}>Git & CI/CD:</strong> Strict code audits, merge control, and deployment pipes.</div>
-                    </>
-                  )}
-                  {activeStackDrawer === 'core' && (
-                    <>
-                      <div>🏗️ <strong style={{ color: '#ff007f' }}>Clean Architecture:</strong> Domain-driven, modular design structures for easy scale.</div>
-                      <div>⚡ <strong style={{ color: '#00e5ff' }}>Performance Profiling:</strong> Layout shift elimination, minimal asset footprints.</div>
-                      <div>🧠 <strong style={{ color: '#ffd700' }}>Algorithmic Logic:</strong> Data structures and optimization calculations.</div>
-                      <div>🛡️ <strong style={{ color: '#00ff66' }}>Code Integrity:</strong> Secure state handling, zero external pollution.</div>
-                    </>
+                      RETRY
+                    </button>
                   )}
                 </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      )}
-
-      {/* 3. 🧗 Fitness Stats Gym Card Modal */}
-      {showFitnessStats && (
-        <div style={{
-          position: 'absolute',
-          top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(5, 5, 12, 0.95)',
-          zIndex: 220,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '20px'
-        }}>
-          <div className="crt-scanline" style={{ pointerEvents: 'none' }} />
-          <div className="rpg-box" style={{ width: '90%', maxWidth: '440px', background: '#08080f', borderColor: '#2196f3', boxShadow: '0 0 25px rgba(33, 150, 243, 0.3)' }}>
-            
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '3px solid #2196f3', paddingBottom: '8px', marginBottom: '15px' }}>
-              <span className="pixel-header" style={{ fontSize: '0.85rem', color: '#2196f3' }}>💪 GYM MEMBERSHIP ID SHEET</span>
-              <button 
-                onClick={() => setShowFitnessStats(false)}
-                className="pixel-header"
-                style={{ background: 'var(--rpg-accent)', color: '#fff', border: '2px solid #000', padding: '2px 8px', fontSize: '0.65rem', cursor: 'pointer' }}
-              >
-                CLOSE [B]
-              </button>
-            </div>
-
-            {/* Gym card layout */}
-            <div style={{ background: '#1565c0', color: '#fff', borderRadius: '4px', border: '2px solid #ffd700', padding: '15px', position: 'relative', overflow: 'hidden' }}>
-              {/* Diagonal stamp overlay */}
-              <div style={{
-                position: 'absolute',
-                top: '20px', right: '-15px',
-                transform: 'rotate(25deg)',
-                background: 'rgba(255, 215, 0, 0.15)',
-                border: '2px dashed #ffd700',
-                color: '#ffd700',
-                fontSize: '0.62rem',
-                fontFamily: 'monospace',
-                fontWeight: 'bold',
-                padding: '4px 10px',
-                letterSpacing: '1px',
-                borderRadius: '3px',
-                zIndex: 1
-              }}>
-                CERTIFIED ATHLETE
-              </div>
-
-              <div style={{ display: 'flex', gap: '15px', alignItems: 'center', marginBottom: '15px', zIndex: 2, position: 'relative' }}>
-                <div style={{ width: '56px', height: '56px', background: '#000', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ fontSize: '2.2rem' }}>🧗</span>
+              </>
+            ) : (
+              /* Hangboard & Grip stats view */
+              <div style={{ background: '#12243d', color: '#fff', borderRadius: '4px', border: '2px solid #2196f3', padding: '12px', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '10px' }}>
+                  <div style={{ width: '44px', height: '44px', background: '#000', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem' }}>
+                    🧗
+                  </div>
+                  <div>
+                    <h3 className="pixel-header" style={{ fontSize: '0.8rem', color: '#ffd700', margin: '0 0 2px 0' }}>RAGHAV CLIMBER</h3>
+                    <span className="pixel-header" style={{ fontSize: '0.5rem', color: '#90caf9' }}>Class: Granite Slab Hyperfixator</span>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="pixel-header" style={{ fontSize: '0.9rem', color: '#ffd700', margin: '0 0 4px 0' }}>RAGHAV CLIMBER</h3>
-                  <span className="pixel-header" style={{ fontSize: '0.52rem', color: '#cfd8dc' }}>Class: Granite Slab Hyperfixator</span>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.72rem', borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>🏅 Climbing Level:</span> <span style={{ color: '#ffd700', fontWeight: 'bold' }}>V5 (Sandstone redpoint)</span></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>💪 Pull-up Rep Max:</span> <span style={{ color: '#ffd700' }}>22 Repetitions</span></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>✊ Crimp Dead-Hang:</span> <span style={{ color: '#ffd700' }}>8 / 10 (15mm micro-edges)</span></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>🔋 Core Stability:</span> <span style={{ color: '#90caf9' }}>Gold Tier (Plank Max: 4m)</span></div>
+                </div>
+
+                <div style={{ marginTop: '10px', borderTop: '1px dashed rgba(255,255,255,0.15)', paddingTop: '8px', fontSize: '0.65rem', color: '#cfd8dc', lineHeight: 1.35 }}>
+                  <strong style={{ color: '#ffd700' }}>Current Training Regimen:</strong><br/>
+                  • Dead-hang crimps (7s hold, 3s rest) on 15mm edges.<br/>
+                  • Weekly volume board sessions focusing on high-tension body positioning.
                 </div>
               </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '1.25rem', borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: '12px', zIndex: 2, position: 'relative' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>🏅 climbing Level:</span> <span style={{ color: '#ffd700', fontWeight: 'bold' }}>V5 (Sandstone redpoint)</span></div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>💪 Pull-up Rep Max:</span> <span style={{ color: '#ffd700' }}>22 Repetitions</span></div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>✊ Crimp Dead-Hang:</span> <span style={{ color: '#ffd700' }}>8 / 10 (Extreme holds)</span></div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>🔋 Core Stability:</span> <span style={{ color: '#cfd8dc' }}>Gold Tier (Plank Max: 4m)</span></div>
-              </div>
-
-              <div style={{ marginTop: '12px', borderTop: '1.5px dashed rgba(255,255,255,0.2)', paddingTop: '10px', fontSize: '1.15rem', color: '#eceff1', fontFamily: 'monospace' }}>
-                <div style={{ fontWeight: 'bold', fontSize: '0.62rem', color: '#ffd700', marginBottom: '4px', textTransform: 'uppercase' }}>Current Training Regimen:</div>
-                • Dead-hang crimps (7s hold, 3s rest) on 15mm edges.<br/>
-                • Weekly volume board sessions focusing on high-tension core tension.
-              </div>
-            </div>
+            )}
 
           </div>
         </div>
@@ -4698,64 +4468,173 @@ export default function InteractiveAvatar() {
           padding: '20px'
         }}>
           <div className="crt-scanline" style={{ pointerEvents: 'none' }} />
-          <div className="rpg-box" style={{ width: '95%', maxWidth: '580px', background: '#0a100a', borderColor: '#4caf50', boxShadow: '0 0 25px rgba(76, 175, 80, 0.3)' }}>
+          <div className="rpg-box" style={{ width: '95%', maxWidth: '540px', maxHeight: '85%', overflowY: 'auto', background: '#0a100a', borderColor: '#4caf50', boxShadow: '0 0 25px rgba(76, 175, 80, 0.3)', padding: '14px 16px' }}>
             
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '3px solid #4caf50', paddingBottom: '8px', marginBottom: '15px' }}>
-              <span className="pixel-header" style={{ fontSize: '0.85rem', color: '#4caf50' }}>📋 RAGHAV'S FOOTBALL CHALKBOARD</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #4caf50', paddingBottom: '6px', marginBottom: '10px' }}>
+              <span className="pixel-header" style={{ fontSize: '0.75rem', color: '#4caf50' }}>📋 RAGHAV'S FOOTBALL CHALKBOARD</span>
               <button 
                 onClick={() => setShowTacticalBlueprints(false)}
                 className="pixel-header"
-                style={{ background: 'var(--rpg-accent)', color: '#fff', border: '2px solid #000', padding: '2px 8px', fontSize: '0.65rem', cursor: 'pointer' }}
+                style={{ background: 'var(--rpg-accent)', color: '#fff', border: '2px solid #000', padding: '2px 8px', fontSize: '0.62rem', cursor: 'pointer' }}
               >
                 CLOSE [B]
               </button>
             </div>
 
             {/* Chalkboard styling */}
-            <div style={{ background: '#1c361e', border: '5px solid #8d6e63', padding: '15px', color: '#eceff1', borderRadius: '4px', boxShadow: 'inset 0 0 20px rgba(0,0,0,0.8)' }}>
+            <div style={{ background: '#1c361e', border: '3px solid #8d6e63', padding: '10px 12px', color: '#eceff1', borderRadius: '4px', boxShadow: 'inset 0 0 16px rgba(0,0,0,0.8)' }}>
 
-              <div style={{ borderBottom: '2px dashed rgba(255,255,255,0.2)', paddingBottom: '8px', marginBottom: '12px', textAlign: 'center' }}>
-                <h3 className="pixel-header" style={{ fontSize: '0.8rem', color: '#ffeb3b', margin: 0 }}>
+              <div style={{ borderBottom: '1px dashed rgba(255,255,255,0.25)', paddingBottom: '6px', marginBottom: '8px', textAlign: 'center' }}>
+                <h3 className="pixel-header" style={{ fontSize: '0.72rem', color: '#ffeb3b', margin: 0 }}>
                   FC BARCELONA — MÉS QUE UN CLUB
                 </h3>
-                <span style={{ fontSize: '0.62rem', fontFamily: 'monospace', color: '#81c784' }}>Raghav's one and only football religion</span>
+                <span style={{ fontSize: '0.55rem', fontFamily: 'monospace', color: '#81c784' }}>Raghav's one and only football religion</span>
               </div>
 
               {/* Fandom columns */}
-              <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                 {/* Chalkboard Drawing */}
-                <div style={{ flex: '1 1 200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ width: '220px', height: '140px' }}>
+                <div style={{ flex: '0 0 120px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '120px', height: '80px' }}>
                     <PixelProp type="tacticboard" />
                   </div>
                 </div>
 
                 {/* Club / Player / Loyalty details */}
-                <div style={{ flex: '1.2 1 240px', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '1.2rem', fontFamily: 'monospace' }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px', fontSize: '0.7rem', lineHeight: '1.3', fontFamily: 'monospace' }}>
                   <div>
-                    <span style={{ color: '#4fc3f7', fontWeight: 'bold' }}>🔵🔴 CLUB — FC Barcelona (FCB):</span><br/>
-                    The Blaugrana. Tiki-taka purists raised on the La Masia academy and the Camp Nou faithful. Possession is the philosophy — style over everything.
+                    <span style={{ color: '#4fc3f7', fontWeight: 'bold' }}>🔵🔴 CLUB — FC Barcelona:</span>
+                    <span style={{ color: '#ccc', marginLeft: '4px' }}>The Blaugrana. Tiki-taka purists, La Masia philosophy — style over everything.</span>
                   </div>
                   <div>
-                    <span style={{ color: '#ffeb3b', fontWeight: 'bold' }}>🐐 PLAYER — Lionel Messi:</span><br/>
-                    The GOAT. The number 10 whose left foot rewrote football. Every dribble, free-kick and impossible angle is pure inspiration.
+                    <span style={{ color: '#ffeb3b', fontWeight: 'bold' }}>🐐 PLAYER — Lionel Messi:</span>
+                    <span style={{ color: '#ccc', marginLeft: '4px' }}>The GOAT. Pure inspiration from the #10 whose left foot rewrote football history.</span>
                   </div>
                   <div>
-                    <span style={{ color: '#ffd54f', fontWeight: 'bold' }}>💛 LOYALTY — Visca Barça, sempre:</span><br/>
-                    Through trebles and heartbreaks, Champions League nights and El Clásico wars — a culer for life. No glory-hunting, no switching sides. One club, forever.
+                    <span style={{ color: '#ffd54f', fontWeight: 'bold' }}>💛 LOYALTY — Visca Barça:</span>
+                    <span style={{ color: '#ccc', marginLeft: '4px' }}>Through trebles & heartbreak, a culer for life. One club, forever.</span>
                   </div>
                 </div>
               </div>
 
             </div>
 
-            {/* Play Match call-to-action — launches the 1v1 soccer minigame */}
+            {/* Play Match call-to-action */}
             <button
               onClick={() => { setShowTacticalBlueprints(false); setShowFullscreenSoccer(true); }}
               className="pixel-header"
-              style={{ marginTop: '15px', width: '100%', background: 'var(--rpg-highlight)', color: '#000', border: '3px solid #000', padding: '12px', fontSize: '0.9rem', fontWeight: 'bold', cursor: 'pointer', boxShadow: '3px 3px 0 #000' }}
+              style={{ marginTop: '10px', width: '100%', background: 'var(--rpg-highlight)', color: '#000', border: '2px solid #000', padding: '8px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', boxShadow: '2px 2px 0 #000' }}
             >
               ⚽ PLAY A MATCH — 1V1 SOCCER DUEL
+            </button>
+
+          </div>
+        </div>
+      )}
+
+      {/* 4B. 📚 Manga & Anime Lounge Overview Modal (Matches Football Chalkboard Layout) */}
+      {showMangaLounge && (
+        <div style={{
+          position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(5, 5, 12, 0.95)',
+          zIndex: 220,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div className="crt-scanline" style={{ pointerEvents: 'none' }} />
+          <div className="rpg-box" style={{
+            width: '95%',
+            maxWidth: '560px',
+            maxHeight: '85%',
+            overflowY: 'auto',
+            background: '#0d0914',
+            borderColor: '#9c27b0',
+            boxShadow: '0 0 25px rgba(156, 39, 176, 0.35)',
+            padding: '14px 16px'
+          }}>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #9c27b0', paddingBottom: '6px', marginBottom: '10px' }}>
+              <span className="pixel-header" style={{ fontSize: '0.75rem', color: '#ba68c8' }}>📚 RAGHAV'S MANGA & ANIME LOUNGE</span>
+              <button 
+                onClick={() => setShowMangaLounge(false)}
+                className="pixel-header"
+                style={{ background: 'var(--rpg-accent)', color: '#fff', border: '2px solid #000', padding: '2px 8px', fontSize: '0.62rem', cursor: 'pointer' }}
+              >
+                CLOSE [B]
+              </button>
+            </div>
+
+            {/* Aesthetic Lounge Card styling */}
+            <div style={{ background: '#181124', border: '3px solid #6a1b9a', padding: '10px 12px', color: '#eceff1', borderRadius: '4px', boxShadow: 'inset 0 0 16px rgba(0,0,0,0.8)' }}>
+
+              <div style={{ borderBottom: '1px dashed rgba(255,255,255,0.2)', paddingBottom: '6px', marginBottom: '8px', textAlign: 'center' }}>
+                <h3 className="pixel-header" style={{ fontSize: '0.75rem', color: '#e1bee7', margin: 0 }}>
+                  RAGHAV'S ANIME & MANGA SANCTUARY
+                </h3>
+                <span style={{ fontSize: '0.55rem', fontFamily: 'monospace', color: '#ce93d8' }}>Curated archive of peak storytelling, worldbuilding, and retro shonen lore</span>
+              </div>
+
+              {/* Watchlist & Favorites Grid */}
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                {/* Prop icon / illustration on the left */}
+                <div style={{ flex: '0 0 110px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                  <div style={{ width: '80px', height: '90px' }}>
+                    <PixelProp type="arcade" />
+                  </div>
+                  <span style={{ fontSize: '0.52rem', fontFamily: 'monospace', color: '#ab47bc', textAlign: 'center' }}>Retro Weeb Terminal</span>
+                </div>
+
+                {/* Categories */}
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.68rem', lineHeight: '1.35', fontFamily: 'monospace' }}>
+                  <div>
+                    <span style={{ color: '#ffd54f', fontWeight: 'bold' }}>⭐ ALL-TIME PEAK:</span>
+                    <div style={{ color: '#ccc', marginLeft: '6px' }}>• <strong style={{ color: '#fff' }}>Hunter × Hunter</strong> (Chimera Ant arc, peak power system)</div>
+                    <div style={{ color: '#ccc', marginLeft: '6px' }}>• <strong style={{ color: '#fff' }}>Attack on Titan</strong> (Masterclass narrative pacing & Erwin hype)</div>
+                    <div style={{ color: '#ccc', marginLeft: '6px' }}>• <strong style={{ color: '#fff' }}>Cyberpunk: Edgerunners</strong> (Trigger art & emotional damage)</div>
+                  </div>
+                  <div>
+                    <span style={{ color: '#4fc3f7', fontWeight: 'bold' }}>📺 CURRENT WATCHLIST:</span>
+                    <div style={{ color: '#ccc', marginLeft: '6px' }}>• <strong style={{ color: '#fff' }}>Dandadan</strong> (Turbo Granny chaos & kinetic animation)</div>
+                    <div style={{ color: '#ccc', marginLeft: '6px' }}>• <strong style={{ color: '#fff' }}>Bleach: TYBW</strong> (Studio Pierrot cinema-grade Bankai)</div>
+                    <div style={{ color: '#ccc', marginLeft: '6px' }}>• <strong style={{ color: '#fff' }}>Jujutsu Kaisen</strong> (Shibuya incident & Domain expansions)</div>
+                  </div>
+                  <div>
+                    <span style={{ color: '#81c784', fontWeight: 'bold' }}>⏳ PLAN TO WATCH / READING:</span>
+                    <div style={{ color: '#ccc', marginLeft: '6px' }}>• <strong style={{ color: '#fff' }}>Frieren</strong>, <strong style={{ color: '#fff' }}>Vinland Saga S2</strong>, <strong style={{ color: '#fff' }}>Monster</strong></div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Play Trivia Arcade call-to-action button */}
+            <button
+              onClick={() => {
+                setShowMangaLounge(false);
+                setShowTrivia(true);
+                setCurrentQuestionIdx(0);
+                setCorrectStreak(0);
+                setTriviaResult(null);
+              }}
+              className="pixel-header"
+              style={{
+                marginTop: '10px',
+                width: '100%',
+                background: 'var(--rpg-highlight)',
+                color: '#000',
+                border: '2px solid #000',
+                padding: '8px',
+                fontSize: '0.75rem',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                boxShadow: '2px 2px 0 #000'
+              }}
+            >
+              🕹️ PLAY MANGA LORE TRIVIA ARCADE
             </button>
 
           </div>
@@ -4776,9 +4655,18 @@ export default function InteractiveAvatar() {
           padding: '20px'
         }}>
           <div className="crt-scanline" style={{ pointerEvents: 'none' }} />
-          <div className="rpg-box" style={{ width: '95%', maxWidth: '680px', background: '#050508', borderColor: '#00e5ff', boxShadow: '0 0 25px rgba(0, 229, 255, 0.3)' }}>
+          <div className="rpg-box" style={{
+            width: '95%',
+            maxWidth: '680px',
+            maxHeight: '85%',
+            overflowY: 'auto',
+            background: '#050508',
+            borderColor: '#00e5ff',
+            boxShadow: '0 0 25px rgba(0, 229, 255, 0.3)',
+            padding: '14px 16px'
+          }}>
             
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '3px solid #00e5ff', paddingBottom: '8px', marginBottom: '15px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '3px solid #00e5ff', paddingBottom: '8px', marginBottom: '12px' }}>
               <span className="pixel-header" style={{ fontSize: '0.85rem', color: '#00e5ff' }}>🖥️ RAGHAV'S GLOWING COMMAND DECK</span>
               <button 
                 onClick={() => setShowPCProjects(false)}
@@ -4789,9 +4677,14 @@ export default function InteractiveAvatar() {
               </button>
             </div>
 
-            <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'minmax(200px, 240px) 1fr',
+              gap: '12px',
+              alignItems: 'stretch'
+            }}>
               {/* Left Column: Project Selection Terminal */}
-              <div style={{ flex: '1 1 220px', display: 'flex', flexDirection: 'column', gap: '8px', background: '#111', padding: '10px', borderRadius: '4px', border: '2px solid #333' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: '#111', padding: '10px', borderRadius: '4px', border: '2px solid #333' }}>
                 <span className="pixel-header" style={{ fontSize: '0.52rem', color: '#888', marginBottom: '4px', display: 'block' }}>📁 ACTIVE PROJECTS DICTIONARY:</span>
                 {PC_PROJECTS.map(project => (
                   <button
@@ -4816,16 +4709,16 @@ export default function InteractiveAvatar() {
               </div>
 
               {/* Right Column: Simulated Live stdout console */}
-              <div style={{ flex: '1.5 1 300px', display: 'flex', flexDirection: 'column', background: '#000', border: '3px solid #333', padding: '10px', borderRadius: '4px', height: '260px', boxSizing: 'border-box' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', background: '#000', border: '3px solid #333', padding: '10px', borderRadius: '4px', height: '280px', boxSizing: 'border-box' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #333', paddingBottom: '4px', marginBottom: '8px', fontSize: '0.52rem', fontFamily: 'monospace', color: '#ff007f' }}>
                   <span>TERMINAL: stdout</span>
                   <span>STATUS: RUNNING</span>
                 </div>
 
                 {/* CRT Glowing terminal text logs box */}
-                <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', fontFamily: 'monospace', fontSize: '0.98rem', color: '#39ff14', textShadow: '0 0 4px rgba(57,255,20,0.5)', paddingRight: '4px' }}>
+                <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px', fontFamily: 'monospace', fontSize: '0.92rem', color: '#39ff14', textShadow: '0 0 4px rgba(57,255,20,0.5)', paddingRight: '4px' }}>
                   {simulatedLogs.map((log, idx) => (
-                    <div key={idx} style={{ wordBreak: 'break-all', whiteSpace: 'normal' }}>
+                    <div key={idx} style={{ wordBreak: 'break-all', whiteSpace: 'normal', lineHeight: '1.3' }}>
                       {log}
                     </div>
                   ))}
