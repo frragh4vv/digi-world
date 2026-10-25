@@ -2742,7 +2742,7 @@ export default function InteractiveAvatar() {
             pushToast("🔇 Sound Muted", "#f44336");
           }
         }}
-        className="pixel-header"
+        className="pixel-header sound-toggle"
         style={{
           position: 'absolute',
           top: '10px',
@@ -2761,12 +2761,13 @@ export default function InteractiveAvatar() {
         {isAudioEnabled ? "🔊 SOUND: ON" : "🔇 SOUND: MUTED"}
       </button>
 
-      {/* 🍞 Quest / badge toast stack (top-center popups) */}
-      <div style={{ position: 'absolute', top: '12px', left: '50%', transform: 'translateX(-50%)', zIndex: 300, display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center', pointerEvents: 'none' }}>
+      {/* 🍞 Quest / badge toast stack (top-center popups) — starts below the
+          SOUND button and wraps, so long toasts aren't hidden or cut off */}
+      <div style={{ position: 'absolute', top: '44px', left: '50%', transform: 'translateX(-50%)', width: 'calc(100% - 24px)', zIndex: 300, display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center', pointerEvents: 'none' }}>
         {toasts.map(t => (
           <div
             key={t.id}
-            className="pixel-header animate-bob"
+            className="pixel-header animate-bob game-toast"
             style={{
               background: 'rgba(10, 10, 18, 0.92)',
               color: t.color,
@@ -2775,7 +2776,9 @@ export default function InteractiveAvatar() {
               fontSize: '0.7rem',
               borderRadius: '4px',
               boxShadow: '0 4px 0 rgba(0,0,0,0.6)',
-              whiteSpace: 'nowrap'
+              maxWidth: '100%',
+              textAlign: 'center',
+              lineHeight: 1.5
             }}
           >
             {t.text}
@@ -2848,8 +2851,8 @@ export default function InteractiveAvatar() {
       >
         {/* Floating 3-second Section Discovery Banner */}
         {activeSectionBanner && (
-          <div 
-            className="pixel-header animate-bob"
+          <div
+            className="pixel-header animate-bob section-banner"
             style={{
               position: 'absolute',
               top: '12px',

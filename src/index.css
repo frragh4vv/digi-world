@@ -748,3 +748,27 @@ body {
     box-sizing: border-box;
   }
 }
+
+/* ── Phone: smaller in-room HUD chips ──
+   The SOUND button, toasts and zone banner are sized for a desktop screen;
+   on a ~350px room they covered each other. Inline styles set the desktop
+   sizes, hence !important. The zone banner moves to the bottom edge. */
+@media (max-width: 768px) {
+  .sound-toggle {
+    top: 6px !important;
+    right: 6px !important;
+    font-size: 0.5rem !important;
+    padding: 3px 6px !important;
+  }
+  .game-toast {
+    font-size: 0.5rem !important;
+    padding: 4px 8px !important;
+  }
+  .section-banner {
+    top: auto !important;
+    bottom: 6px;
+    font-size: 0.5rem !important;
+    padding: 3px 10px !important;
+    white-space: nowrap;
+  }
+}
