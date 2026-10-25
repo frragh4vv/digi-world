@@ -315,7 +315,8 @@ export default function InteractiveAvatar() {
     equippedBadges, unlockBadge,
     guestbookEntries, addGuestbookEntry,
     caffeineTimer, setCaffeineTimer,
-    activeItemId, setActiveItemId
+    activeItemId, setActiveItemId,
+    isPaused
   } = useGameState();
 
   // Spawning Customizer states
@@ -1122,7 +1123,7 @@ export default function InteractiveAvatar() {
     }
   };
 
-  const isModalOpen = !gameStarted || showFullscreenSoccer || showFullscreenBiking || showTravelDiary || showCarousel || showVisitorGallery || showKitchen || showTrivia || showMangaLounge || showGuestbookSubmit || showClimbingQTE || showTacticalBlueprints || showPCProjects || Boolean(activeGameStation) || Boolean(selectedGalleryProfile) || Boolean(selectedVisitorReview) || Boolean(activeItemId);
+  const isModalOpen = !gameStarted || isPaused || showFullscreenSoccer || showFullscreenBiking || showTravelDiary || showCarousel || showVisitorGallery || showKitchen || showTrivia || showMangaLounge || showGuestbookSubmit || showClimbingQTE || showTacticalBlueprints || showPCProjects || Boolean(activeGameStation) || Boolean(selectedGalleryProfile) || Boolean(selectedVisitorReview) || Boolean(activeItemId);
 
   // Clear any stuck inputs when modal opens or closes
   useEffect(() => {
@@ -1144,6 +1145,11 @@ export default function InteractiveAvatar() {
         clickTarget.current = null;
         return;
       }
+
+      // Walking keys must not scroll the page underneath the console
+      // (leave Space alone on focused controls so it can still press a button)
+      const onControl = ['BUTTON', 'INPUT', 'TEXTAREA', 'SELECT'].includes(e.target && e.target.tagName);
+      if (e.key.startsWith('Arrow') || (e.key === ' ' && !onControl)) e.preventDefault();
 
       if (e.key === 'ArrowUp') keysPressed.current['w'] = true;
       if (e.key === 'ArrowDown') keysPressed.current['s'] = true;
@@ -1183,12 +1189,20 @@ export default function InteractiveAvatar() {
       }
     };
 
+    // Alt-tab / switching tabs while holding a key never delivers its keyup —
+    // drop all held keys so the avatar doesn't keep walking on return.
+    const handleBlur = () => {
+      keysPressed.current = {};
+    };
+
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener('blur', handleBlur);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('blur', handleBlur);
     };
   }, [gameStarted, isModalOpen]);
 

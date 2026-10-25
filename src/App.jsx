@@ -184,14 +184,13 @@ function GameConsole() {
   const {
     activeItemId,
     setActiveItemId,
-    caffeineTimer
+    caffeineTimer,
+    isPaused: showStartMenu,
+    setIsPaused: setShowStartMenu
   } = useGameState();
 
   // Keyboard Event Dispatcher for Console D-Pad and Buttons (Mobile Touch Support!)
-  const simulateKeyEvent = (key, type, e) => {
-    if (e && e.cancelable && type === 'keydown') {
-      e.preventDefault();
-    }
+  const simulateKeyEvent = (key, type) => {
     const code = key === 'e' ? 'KeyE' : key === 'b' ? 'KeyB' : key === 'Escape' ? 'Escape' : key;
     const event = new KeyboardEvent(type, {
       key: key,
@@ -202,9 +201,25 @@ function GameConsole() {
     window.dispatchEvent(event);
   };
 
+  // Press-and-hold handlers for an on-screen button. Pointer events cover mouse,
+  // touch and pen in one path (mouse+touch handlers double-fired on phones), and
+  // pointer capture guarantees the keyup even if the finger slides off the button.
+  const holdKey = (key) => {
+    const release = () => simulateKeyEvent(key, 'keyup');
+    return {
+      onPointerDown: (e) => {
+        e.preventDefault();
+        e.currentTarget.setPointerCapture?.(e.pointerId);
+        simulateKeyEvent(key, 'keydown');
+      },
+      onPointerUp: release,
+      onPointerCancel: release,
+      onContextMenu: (e) => e.preventDefault()
+    };
+  };
+
   const selectedItem = inventoryItems.find(item => item.id === activeItemId);
 
-  const [showStartMenu, setShowStartMenu] = useState(false);
   const [startTab, setStartTab] = useState('stats'); // 'stats' | 'guide'
 
   useEffect(() => {
@@ -217,7 +232,23 @@ function GameConsole() {
     };
     window.addEventListener('keydown', handleGlobalKey);
     return () => window.removeEventListener('keydown', handleGlobalKey);
-  }, []);
+  }, [setShowStartMenu]);
+
+  // While paused, the menu owns the keyboard: B / Esc / P resume, and every other
+  // key is swallowed (capture phase) so the room behind can't react to it.
+  useEffect(() => {
+    if (!showStartMenu) return;
+    const swallow = (e) => {
+      const k = (e.key || '').toLowerCase();
+      e.stopImmediatePropagation();
+      if (k === 'b' || k === 'p' || e.key === 'Escape') {
+        e.preventDefault();
+        setShowStartMenu(false);
+      }
+    };
+    window.addEventListener('keydown', swallow, true);
+    return () => window.removeEventListener('keydown', swallow, true);
+  }, [showStartMenu, setShowStartMenu]);
 
   return (
     <div className="console-layout">
@@ -233,7 +264,7 @@ function GameConsole() {
             </span>
           </div>
           <p className="pixel-text" style={{ fontSize: 'clamp(0.95rem, 3.2vw, 1.2rem)', color: '#9aa0b0', margin: 0, lineHeight: 1.4 }}>
-            Walk around my bedroom overworld! <br className="hide-desktop" />[WASD / Arrows to walk · E to inspect · START for menu]
+            Walk around my bedroom overworld! <br className="hide-desktop" />[WASD / Arrows to walk · E to inspect · Esc to close · P / START for menu]
           </p>
         </header>
 
@@ -248,41 +279,17 @@ function GameConsole() {
           <div className="console-controls">
             {/* D-Pad */}
             <div className="d-pad">
-              <button 
-                onMouseDown={() => simulateKeyEvent('ArrowUp', 'keydown')}
-                onMouseUp={() => simulateKeyEvent('ArrowUp', 'keyup')}
-                onTouchStart={() => simulateKeyEvent('ArrowUp', 'keydown')}
-                onTouchEnd={() => simulateKeyEvent('ArrowUp', 'keyup')}
-                className="d-pad-btn d-pad-up"
-              >
+              <button {...holdKey('ArrowUp')} className="d-pad-btn d-pad-up" aria-label="Up">
                 ▲
               </button>
-              <button 
-                onMouseDown={() => simulateKeyEvent('ArrowLeft', 'keydown')}
-                onMouseUp={() => simulateKeyEvent('ArrowLeft', 'keyup')}
-                onTouchStart={() => simulateKeyEvent('ArrowLeft', 'keydown')}
-                onTouchEnd={() => simulateKeyEvent('ArrowLeft', 'keyup')}
-                className="d-pad-btn d-pad-left"
-              >
+              <button {...holdKey('ArrowLeft')} className="d-pad-btn d-pad-left" aria-label="Left">
                 ◀
               </button>
               <div className="d-pad-center"></div>
-              <button 
-                onMouseDown={() => simulateKeyEvent('ArrowRight', 'keydown')}
-                onMouseUp={() => simulateKeyEvent('ArrowRight', 'keyup')}
-                onTouchStart={() => simulateKeyEvent('ArrowRight', 'keydown')}
-                onTouchEnd={() => simulateKeyEvent('ArrowRight', 'keyup')}
-                className="d-pad-btn d-pad-right"
-              >
+              <button {...holdKey('ArrowRight')} className="d-pad-btn d-pad-right" aria-label="Right">
                 ▶
               </button>
-              <button 
-                onMouseDown={() => simulateKeyEvent('ArrowDown', 'keydown')}
-                onMouseUp={() => simulateKeyEvent('ArrowDown', 'keyup')}
-                onTouchStart={() => simulateKeyEvent('ArrowDown', 'keydown')}
-                onTouchEnd={() => simulateKeyEvent('ArrowDown', 'keyup')}
-                className="d-pad-btn d-pad-down"
-              >
+              <button {...holdKey('ArrowDown')} className="d-pad-btn d-pad-down" aria-label="Down">
                 ▼
               </button>
             </div>
@@ -300,6 +307,7 @@ function GameConsole() {
                     onClick={() => setShowStartMenu(prev => !prev)}
                     className="system-pill-btn"
                     title="START [Pause Menu / Stats]"
+                    aria-label="Start: pause menu"
                   />
                   <span className="system-pill-label">START</span>
                 </div>
@@ -309,23 +317,19 @@ function GameConsole() {
             {/* Action Buttons A & B */}
             <div className="action-buttons-wrap">
               <div className="action-buttons">
-                <button 
-                  onMouseDown={(e) => simulateKeyEvent('e', 'keydown', e)}
-                  onMouseUp={(e) => simulateKeyEvent('e', 'keyup', e)}
-                  onTouchStart={(e) => simulateKeyEvent('e', 'keydown', e)}
-                  onTouchEnd={(e) => simulateKeyEvent('e', 'keyup', e)}
+                <button
+                  {...holdKey('e')}
                   className="action-btn btn-a"
                   title="Action / Inspect [A]"
+                  aria-label="A: action / inspect"
                 >
                   A
                 </button>
                 <button
-                  onMouseDown={(e) => simulateKeyEvent('b', 'keydown', e)}
-                  onMouseUp={(e) => simulateKeyEvent('b', 'keyup', e)}
-                  onTouchStart={(e) => simulateKeyEvent('b', 'keydown', e)}
-                  onTouchEnd={(e) => simulateKeyEvent('b', 'keyup', e)}
+                  {...holdKey('b')}
                   className="action-btn btn-b"
                   title="Back / Cancel [B]"
+                  aria-label="B: back / cancel"
                 >
                   B
                 </button>
@@ -359,6 +363,9 @@ function GameConsole() {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 15 }}
               className="start-menu-modal rpg-box"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Pause menu"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="start-menu-header">
@@ -460,6 +467,9 @@ function GameConsole() {
               transition={{ type: 'spring', damping: 15 }}
               onClick={(e) => e.stopPropagation()}
               className="rpg-box"
+              role="dialog"
+              aria-modal="true"
+              aria-label={selectedItem.title}
               style={{
                 width: '100%',
                 maxWidth: '750px',
@@ -546,7 +556,8 @@ function GameConsole() {
                       <img 
                         key={idx} 
                         src={img} 
-                        alt={`Evidence ${idx}`} 
+                        alt={`${selectedItem.title} — photo ${idx + 1}`}
+                        loading="lazy"
                         style={{ 
                           width: '200px', 
                           height: '140px', 

@@ -583,3 +583,31 @@ body {
   0% { box-shadow: 0 0 4px rgba(255, 215, 0, 0.4); }
   100% { box-shadow: 0 0 16px rgba(255, 215, 0, 0.85); }
 }
+
+/* Console buttons are held like a gamepad: no double-tap zoom, scroll-drag,
+   long-press callout or grey tap flash on touch screens */
+.d-pad-btn,
+.action-btn,
+.system-pill-btn {
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Visible focus ring for keyboard users on the console buttons */
+.d-pad-btn:focus-visible,
+.action-btn:focus-visible,
+.system-pill-btn:focus-visible {
+  outline: 2px solid var(--rpg-highlight);
+  outline-offset: 2px;
+}
+
+/* Respect the OS "reduce motion" setting: stop the looping scanline, blink
+   and pulse effects */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

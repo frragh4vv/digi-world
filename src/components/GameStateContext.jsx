@@ -42,15 +42,19 @@ export function GameStateProvider({ children }) {
   const [activeItemId, setActiveItemId] = useState(null);
   const [caffeineTimer, setCaffeineTimer] = useState(0);
 
-  // Load guestbook logs on start
+  // START pause menu — shared so the overworld can freeze input while it's open
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Load guestbook logs on start. Storage can be blocked (private mode) or hold
+  // corrupt JSON — fall back to the defaults instead of crashing the whole app.
   useEffect(() => {
-    const saved = localStorage.getItem('raghav_rpg_guestbook');
-    if (saved) {
-      setGuestbookEntries(JSON.parse(saved));
-    } else {
-      setGuestbookEntries(DEFAULT_GUESTBOOK);
-      localStorage.setItem('raghav_rpg_guestbook', JSON.stringify(DEFAULT_GUESTBOOK));
-    }
+    let entries = DEFAULT_GUESTBOOK;
+    try {
+      const saved = JSON.parse(localStorage.getItem('raghav_rpg_guestbook'));
+      if (Array.isArray(saved)) entries = saved;
+      else localStorage.setItem('raghav_rpg_guestbook', JSON.stringify(DEFAULT_GUESTBOOK));
+    } catch { /* storage unavailable — keep defaults in memory */ }
+    setGuestbookEntries(entries);
   }, []);
 
   // Countdown timer for Caffeine Surge speed buff
@@ -73,9 +77,13 @@ export function GameStateProvider({ children }) {
       review,
       date: new Date().toLocaleDateString()
     };
-    const updated = [...guestbookEntries, newEntry];
-    setGuestbookEntries(updated);
-    localStorage.setItem('raghav_rpg_guestbook', JSON.stringify(updated));
+    setGuestbookEntries(prev => {
+      const updated = [...prev, newEntry];
+      try {
+        localStorage.setItem('raghav_rpg_guestbook', JSON.stringify(updated));
+      } catch { /* storage full/blocked — entry still shows this session */ }
+      return updated;
+    });
   };
 
   const unlockBadge = (badgeName) => {
@@ -114,7 +122,8 @@ export function GameStateProvider({ children }) {
       guestbookEntries, addGuestbookEntry,
       resetGameState,
       activeItemId, setActiveItemId,
-      caffeineTimer, setCaffeineTimer
+      caffeineTimer, setCaffeineTimer,
+      isPaused, setIsPaused
     }}>
       {children}
     </GameStateContext.Provider>
