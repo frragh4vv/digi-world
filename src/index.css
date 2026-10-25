@@ -714,3 +714,37 @@ body {
     padding: 4px 8px !important;
   }
 }
+
+/* ── Phone: in-game popups get the whole screen ──
+   Popups are absolutely positioned inside .game-viewport, which is only
+   ~300px tall on a phone. While one is open (body.game-popup-open, set by
+   InteractiveAvatar) pin the screen full-size and dock the D-pad / A / B
+   controls along the bottom so they stay usable. */
+@media (max-width: 768px) {
+  body.game-popup-open {
+    overflow: hidden;
+  }
+  body.game-popup-open .game-viewport {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 104px;
+    z-index: 180;
+    border-width: 0;
+    border-radius: 0;
+  }
+  body.game-popup-open .console-controls {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 104px;
+    z-index: 181;
+    margin: 0;
+    padding: 0 14px env(safe-area-inset-bottom, 0) 14px;
+    background: #1c1526;
+    border-top: 2px solid rgba(0, 255, 255, 0.35);
+    box-sizing: border-box;
+  }
+}

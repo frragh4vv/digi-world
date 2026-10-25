@@ -1125,6 +1125,16 @@ export default function InteractiveAvatar() {
 
   const isModalOpen = !gameStarted || isPaused || showFullscreenSoccer || showFullscreenBiking || showTravelDiary || showCarousel || showVisitorGallery || showKitchen || showTrivia || showMangaLounge || showGuestbookSubmit || showClimbingQTE || showTacticalBlueprints || showPCProjects || Boolean(activeGameStation) || Boolean(selectedGalleryProfile) || Boolean(selectedVisitorReview) || Boolean(activeItemId);
 
+  // Tell the page when an in-game popup (trivia, kitchen, diary, minigames…)
+  // is open. On phones, index.css then expands the game screen to fill the
+  // display — popups are positioned inside it and were cramped into ~300px.
+  // (the item-inspect card is App's own fixed overlay, so it doesn't count)
+  const popupOpen = gameStarted && isModalOpen && !isPaused && !activeItemId;
+  useEffect(() => {
+    document.body.classList.toggle('game-popup-open', popupOpen);
+    return () => document.body.classList.remove('game-popup-open');
+  }, [popupOpen]);
+
   // Clear any stuck inputs when modal opens or closes
   useEffect(() => {
     keysPressed.current = {};
