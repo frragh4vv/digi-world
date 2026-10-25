@@ -546,6 +546,22 @@ body {
     font-size: 0.55rem;
     padding: 6px 3px;
   }
+
+  /* Start at the top instead of centring a short console in 100vh */
+  .handheld-container {
+    min-height: auto;
+    padding: 8px 0;
+  }
+  .title-bar-version {
+    display: none;
+  }
+}
+
+/* Control hints: keyboard wording by default, touch wording on phones/tablets */
+.hint-touch { display: none; }
+@media (hover: none) and (pointer: coarse) {
+  .hint-keyboard { display: none; }
+  .hint-touch { display: inline; }
 }
 
 .hide-desktop { display: none; }
@@ -556,6 +572,7 @@ body {
 /* Tiles & Grid Design — High-Resolution Illustrated Room Overworld */
 .map-grid {
   display: grid;
+  flex: 1;
   width: 100%;
   height: 100%;
   position: relative;
@@ -573,6 +590,36 @@ body {
   background-size: 100% 100%;
   background-repeat: no-repeat;
   image-rendering: pixelated;
+  height: 116px;
+  position: relative;
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 14px 85px 18px 115px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+.dialogue-title {
+  font-size: 0.78rem;
+  color: #5c2214;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.dialogue-text {
+  margin: 0;
+  font-size: 1.45rem;
+  line-height: 1.25;
+  color: #2a1708;
+  white-space: normal;
+  overflow-wrap: break-word;
+  font-weight: bold;
+}
+.dialogue-action {
+  position: absolute;
+  right: 85px;
+  bottom: 18px;
 }
 
 /* Custom Scrollbars */
@@ -629,5 +676,41 @@ body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Phone screen layout ──
+   Kept at the end of the file so it overrides the base .map-grid and
+   .dialogue-* rules above (same specificity, later wins). */
+@media (max-width: 768px) {
+  /* Let the room keep its painted aspect ratio and size the screen around
+     it, instead of squeezing the room to fit a fixed 4:3-ish box */
+  .game-viewport {
+    aspect-ratio: auto;
+  }
+  .map-grid {
+    flex: none;
+    height: auto;
+    aspect-ratio: 1376 / 768;
+  }
+
+  /* Parchment ends scale with width, so the side padding must too */
+  .dialogue-parchment {
+    height: auto;
+    min-height: 84px;
+    padding: 12px 32px 14px 44px;
+  }
+  .dialogue-title {
+    font-size: 0.55rem;
+  }
+  .dialogue-text {
+    font-size: 1.1rem;
+  }
+  .dialogue-action {
+    position: static;
+    align-self: flex-end;
+    margin-top: 4px;
+    font-size: 0.55rem !important;
+    padding: 4px 8px !important;
   }
 }

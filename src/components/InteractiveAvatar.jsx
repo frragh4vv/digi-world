@@ -2833,8 +2833,7 @@ export default function InteractiveAvatar() {
         className="map-grid"
         style={{
           gridTemplateColumns: `repeat(${MAP_COLS}, 1fr)`,
-          gridTemplateRows: `repeat(${MAP_ROWS}, 1fr)`,
-          flex: 1
+          gridTemplateRows: `repeat(${MAP_ROWS}, 1fr)`
         }}
       >
         {/* Floating 3-second Section Discovery Banner */}
@@ -3101,43 +3100,13 @@ export default function InteractiveAvatar() {
       </div>
 
       {/* Parchment-scroll RPG dialogue box matching reference design */}
-      <div
-        className="dialogue-parchment"
-        style={{
-          height: '116px',
-          position: 'relative',
-          zIndex: 12,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          padding: '14px 85px 18px 115px',
-          boxSizing: 'border-box'
-        }}
-      >
-        <span
-          className="pixel-header"
-          style={{
-            fontSize: '0.78rem',
-            color: '#5c2214',
-            marginBottom: '4px',
-            textTransform: 'uppercase',
-            letterSpacing: '1px'
-          }}
-        >
+      {/* Box size, padding and font sizes live in index.css (.dialogue-*) so
+          phones can shrink the scroll's wide decorative margins */}
+      <div className="dialogue-parchment">
+        <span className="pixel-header dialogue-title">
           {nearObject ? `${nearObject.symbol} ${nearObject.title.toUpperCase()} -` : `⛺ COZY SPACE -`}
         </span>
-        <p
-          className="pixel-text typing-cursor"
-          style={{
-            margin: 0,
-            fontSize: '1.45rem',
-            lineHeight: '1.25',
-            color: '#2a1708',
-            whiteSpace: 'normal',
-            wordWrap: 'break-word',
-            fontWeight: 'bold'
-          }}
-        >
+        <p className="pixel-text typing-cursor dialogue-text">
           {displayedText}
         </p>
 
@@ -3146,11 +3115,8 @@ export default function InteractiveAvatar() {
             onClick={() => {
               keysPressed.current['e'] = true;
             }}
-            className="pixel-header"
+            className="pixel-header dialogue-action"
             style={{
-              position: 'absolute',
-              right: '85px',
-              bottom: '18px',
               background: '#b83226',
               color: '#fdf3dd',
               border: '2px solid #3a150c',

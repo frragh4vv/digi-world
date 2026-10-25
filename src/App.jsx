@@ -260,11 +260,13 @@ function GameConsole() {
           <div className="title-bar pixel-header">
             <span className="title-bar-dot" />
             <span className="title-bar-text">
-              RAGHAV'S DIGITAL WORLD <span className="title-bar-sep">//</span> <span className="title-bar-online">ONLINE</span> <span className="title-bar-sep">//</span> V2.0
+              RAGHAV'S DIGITAL WORLD <span className="title-bar-sep">//</span> <span className="title-bar-online">ONLINE</span><span className="title-bar-version"> <span className="title-bar-sep">//</span> V2.0</span>
             </span>
           </div>
           <p className="pixel-text" style={{ fontSize: 'clamp(0.95rem, 3.2vw, 1.2rem)', color: '#9aa0b0', margin: 0, lineHeight: 1.4 }}>
-            Walk around my bedroom overworld! <br className="hide-desktop" />[WASD / Arrows to walk · E to inspect · Esc to close · P / START for menu]
+            Walk around my bedroom overworld! <br className="hide-desktop" />
+            <span className="hint-keyboard">[WASD / Arrows to walk · E to inspect · Esc to close · P / START for menu]</span>
+            <span className="hint-touch">[D-pad to walk · A to inspect · B to close · START for menu]</span>
           </p>
         </header>
 
