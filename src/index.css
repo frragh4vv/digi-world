@@ -772,3 +772,27 @@ body {
     white-space: nowrap;
   }
 }
+
+/* Activity spot floor ring (see ACTIVITY_TARGETS in InteractiveAvatar) */
+.activity-marker {
+  position: absolute;
+  width: 3.4%;
+  aspect-ratio: 2 / 1;
+  transform: translate(-50%, -50%);
+  border: 2px solid rgba(0, 255, 255, 0.75);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(0, 255, 255, 0.28), rgba(0, 255, 255, 0) 70%);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.55);
+  z-index: 2;
+  pointer-events: none;
+  animation: marker-pulse 1.6s ease-in-out infinite;
+}
+.activity-marker.active {
+  border-color: #ffd166;
+  background: radial-gradient(ellipse at center, rgba(255, 209, 102, 0.4), rgba(255, 209, 102, 0) 70%);
+  box-shadow: 0 0 14px rgba(255, 209, 102, 0.8);
+}
+@keyframes marker-pulse {
+  0%, 100% { opacity: 0.55; transform: translate(-50%, -50%) scale(0.9); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+}

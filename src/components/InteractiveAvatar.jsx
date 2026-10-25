@@ -2879,6 +2879,20 @@ export default function InteractiveAvatar() {
           </div>
         )}
 
+        {/* Glowing floor rings on each activity spot — interactions only trigger
+            when standing on one, so visitors need to see where they are */}
+        {ACTIVITY_TARGETS.map(item => (
+          <div
+            key={`marker-${item.id}`}
+            className={`activity-marker${nearObject?.id === item.id ? ' active' : ''}`}
+            style={{
+              left: `${(item.target.col / MAP_COLS) * 100}%`,
+              top: `${(item.target.row / MAP_ROWS) * 100}%`
+            }}
+            aria-hidden="true"
+          />
+        ))}
+
         {tiles.map((t, idx) => {
           const isSolidObstacle = isTileSolid(t.col, t.row);
           const tileZIndex = isSolidObstacle ? (Math.floor(t.row * 10) + 5) : 1;
