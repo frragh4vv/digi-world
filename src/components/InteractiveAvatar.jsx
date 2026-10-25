@@ -144,6 +144,9 @@ const floorBgFor = (type, col, row) => {
 // 🔧 DEV-ONLY TILE NUMBERS ───────────────────────────────────────────────────
 const SHOW_TILE_NUMBERS = false;
 
+// Touch-first device (phone/tablet): prompts name the on-screen A button, not E
+const IS_TOUCH = typeof window !== 'undefined' && window.matchMedia?.('(hover: none) and (pointer: coarse)').matches;
+
 // Web Audio Synth Sound Engine
 let globalAudioEnabled = false;
 let audioCtxInstance = null;
@@ -3066,11 +3069,14 @@ export default function InteractiveAvatar() {
           }}
         >
           {nearObject && (
-            <div 
+            <div
               className="pixel-header animate-bob"
               style={{
                 position: 'absolute',
                 top: '-45px',
+                // Centered over the player, but near a side wall grow inward
+                // instead — the room clips anything past its edge
+                ...(playerPos.col < 4 ? { left: 0 } : playerPos.col > MAP_COLS - 4 ? { right: 0 } : {}),
                 background: 'var(--rpg-accent)',
                 color: '#fff',
                 border: '2px solid #000',
@@ -3082,7 +3088,7 @@ export default function InteractiveAvatar() {
                 zIndex: 15
               }}
             >
-              [E] {nearObject.inspectPrompt || "INSPECT"}
+              {IS_TOUCH ? '[A]' : '[E]'} {nearObject.inspectPrompt || "INSPECT"}
             </div>
           )}
 
