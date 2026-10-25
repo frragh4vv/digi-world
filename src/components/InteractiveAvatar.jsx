@@ -147,6 +147,12 @@ const SHOW_TILE_NUMBERS = false;
 // Touch-first device (phone/tablet): prompts name the on-screen A button, not E
 const IS_TOUCH = typeof window !== 'undefined' && window.matchMedia?.('(hover: none) and (pointer: coarse)').matches;
 
+// Climbing QTE holds. Touch screens have no Space key, so skip it there and
+// label holds with the on-screen D-pad / A button the player actually taps.
+const QTE_KEYS = IS_TOUCH ? ['w', 'a', 's', 'd', 'e'] : ['w', 'a', 's', 'd', 'e', 'space'];
+const QTE_TOUCH_LABELS = { w: '▲', a: '◀', s: '▼', d: '▶', e: 'A' };
+const qteLabel = (k) => (IS_TOUCH ? QTE_TOUCH_LABELS[k] : k.toUpperCase());
+
 // Web Audio Synth Sound Engine
 let globalAudioEnabled = false;
 let audioCtxInstance = null;
@@ -1328,7 +1334,7 @@ export default function InteractiveAvatar() {
             // Start QTE Climbing minigame / Hangboard stats
             setQteProgress(0);
             setQteStatus('playing');
-            const keysList = ['w', 'a', 's', 'd', 'e', 'space'];
+            const keysList = QTE_KEYS;
             const initialRandom = keysList[Math.floor(Math.random() * keysList.length)];
             setQteKey(initialRandom);
             setBoulderingTab('climb');
@@ -2193,7 +2199,7 @@ export default function InteractiveAvatar() {
           setDialogueText("🧗 [Bouldering]: You scaled the entire V5 Bouldering Wall! Climber Elite badge unlocked!");
         } else {
           // select next random hold key
-          const keysList = ['w', 'a', 's', 'd', 'e', 'space'];
+          const keysList = QTE_KEYS;
           const nextRandom = keysList[Math.floor(Math.random() * keysList.length)];
           setQteKey(nextRandom);
         }
@@ -2205,7 +2211,7 @@ export default function InteractiveAvatar() {
         setTimeout(() => {
           setQteStatus('playing');
           // reset key
-          const keysList = ['w', 'a', 's', 'd', 'e', 'space'];
+          const keysList = QTE_KEYS;
           const nextRandom = keysList[Math.floor(Math.random() * keysList.length)];
           setQteKey(nextRandom);
         }, 1200);
@@ -4394,7 +4400,7 @@ export default function InteractiveAvatar() {
                       <div style={{ textAlign: 'center', background: '#000', padding: '10px', border: '2px solid var(--rpg-text)', borderRadius: '4px' }}>
                         <div className="pixel-header" style={{ fontSize: '0.58rem', color: '#ffb700', marginBottom: '4px' }}>NEXT HOLD TO GRAB:</div>
                         <div className="pixel-header animate-bob" style={{ fontSize: '1.6rem', color: 'var(--rpg-highlight)', textShadow: '0 0 10px var(--rpg-highlight)' }}>
-                          {qteKey.toUpperCase()}
+                          {qteLabel(qteKey)}
                         </div>
                       </div>
                     )}
