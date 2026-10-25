@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import RPGStats from './components/RPGStats';
 import InteractiveAvatar from './components/InteractiveAvatar';
 import Sprite from './components/Sprite';
-import { motion, AnimatePresence } from 'framer-motion';
 import { GameStateProvider, useGameState } from './components/GameStateContext';
 
 // ── Developer character file (the fun "inspect developer" screen) ──────────
@@ -351,20 +350,14 @@ function GameConsole() {
       </div>
 
       {/* START Button Pause Menu Overlay */}
-      <AnimatePresence>
-        {showStartMenu && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="start-menu-backdrop"
+      {/* Enter animations are CSS (.anim-fade / .anim-pop in index.css) */}
+      {showStartMenu && (
+          <div
+            className="start-menu-backdrop anim-fade"
             onClick={() => setShowStartMenu(false)}
           >
-            <motion.div 
-              initial={{ scale: 0.9, y: 15 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 15 }}
-              className="start-menu-modal rpg-box"
+            <div
+              className="start-menu-modal rpg-box anim-pop"
               role="dialog"
               aria-modal="true"
               aria-label="Pause menu"
@@ -438,18 +431,14 @@ function GameConsole() {
                   </div>
                 )}
               </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </div>
+          </div>
+      )}
 
       {/* Details Inspection Modal Overlay */}
-      <AnimatePresence>
-        {activeItemId && selectedItem && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+      {activeItemId && selectedItem && (
+          <div
+            className="anim-fade"
             style={{
               position: 'fixed',
               top: 0, left: 0, right: 0, bottom: 0,
@@ -462,13 +451,9 @@ function GameConsole() {
             }}
             onClick={() => setActiveItemId(null)}
           >
-            <motion.div 
-              initial={{ scale: 0.8, y: 50 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.8, y: 50 }}
-              transition={{ type: 'spring', damping: 15 }}
+            <div
               onClick={(e) => e.stopPropagation()}
-              className="rpg-box"
+              className="rpg-box anim-pop anim-pop-big"
               role="dialog"
               aria-modal="true"
               aria-label={selectedItem.title}
@@ -572,10 +557,9 @@ function GameConsole() {
                   </div>
                 </div>
               )}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </div>
+          </div>
+      )}
     </div>
   );
 }
