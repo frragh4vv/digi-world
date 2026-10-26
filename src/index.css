@@ -315,14 +315,6 @@ body {
   gap: 8px;
 }
 
-.console-brand-badge {
-  font-size: 0.72rem;
-  color: #b9a6d6;
-  letter-spacing: 2px;
-  text-align: center;
-  line-height: 1.3;
-  text-shadow: 0 0 8px rgba(0, 255, 255, 0.35);
-}
 
 .select-start-cluster {
   display: flex;
@@ -503,9 +495,6 @@ body {
   }
   .d-pad-btn {
     font-size: 0.95rem;
-  }
-  .console-brand-badge {
-    font-size: 0.55rem;
   }
   .select-start-cluster {
     gap: 8px;

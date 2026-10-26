@@ -295,13 +295,8 @@ function GameConsole() {
               </button>
             </div>
 
-            {/* Center: System SELECT & START Pill Buttons + Retro Brand Label */}
+            {/* Center: System START Pill Button */}
             <div className="console-center-cluster">
-              <div className="pixel-header console-brand-badge">
-                ANTIGRAVITY<br/>
-                <span style={{ fontSize: '0.58rem', color: '#8d7ba3', letterSpacing: '1px' }}>RETRO COLOR</span>
-              </div>
-
               <div className="select-start-cluster">
                 <div className="system-pill-btn-wrap">
                   <button 
