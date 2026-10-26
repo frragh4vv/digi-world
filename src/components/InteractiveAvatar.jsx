@@ -2395,10 +2395,13 @@ export default function InteractiveAvatar() {
             best = v;
           }
         });
-        clickTarget.current = best;
+        clickTarget.current = { col: best.col + 0.5, row: best.row + 0.5 };
       }
     } else {
-      clickTarget.current = { col, row };
+      // Walk to the tile's centre — player coords are continuous, so {col,row}
+      // alone is the tile's top-left corner, which sits inside the collision
+      // box next to walls (the walk stopped short) and looks off on a tap
+      clickTarget.current = { col: col + 0.5, row: row + 0.5 };
     }
   };
 
