@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import RPGStats from './components/RPGStats';
 import InteractiveAvatar from './components/InteractiveAvatar';
 import Sprite from './components/Sprite';
+import BootScreen from './components/BootScreen';
 import { GameStateProvider, useGameState } from './components/GameStateContext';
 
 // ── Developer character file (the fun "inspect developer" screen) ──────────
@@ -220,6 +221,7 @@ function GameConsole() {
   const selectedItem = inventoryItems.find(item => item.id === activeItemId);
 
   const [startTab, setStartTab] = useState('stats'); // 'stats' | 'guide'
+  const [booting, setBooting] = useState(true); // handheld power-on screen
 
   useEffect(() => {
     const handleGlobalKey = (e) => {
@@ -274,6 +276,7 @@ function GameConsole() {
           <div className="game-viewport">
             <div className="crt-scanline" />
             <InteractiveAvatar />
+            {booting && <BootScreen onDone={() => setBooting(false)} />}
           </div>
 
           {/* Handheld Physical Controls */}

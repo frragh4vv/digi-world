@@ -826,3 +826,79 @@ body {
 .sound-pill:active {
   background: #352b44;
 }
+
+/* ── Boot / power-on screen (BootScreen.jsx) ── */
+.boot-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 600; /* above everything InteractiveAvatar draws */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 20px;
+  box-sizing: border-box;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25) 50%) 0 0 / 100% 3px,
+    radial-gradient(circle at 50% 45%, #0d1f24 0%, #050508 70%);
+  cursor: pointer;
+  animation: boot-power-on 0.45s ease-out both;
+  transition: opacity 0.35s ease;
+}
+.boot-screen.leaving {
+  opacity: 0;
+}
+.boot-logo {
+  font-size: clamp(1rem, 4vw, 1.9rem);
+  line-height: 1.5;
+  text-align: center;
+  color: var(--rpg-highlight);
+  text-shadow: 0 0 14px rgba(0, 255, 255, 0.7), 0 0 30px rgba(255, 0, 127, 0.35);
+  animation: boot-logo-in 0.9s ease-out 0.2s both;
+}
+.boot-log {
+  width: min(320px, 90%);
+  min-height: 7.5em;
+  font-size: clamp(0.9rem, 2.6vw, 1.15rem);
+  color: var(--rpg-text);
+  text-shadow: 0 0 6px rgba(0, 255, 102, 0.5);
+  line-height: 1.5;
+}
+.boot-bar {
+  width: min(320px, 90%);
+  height: 12px;
+  border: 2px solid var(--rpg-highlight);
+  border-radius: 3px;
+  background: #000;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.35);
+}
+.boot-bar-fill {
+  height: 100%;
+  background: repeating-linear-gradient(90deg, var(--rpg-highlight) 0 8px, #00b3b3 8px 10px);
+  transition: width 0.25s ease-out;
+}
+.boot-skip {
+  font-size: 0.5rem;
+  color: #6c6880;
+  animation: blink 1.2s steps(2, start) infinite;
+}
+/* CRT switching on: a bright horizontal line that opens up into the screen */
+@keyframes boot-power-on {
+  0% { transform: scale(1, 0.01); filter: brightness(3); }
+  60% { transform: scale(1, 1); filter: brightness(1.6); }
+  100% { transform: none; filter: none; }
+}
+@keyframes boot-logo-in {
+  from { opacity: 0; letter-spacing: 0.5em; }
+  to { opacity: 1; }
+}
+/* On phones the screen behind can be very tall (character creator), so keep
+   the boot content at the top instead of centring it off-screen */
+@media (max-width: 768px) {
+  .boot-screen {
+    justify-content: flex-start;
+    padding-top: 64px;
+  }
+}
