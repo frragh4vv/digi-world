@@ -872,8 +872,10 @@ export default function InteractiveAvatar() {
         } else if (isConfirm) {
           if (typing && e.key !== 'Enter') return;
           e.preventDefault();
-          if (menuRow === CREATION_START_ROW || e.key === 'Enter') handleStartGame();
-          else applyCreationChoice(menuRow, menuCol);
+          // A / E / Enter always enters the room, as the "ENTER ROOM [A]"
+          // button promises — ◀ ▶ already apply the highlighted option, so A
+          // re-applying it did nothing visible (on phones A never started)
+          handleStartGame();
         }
         return;
       }
@@ -2739,7 +2741,7 @@ export default function InteractiveAvatar() {
         </button>
 
         <p className="pixel-text" style={{ fontSize: '1.05rem', color: '#666', marginTop: '12px', textAlign: 'center' }}>
-          🎮 D-pad / arrows: move the gold highlight · A / Enter: select · Enter anywhere: start
+          🎮 D-pad ▲▼: pick a row · ◀ ▶: change it · A / Enter: enter the room
         </p>
 
       </div>
