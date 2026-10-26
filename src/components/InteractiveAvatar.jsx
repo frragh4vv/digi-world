@@ -2456,6 +2456,7 @@ export default function InteractiveAvatar() {
 
     return (
       <div
+        className="creator-screen"
         style={{
           width: '100%',
           height: '100%',
@@ -2960,7 +2961,8 @@ export default function InteractiveAvatar() {
         ))}
 
         {/* Kickable overworld lobby soccer ball */}
-        <div 
+        <div
+          className="room-ball"
           style={{
             position: 'absolute',
             left: `${(ballPos.col / MAP_COLS) * 100}%`,
@@ -2979,6 +2981,7 @@ export default function InteractiveAvatar() {
 
         {/* 🐈 Easter-egg cat — loafs around, relocates when it pleases */}
         <div
+          className="room-cat"
           style={{
             position: 'absolute',
             left: `${((CAT_SPOTS[catSpot].col + 0.5) / MAP_COLS) * 100}%`,
@@ -2996,6 +2999,7 @@ export default function InteractiveAvatar() {
 
         {/* Raghav Animated NPC — increased by 15% to 37px x 44px */}
         <div
+          className="room-npc"
           style={{
             position: 'absolute',
             left: `${(raghavPos.col / MAP_COLS) * 100}%`,
@@ -3012,7 +3016,7 @@ export default function InteractiveAvatar() {
           {/* Thought bubble while acting at a station */}
           {raghavThought && (
             <div
-              className="pixel-header animate-bob"
+              className="pixel-header animate-bob room-thought"
               style={{
                 position: 'absolute',
                 top: '-34px',
@@ -3042,7 +3046,8 @@ export default function InteractiveAvatar() {
 
 
         {/* Custom Player Avatar Sprite — increased by 15% to 52px x 52px */}
-        <div 
+        <div
+          className="room-player"
           style={{
             position: 'absolute',
             left: `${(playerPos.col / MAP_COLS) * 100}%`,
@@ -3060,7 +3065,7 @@ export default function InteractiveAvatar() {
         >
           {nearObject && (
             <div
-              className="pixel-header animate-bob"
+              className="pixel-header animate-bob room-prompt"
               style={{
                 position: 'absolute',
                 top: '-45px',

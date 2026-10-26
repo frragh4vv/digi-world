@@ -902,3 +902,44 @@ body {
     padding-top: 64px;
   }
 }
+
+/* ── Phone: more room for the game, less for the console ──
+   Characters were a fixed 52px in a ~370px-wide room (about 3 tiles tall);
+   scale them and their bubbles down. Trim the console's padding and shrink
+   the D-pad / A / B so the screen gets the space. The character creator is
+   capped to the visible height (scrolls inside) so the controls stay in view
+   instead of ending up ~2000px down the page. Inline sizes => !important. */
+@media (max-width: 768px) {
+  .room-player { width: 34px !important; height: 34px !important; }
+  .room-npc { width: 25px !important; height: 30px !important; }
+  .room-cat { width: 20px !important; height: 20px !important; }
+  .room-ball { width: 16px !important; height: 16px !important; }
+  .room-prompt {
+    top: -30px !important;
+    font-size: 0.48rem !important;
+    padding: 2px 5px !important;
+  }
+  .room-thought {
+    top: -24px !important;
+    font-size: 0.42rem !important;
+    padding: 2px 4px !important;
+  }
+
+  .creator-screen {
+    height: calc(100dvh - 300px) !important;
+    min-height: 340px;
+  }
+
+  .console-layout { padding: 6px 2px 16px 2px; }
+  .handheld-container { padding: 4px 0; }
+  .handheld-chassis { padding: 6px 5px 8px 5px; gap: 6px; }
+  .game-viewport { border-width: 3px; }
+  .console-controls { margin-top: 0; padding: 0 6px; }
+  .d-pad {
+    grid-template-columns: repeat(3, 26px);
+    grid-template-rows: repeat(3, 26px);
+  }
+  .d-pad-btn { font-size: 0.8rem; border-width: 2px; }
+  .action-btn { width: 38px; height: 38px; font-size: 0.75rem; }
+  .speaker-grille { display: none; }
+}
