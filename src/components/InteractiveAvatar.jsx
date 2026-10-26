@@ -106,18 +106,12 @@ export const HAIR_COLORS = ['#181820', '#f4c542', '#7c3f1d', '#00f0ff', '#ff4d8d
 export const SHIRT_COLORS = ['#e63946', '#06d6a0', '#2a6fdb', '#22223b', '#fca311'];
 export const PANTS_COLORS = ['#2b4162', '#6c584c', '#1a1a24', '#dcd6cd', '#4f5d2f'];
 
-export const STAT_KEYS = ['stamina', 'curiosity', 'reflexes', 'intellect'];
-export const STAT_INFO = {
-  stamina:   { icon: '💪', label: 'Stamina',   perk: 'bigger energy tank, slower drain' },
-  curiosity: { icon: '🔍', label: 'Curiosity', perk: 'inspect things from 1 tile away' },
-  reflexes:  { icon: '⚡', label: 'Reflexes',  perk: 'walk & bike faster' },
-  intellect: { icon: '🧠', label: 'Intellect', perk: 'trivia hints, faster cooking' },
-};
 
 // D-pad row map: 
 // 0: hairStyle (5) · 1: outfitType (4) · 2: pantsType (4) · 3: faceStyle (4) · 4: skin (4) 
-// · 5: hairCol (5) · 6: shirtCol (5) · 7: pantsCol (5) · 8-11: stats · 12: START
-const CREATION_ROW_SIZES = [5, 4, 4, 4, 4, 5, 5, 5, 1, 1, 1, 1, 1];
+// · 5: hairCol (5) · 6: shirtCol (5) · 7: pantsCol (5) · 8: START
+const CREATION_ROW_SIZES = [5, 4, 4, 4, 4, 5, 5, 5, 1];
+const CREATION_START_ROW = 8;
 
 // Background colour for each floor zone, so prop/obstacle tiles can paint the
 // SAME floor as their surroundings instead of a dark box. Keep in sync with the
@@ -335,8 +329,6 @@ export default function InteractiveAvatar() {
   const [raghavThought, setRaghavThought] = useState(null);
   const raghavBrain = useRef({ pos: { col: 9, row: 6 }, path: [], mode: 'idle', actUntil: 0, stationIdx: 0 });
   const [gameStarted, setGameStarted] = useState(false);
-  const [pointsPool, setPointsPool] = useState(20);
-  const [statsAlloc, setStatsAlloc] = useState({ stamina: 5, curiosity: 5, reflexes: 5, intellect: 5 });
   // Always-ticking frame for static sprite previews (creation screen, gallery, guestbook)
   const [previewFrame, setPreviewFrame] = useState(0);
 
@@ -771,7 +763,7 @@ export default function InteractiveAvatar() {
         } else if (isConfirm && !triviaResult) {
           e.preventDefault();
           if (!triviaHidden.includes(menuRow)) handleTriviaAnswer(menuRow);
-        } else if (k === 'h' && playerStats.intellect >= 7) {
+        } else if (k === 'h') {
           e.preventDefault();
           useTriviaHint();
         }
@@ -869,11 +861,7 @@ export default function InteractiveAvatar() {
             });
           } else {
             const dir = k === 'arrowright' ? 1 : -1;
-            if (menuRow >= 8 && menuRow <= 11) {
-              // stat rows: ◀ takes a point back, ▶ spends one
-              adjustStat(STAT_KEYS[menuRow - 8], dir);
-              playSound(dir > 0 ? 'chime' : 'thump');
-            } else if (menuRow <= 7) {
+            if (menuRow < CREATION_START_ROW) {
               playSound('step');
               const size = CREATION_ROW_SIZES[menuRow];
               const next = (menuCol + dir + size) % size;
@@ -884,8 +872,8 @@ export default function InteractiveAvatar() {
         } else if (isConfirm) {
           if (typing && e.key !== 'Enter') return;
           e.preventDefault();
-          if (menuRow === 12 || e.key === 'Enter') handleStartGame();
-          else if (menuRow <= 7) applyCreationChoice(menuRow, menuCol);
+          if (menuRow === CREATION_START_ROW || e.key === 'Enter') handleStartGame();
+          else applyCreationChoice(menuRow, menuCol);
         }
         return;
       }
@@ -897,7 +885,7 @@ export default function InteractiveAvatar() {
       showKitchen, cookingItem, showCarousel, showTravelDiary, showVisitorGallery, selectedGalleryProfile,
       selectedVisitorReview, showGuestbookSubmit, showPCProjects, pcActiveProject,
       showTacticalBlueprints, showMangaLounge, showClimbingQTE, showFullscreenSoccer, showFullscreenBiking,
-      bikeSelected, activeItemId, guestbookEntries, currentQuestionIdx, playerStats, statsAlloc, pointsPool]);
+      bikeSelected, activeItemId, guestbookEntries, currentQuestionIdx, playerStats]);
 
   // ── Raghav NPC brain: wander → act → repeat ──────────────────────────────
   // Picks a random activity station, paths there avoiding walls, faces it, shows
@@ -1027,17 +1015,6 @@ export default function InteractiveAvatar() {
       ans: 2
     }
   ];
-
-  // Attribute distributor adjustments
-  const adjustStat = (statName, amount) => {
-    if (amount > 0 && pointsPool > 0) {
-      setStatsAlloc(prev => ({ ...prev, [statName]: prev[statName] + 1 }));
-      setPointsPool(p => p - 1);
-    } else if (amount < 0 && statsAlloc[statName] > 1) {
-      setStatsAlloc(prev => ({ ...prev, [statName]: prev[statName] - 1 }));
-      setPointsPool(p => p + 1);
-    }
-  };
 
   // Typewriter effect (deterministic slice so first character 'W' is never dropped)
   useEffect(() => {
@@ -2341,17 +2318,15 @@ export default function InteractiveAvatar() {
 
     playSound('chime');
 
-    // Set GameState contexts — the allocated attribute build is now REAL:
-    // ⚡ reflexes → speed · 💪 stamina → energy drain · 🔍 curiosity → inspect
-    // range · 🧠 intellect → trivia hints + cook speed (see the game loop).
+    // Set GameState contexts. (playerStats stays at the neutral 5/5/5/5
+    // default — the attribute allocator was removed from this screen.)
     setPlayerName(customName);
-    setPlayerStats({ ...statsAlloc });
     setPlayerColors(customColors);
 
     setGameStarted(true);
     setTimeout(() => {
       window.focus();
-      pushToast('🎒 Build locked in — your stats shape the run!');
+      pushToast(`🎒 Welcome in, ${customName.trim()}!`);
     }, 400);
   };
 
@@ -2556,7 +2531,7 @@ export default function InteractiveAvatar() {
                 cursor: 'pointer',
                 boxShadow: '0 3px 0 #000',
                 outline: 'none',
-                ...(menuRow === 12 ? FOCUS_RING : {})
+                ...(menuRow === CREATION_START_ROW ? FOCUS_RING : {})
               }}
             >
               🎮 ENTER ROOM [A]
@@ -2733,56 +2708,11 @@ export default function InteractiveAvatar() {
               </div>
             </div>
 
-            {/* ⚔️ Attribute Point Allocator (Rows 8..11) */}
-            <div className="rpg-box" style={{ padding: '8px 12px', background: '#050508' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                <span className="pixel-header" style={{ fontSize: '0.62rem', color: 'var(--rpg-highlight)' }}>⚔️ ALLOCATE ATTRIBUTES:</span>
-                <span className="pixel-header" style={{ fontSize: '0.62rem', color: pointsPool > 0 ? '#ffd166' : '#666' }}>
-                  POINTS LEFT: {pointsPool}
-                </span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                {STAT_KEYS.map((key, idx) => (
-                  <div
-                    key={key}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '8px', padding: '3px 6px',
-                      background: '#0a0a12', border: '1px solid #222',
-                      ...(menuRow === 8 + idx ? FOCUS_RING : {})
-                    }}
-                  >
-                    <span className="pixel-text" style={{ fontSize: '1.15rem', width: '110px', color: '#fff' }}>
-                      {STAT_INFO[key].icon} {STAT_INFO[key].label}
-                    </span>
-                    <button
-                      onClick={() => adjustStat(key, -1)}
-                      className="pixel-header"
-                      style={{ background: '#222', color: '#fff', border: '1px solid #555', width: '22px', cursor: 'pointer', fontSize: '0.7rem' }}
-                    >–</button>
-                    <div style={{ flex: 1, height: '10px', background: '#000', border: '1px solid #333', borderRadius: '999px', overflow: 'hidden' }}>
-                      <div style={{ width: `${(statsAlloc[key] / 15) * 100}%`, height: '100%', background: 'var(--rpg-text)', transition: 'width 0.15s' }} />
-                    </div>
-                    <span className="pixel-text" style={{ fontSize: '1.15rem', width: '22px', textAlign: 'center', color: 'var(--rpg-highlight)' }}>{statsAlloc[key]}</span>
-                    <button
-                      onClick={() => adjustStat(key, 1)}
-                      className="pixel-header"
-                      style={{ background: '#222', color: '#fff', border: '1px solid #555', width: '22px', cursor: 'pointer', fontSize: '0.7rem' }}
-                    >+</button>
-                  </div>
-                ))}
-              </div>
-              <p className="pixel-text" style={{ fontSize: '0.95rem', color: '#777', margin: '8px 0 0 0', lineHeight: 1.4 }}>
-                {menuRow >= 8 && menuRow <= 11
-                  ? `▶ ${STAT_INFO[STAT_KEYS[menuRow - 8]].perk}`
-                  : '💡 These change how the game plays: speed, energy, inspect range, hints.'}
-              </p>
-            </div>
-
           </div>
 
         </div>
 
-        {/* Start Game Action Button (Row 12) */}
+        {/* Start Game Action Button (D-pad row CREATION_START_ROW) */}
         <button
           onClick={handleStartGame}
           className="pixel-header animate-bob"
@@ -2796,7 +2726,7 @@ export default function InteractiveAvatar() {
             cursor: 'pointer',
             boxShadow: '3px 3px 0 #000',
             outline: 'none',
-            ...(menuRow === 12 ? FOCUS_RING : {})
+            ...(menuRow === CREATION_START_ROW ? FOCUS_RING : {})
           }}
         >
           🎮 ENTER COZY ROOM [A]
@@ -3273,8 +3203,9 @@ export default function InteractiveAvatar() {
               })}
             </div>
 
-            {/* 🧠 Intellect ≥ 7 perk: one hint per question */}
-            {playerStats.intellect >= 7 && (
+            {/* 🧠 One hint per question (was an Intellect ≥ 7 perk; the stat
+                allocator was removed, so everyone gets it) */}
+            {(
               <button
                 onClick={useTriviaHint}
                 disabled={triviaHintUsed || !!triviaResult}
@@ -3289,7 +3220,7 @@ export default function InteractiveAvatar() {
                   fontSize: '0.65rem'
                 }}
               >
-                🧠 {triviaHintUsed ? 'HINT USED' : 'USE INTELLECT HINT [H]'}
+                🧠 {triviaHintUsed ? 'HINT USED' : 'USE HINT [H]'}
               </button>
             )}
 
