@@ -285,15 +285,15 @@ const playSound = (type, force = false) => {
 
 // Exact standing targets for interactables (only triggers when standing directly on target)
 const ACTIVITY_TARGETS = [
-  { id: 'bouldering', target: { col: 2, row: 5 }, title: 'Bouldering & Hangboard Wall', dialogue: "🧗 [Bouldering & Hangboard]: Technical climbing slab & grip conditioning board. Press E or Action [A] to view stats & climb!", inspectPrompt: 'CLIMB & STATS', symbol: '🧗' },
-  { id: 'kitchen', target: { col: 7, row: 2 }, title: 'Cyber Bistro Kitchen', dialogue: "🍳 [Cyber Bistro Kitchen]: The grill is sizzling hot! Press E or Action [A] to cook food and restore stamina!", inspectPrompt: 'COOK FOOD', symbol: '🍳' },
-  { id: 'bulletin', target: { col: 11, row: 2 }, title: 'Hall of Fame Portraits', dialogue: "🖼️ [Hall of Fame]: Gilded portrait gallery of overworld explorers. Press E to view the Explorer Log & Guestbook!", inspectPrompt: 'EXPLORER LOG', symbol: '🖼️' },
-  { id: 'anime', target: { col: 14, row: 2 }, title: 'Manga & Anime Lounge', dialogue: "📚 [Manga Lounge]: Volumes of Hunter x Hunter & anime lore. Press E or Action [A] to test your trivia lore!", inspectPrompt: 'MANGA TRIVIA', symbol: '📚' },
-  { id: 'computerglowing', target: { col: 8, row: 5 }, title: 'Command Deck PC', dialogue: "💻 [Command Deck]: Triple monitors running code. Press E to inspect developer project files!", inspectPrompt: 'OPEN PC', symbol: '💻' },
-  { id: 'trekking', target: { col: 3, row: 9 }, title: 'Trek & Travel Campground', dialogue: "⛺ [Trek Campground]: Raghav's travel scrapbook detailing Corsica GR20 and Hampi boulders. Press E to open!", inspectPrompt: 'READ DIARY', symbol: '⛺' },
-  { id: 'bike', target: { col: 9, row: 10 }, title: 'Red Motorcycle & Bike Garage', dialogue: "🏍️ [Garage]: Red motorcycle tuned and ready! Press E or Action [A] to mount the vehicle and start the lap time trial!", inspectPrompt: 'START TIME TRIAL', symbol: '🏍️' },
-  { id: 'tacticboard', target: { col: 16, row: 10 }, title: 'Soccer Pitch & Tactical Board', dialogue: "⚽ [Soccer Field]: Tactical analysis board and mini ball. Press E or Action [A] to start the 1v1 match!", inspectPrompt: 'PLAY SOCCER', symbol: '⚽' },
-  { id: 'bed', target: { col: 2, row: 2 }, title: 'Cozy Spawning Bed', dialogue: "🛏️ [Spawning Bed]: Cozy gold quilt bed. Press E to rest and restore 100% Social Battery.", inspectPrompt: 'REST IN BED', symbol: '🛏️' }
+  { id: 'bouldering', target: { col: 2.5, row: 7.5 }, title: 'Bouldering & Hangboard Wall', dialogue: "🧗 [Bouldering & Hangboard]: Technical climbing slab & grip conditioning board. Press E or Action [A] to view stats & climb!", inspectPrompt: 'CLIMB & STATS', symbol: '🧗' },
+  { id: 'kitchen', target: { col: 8.8, row: 3.5 }, title: 'Cyber Bistro Kitchen', dialogue: "🍳 [Cyber Bistro Kitchen]: The grill is sizzling hot! Press E or Action [A] to cook food and restore stamina!", inspectPrompt: 'COOK FOOD', symbol: '🍳' },
+  { id: 'bulletin', target: { col: 12.2, row: 3.5 }, title: 'Hall of Fame Portraits', dialogue: "🖼️ [Hall of Fame]: Gilded portrait gallery of overworld explorers. Press E to view the Explorer Log & Guestbook!", inspectPrompt: 'EXPLORER LOG', symbol: '🖼️' },
+  { id: 'anime', target: { col: 14.3, row: 4.3 }, title: 'Manga & Anime Lounge', dialogue: "📚 [Manga Lounge]: Volumes of Hunter x Hunter & anime lore. Press E or Action [A] to test your trivia lore!", inspectPrompt: 'MANGA TRIVIA', symbol: '📚' },
+  { id: 'computerglowing', target: { col: 10.9, row: 7.6 }, title: 'Command Deck PC', dialogue: "💻 [Command Deck]: Triple monitors running code. Press E to inspect developer project files!", inspectPrompt: 'OPEN PC', symbol: '💻' },
+  { id: 'trekking', target: { col: 4.2, row: 12.3 }, title: 'Trek & Travel Campground', dialogue: "⛺ [Trek Campground]: Raghav's travel scrapbook detailing Corsica GR20 and Hampi boulders. Press E to open!", inspectPrompt: 'READ DIARY', symbol: '⛺' },
+  { id: 'bike', target: { col: 8.9, row: 12.6 }, title: 'Red Motorcycle & Bike Garage', dialogue: "🏍️ [Garage]: Red motorcycle tuned and ready! Press E or Action [A] to mount the vehicle and start the lap time trial!", inspectPrompt: 'START TIME TRIAL', symbol: '🏍️' },
+  { id: 'tacticboard', target: { col: 15.8, row: 11.8 }, title: 'Soccer Pitch & Tactical Board', dialogue: "⚽ [Soccer Field]: Tactical analysis board and mini ball. Press E or Action [A] to start the 1v1 match!", inspectPrompt: 'PLAY SOCCER', symbol: '⚽' },
+  { id: 'bed', target: { col: 3.0, row: 5.7 }, title: 'Cozy Spawning Bed', dialogue: "🛏️ [Spawning Bed]: Cozy gold quilt bed. Press E to rest and restore 100% Social Battery.", inspectPrompt: 'REST IN BED', symbol: '🛏️' }
 ];
 
 // Room Sections for the 3-second entrance popup with 10-second re-entry cooldown
