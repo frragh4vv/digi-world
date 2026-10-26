@@ -1575,7 +1575,10 @@ export default function InteractiveAvatar() {
 
     animId = requestAnimationFrame(gameLoop);
     return () => cancelAnimationFrame(animId);
-  }, [gameStarted, isRiding, caffeineTimer, playerStats, catSpot, petCount, roastCount, raidCount, isRoasting]);
+    // isModalOpen must be a dependency: the loop reads it from this closure, and
+    // if the loop was last rebuilt while a popup was open (e.g. the cat moved
+    // meanwhile) it kept "seeing" the popup and froze the player after closing
+  }, [gameStarted, isModalOpen, isRiding, caffeineTimer, playerStats, catSpot, petCount, roastCount, raidCount, isRoasting]);
   // --- standalone ⚽ 1V1 SOCCER DUEL ARCADE PORTAL SYSTEM ---
   useEffect(() => {
     if (!showFullscreenSoccer) return;
