@@ -729,16 +729,10 @@ body {
 }
 
 /* ── Phone: smaller in-room HUD chips ──
-   The SOUND button, toasts and zone banner are sized for a desktop screen;
-   on a ~350px room they covered each other. Inline styles set the desktop
-   sizes, hence !important. The zone banner moves to the bottom edge. */
+   Toasts and the zone banner are sized for a desktop screen; on a ~350px
+   room they covered each other. Inline styles set the desktop sizes, hence
+   !important. The zone banner moves to the bottom edge. */
 @media (max-width: 768px) {
-  .sound-toggle {
-    top: 6px !important;
-    right: 6px !important;
-    font-size: 0.5rem !important;
-    padding: 3px 6px !important;
-  }
   .game-toast {
     font-size: 0.5rem !important;
     padding: 4px 8px !important;
@@ -812,4 +806,23 @@ body {
     radial-gradient(ellipse 34% 7% at 50% 84%, rgba(60, 35, 15, 0.35), transparent 100%),
     radial-gradient(circle at 50% 35%, #fff8ea 0%, #efe3c8 55%, #cdb88f 100%);
   overflow: hidden;
+}
+
+/* SOUND pill on the console panel (next to START): grey while muted,
+   glowing green when sound is on */
+.sound-pill {
+  background: #4a4458;
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.25),
+    0 2px 4px rgba(0, 0, 0, 0.4);
+}
+.sound-pill.on {
+  background: #1f9d55;
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.4),
+    0 0 10px rgba(0, 255, 102, 0.55);
+}
+.sound-pill:active {
+  background: #352b44;
 }

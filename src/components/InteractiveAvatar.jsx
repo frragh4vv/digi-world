@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import Sprite from './Sprite';
 import PixelProp from './PixelProp';
 import { useGameState } from './GameStateContext';
@@ -562,6 +563,14 @@ export default function InteractiveAvatar() {
   useEffect(() => {
     isPausedRef.current = isPaused;
   }, [isPaused]);
+
+  // The SOUND toggle lives on the console's button panel (App renders an
+  // empty #console-sound-slot next to START); we portal the button into it so
+  // the audio logic stays here. Looked up after mount, once App's DOM exists.
+  const [soundSlot, setSoundSlot] = useState(null);
+  useEffect(() => {
+    setSoundSlot(document.getElementById('console-sound-slot'));
+  }, []);
 
   // Drive idle sprite-preview animation (creation screen + gallery cards)
   useEffect(() => {
@@ -2423,13 +2432,47 @@ export default function InteractiveAvatar() {
     }
   }
 
+  const toggleAudio = (e) => {
+    e.stopPropagation();
+    const next = !isAudioEnabled;
+    setIsAudioEnabled(next);
+    globalAudioEnabled = next;
+    isAudioEnabledRef.current = next;
+    const ctx = getAudioCtx();
+    if (next) {
+      if (ctx && ctx.state === 'suspended') {
+        ctx.resume().then(() => playSound('chime', true)).catch(() => playSound('chime', true));
+      } else {
+        playSound('chime', true);
+      }
+      pushToast("🔊 Sound Unmuted", "#4caf50");
+    } else {
+      pushToast("🔇 Sound Muted", "#f44336");
+    }
+  };
+
+  // SOUND pill on the console button panel, next to START (see soundSlot)
+  const soundPortal = soundSlot && createPortal(
+    <>
+      <button
+        onClick={toggleAudio}
+        className={`system-pill-btn sound-pill${isAudioEnabled ? ' on' : ''}`}
+        title={isAudioEnabled ? 'Sound on — click to mute' : 'Sound muted — click to unmute'}
+        aria-label={isAudioEnabled ? 'Mute sound' : 'Unmute sound'}
+        aria-pressed={isAudioEnabled}
+      />
+      <span className="system-pill-label">{isAudioEnabled ? 'SOUND' : 'MUTED'}</span>
+    </>,
+    soundSlot
+  );
+
   // --- RENDERING COZY CHARACTER CUSTOMIZER STARTUP SCREEN ---
   if (!gameStarted) {
     // Gold ring marking the D-pad focus position (see CREATION_ROW_SIZES map)
     const ring = (r, c) => (menuRow === r && menuCol === c ? FOCUS_RING : {});
 
     return (
-      <div 
+      <div
         style={{
           width: '100%',
           height: '100%',
@@ -2444,6 +2487,7 @@ export default function InteractiveAvatar() {
           overflowY: 'auto'
         }}
       >
+        {soundPortal}
         <div style={{ textAlign: 'center', marginBottom: '14px' }}>
           <h2 className="pixel-header" style={{ fontSize: '1.15rem', color: 'var(--rpg-highlight)', margin: '0 0 6px 0', textShadow: '0 0 12px rgba(0,255,255,0.45)' }}>
             🏠 DESIGN YOUR EXPLORER
@@ -2770,48 +2814,11 @@ export default function InteractiveAvatar() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%', position: 'relative' }}>
       
-      {/* Audio toggle button top-right in game area */}
-      <button 
-        onClick={(e) => {
-          e.stopPropagation();
-          const next = !isAudioEnabled;
-          setIsAudioEnabled(next);
-          globalAudioEnabled = next;
-          isAudioEnabledRef.current = next;
-          const ctx = getAudioCtx();
-          if (next) {
-            if (ctx && ctx.state === 'suspended') {
-              ctx.resume().then(() => playSound('chime', true)).catch(() => playSound('chime', true));
-            } else {
-              playSound('chime', true);
-            }
-            pushToast("🔊 Sound Unmuted", "#4caf50");
-          } else {
-            pushToast("🔇 Sound Muted", "#f44336");
-          }
-        }}
-        className="pixel-header sound-toggle"
-        style={{
-          position: 'absolute',
-          top: '10px',
-          right: '10px',
-          zIndex: 500,
-          background: isAudioEnabled ? 'rgba(0, 40, 20, 0.95)' : 'rgba(20, 20, 30, 0.95)',
-          color: isAudioEnabled ? '#4caf50' : '#888',
-          border: `2px solid ${isAudioEnabled ? '#4caf50' : '#555'}`,
-          padding: '4px 8px',
-          fontSize: '0.68rem',
-          cursor: 'pointer',
-          borderRadius: '4px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.6)'
-        }}
-      >
-        {isAudioEnabled ? "🔊 SOUND: ON" : "🔇 SOUND: MUTED"}
-      </button>
+      {soundPortal}
 
-      {/* 🍞 Quest / badge toast stack (top-center popups) — starts below the
-          SOUND button and wraps, so long toasts aren't hidden or cut off */}
-      <div style={{ position: 'absolute', top: '44px', left: '50%', transform: 'translateX(-50%)', width: 'calc(100% - 24px)', zIndex: 300, display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center', pointerEvents: 'none' }}>
+      {/* 🍞 Quest / badge toast stack (top-center popups) — wraps, so long
+          toasts aren't cut off */}
+      <div style={{ position: 'absolute', top: '12px', left: '50%', transform: 'translateX(-50%)', width: 'calc(100% - 24px)', zIndex: 300, display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center', pointerEvents: 'none' }}>
         {toasts.map(t => (
           <div
             key={t.id}

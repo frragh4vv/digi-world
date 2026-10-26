@@ -295,9 +295,11 @@ function GameConsole() {
               </button>
             </div>
 
-            {/* Center: System START Pill Button */}
+            {/* Center: SOUND + START pill buttons. The SOUND pill is portalled
+                into #console-sound-slot by InteractiveAvatar (owns the audio) */}
             <div className="console-center-cluster">
               <div className="select-start-cluster">
+                <div id="console-sound-slot" className="system-pill-btn-wrap" />
                 <div className="system-pill-btn-wrap">
                   <button 
                     onClick={() => setShowStartMenu(prev => !prev)}
