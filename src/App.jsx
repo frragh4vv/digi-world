@@ -330,7 +330,6 @@ function GameConsole() {
                   B
                 </button>
               </div>
-              <span className="sparkle-icon">✦</span>
             </div>
           </div>
 
