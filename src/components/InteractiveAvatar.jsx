@@ -146,6 +146,16 @@ const QTE_KEYS = IS_TOUCH ? ['w', 'a', 's', 'd', 'e'] : ['w', 'a', 's', 'd', 'e'
 const QTE_TOUCH_LABELS = { w: '▲', a: '◀', s: '▼', d: '▶', e: 'A' };
 const qteLabel = (k) => (IS_TOUCH ? QTE_TOUCH_LABELS[k] : k.toUpperCase());
 
+// Soccer duel bot. aiSpeed = field-% per frame, thinkFrames = how often it
+// re-plans toward the ball (lower reacts faster). Normal is 10% quicker than
+// the old fixed 0.25 bot; Easy is a bit gentler than before.
+const SOCCER_DIFFICULTY = {
+  easy:   { label: 'EASY',   aiSpeed: 0.22,  thinkFrames: 44 },
+  normal: { label: 'NORMAL', aiSpeed: 0.275, thinkFrames: 38 },
+  hard:   { label: 'HARD',   aiSpeed: 0.34,  thinkFrames: 24 }
+};
+const SOCCER_LEVELS = ['easy', 'normal', 'hard'];
+
 // Web Audio Synth Sound Engine
 let globalAudioEnabled = false;
 let audioCtxInstance = null;
@@ -417,6 +427,7 @@ export default function InteractiveAvatar() {
   const [qteStatus, setQteStatus] = useState('playing'); // 'playing' | 'success' | 'fail'
   
   const [showTacticalBlueprints, setShowTacticalBlueprints] = useState(false);
+  const [soccerDifficulty, setSoccerDifficulty] = useState('normal'); // see SOCCER_DIFFICULTY
   const [showPCProjects, setShowPCProjects] = useState(false);
   const [pcActiveProject, setPcActiveProject] = useState('scraper'); // 'scraper' | 'rpg' | 'tactics'
   const [simulatedLogs, setSimulatedLogs] = useState([]);
@@ -794,7 +805,15 @@ export default function InteractiveAvatar() {
       }
 
       if (showTacticalBlueprints) {
-        if (isConfirm) {
+        if (k === 'arrowleft' || k === 'arrowright') {
+          // ◀ ▶ pick the match difficulty
+          e.preventDefault();
+          playSound('step');
+          setSoccerDifficulty(d => {
+            const i = SOCCER_LEVELS.indexOf(d) + (k === 'arrowright' ? 1 : -1);
+            return SOCCER_LEVELS[Math.max(0, Math.min(SOCCER_LEVELS.length - 1, i))];
+          });
+        } else if (isConfirm) {
           e.preventDefault();
           playSound('chime');
           setShowTacticalBlueprints(false);
@@ -1755,12 +1774,13 @@ export default function InteractiveAvatar() {
       pCol = Math.max(7, Math.min(88, pCol + dx));
       pRow = Math.max(12, Math.min(88, pRow + dy));
 
-      // 2. Opponent Sprite (Raghav in red/black jersey) chases ball (slower & relaxed reaction latency)
-      let aiSpeed = 0.25; // Reduced AI speed per user request
+      // 2. Opponent Sprite (Raghav in red/black jersey) chases ball. Speed and
+      // reaction delay come from the chosen difficulty (SOCCER_DIFFICULTY)
+      const { aiSpeed, thinkFrames } = SOCCER_DIFFICULTY[soccerDifficulty];
 
       aiThinkFrames += 1;
-      // recalculate target only every 38 frames (~630ms) to simulate slower reaction delay
-      if (aiThinkFrames >= 38) {
+      // recalculate target only every thinkFrames frames to simulate reaction delay
+      if (aiThinkFrames >= thinkFrames) {
         aiThinkFrames = 0;
         decidedAiDx = 0;
         decidedAiDy = 0;
@@ -3745,7 +3765,7 @@ export default function InteractiveAvatar() {
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#000', padding: '10px 15px', borderBottom: '3px solid var(--rpg-highlight)' }}>
             <span className="pixel-header" style={{ fontSize: '0.75rem', color: 'var(--rpg-highlight)' }}>⚽ 1V1 SOCCER DUEL</span>
-            <span className="pixel-header" style={{ fontSize: '0.75rem', color: '#fff' }}>MATCH TIMER: {fsSoccerTimer}s</span>
+            <span className="pixel-header" style={{ fontSize: '0.75rem', color: '#fff' }}>MATCH TIMER: {fsSoccerTimer}s · {SOCCER_DIFFICULTY[soccerDifficulty].label}</span>
             <span className="pixel-header" style={{ fontSize: '0.75rem', color: 'var(--rpg-accent)' }}>YOU: {soccerPlayerScore} - RAGHAV: {soccerAIScore}</span>
             <button 
               onClick={() => setShowFullscreenSoccer(false)}
@@ -4528,13 +4548,37 @@ export default function InteractiveAvatar() {
 
             </div>
 
+            {/* Match difficulty (◀ ▶ on the D-pad, or tap) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '10px' }}>
+              <span className="pixel-header" style={{ fontSize: '0.6rem', color: '#9de2c8', marginRight: '4px' }}>◀ DIFFICULTY ▶</span>
+              {SOCCER_LEVELS.map(level => (
+                <button
+                  key={level}
+                  onClick={() => { playSound('step'); setSoccerDifficulty(level); }}
+                  className="pixel-header"
+                  aria-pressed={soccerDifficulty === level}
+                  style={{
+                    flex: 1,
+                    padding: '6px 4px',
+                    fontSize: '0.6rem',
+                    cursor: 'pointer',
+                    background: soccerDifficulty === level ? '#ffd166' : '#14261a',
+                    color: soccerDifficulty === level ? '#000' : '#9de2c8',
+                    border: `2px solid ${soccerDifficulty === level ? '#000' : '#2e5a3a'}`
+                  }}
+                >
+                  {SOCCER_DIFFICULTY[level].label}
+                </button>
+              ))}
+            </div>
+
             {/* Play Match call-to-action */}
             <button
               onClick={() => { setShowTacticalBlueprints(false); setShowFullscreenSoccer(true); }}
               className="pixel-header"
               style={{ marginTop: '10px', width: '100%', background: 'var(--rpg-highlight)', color: '#000', border: '2px solid #000', padding: '8px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer', boxShadow: '2px 2px 0 #000' }}
             >
-              ⚽ PLAY A MATCH — 1V1 SOCCER DUEL
+              ⚽ PLAY A MATCH — 1V1 SOCCER DUEL ({SOCCER_DIFFICULTY[soccerDifficulty].label}) [A]
             </button>
 
           </div>
