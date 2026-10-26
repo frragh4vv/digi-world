@@ -2457,8 +2457,9 @@ export default function InteractiveAvatar() {
           
           {/* Left panel: Live Sprite Preview, Name & Quick Enter Button */}
           <div style={{ width: '220px', display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
-            <div className="rpg-box" style={{ width: '150px', height: '150px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'radial-gradient(circle at 50% 40%, #11241a 0%, #000 75%)', border: '3px solid var(--rpg-text)', boxShadow: '0 0 18px rgba(0,255,102,0.45)' }}>
-              <div style={{ width: '92px', height: '92px' }}>
+            {/* Light "stage" (see .sprite-stage) so dark hair / outfits stay visible */}
+            <div className="rpg-box sprite-stage" style={{ width: '150px', height: '150px', border: '3px solid var(--rpg-text)', boxShadow: '0 0 18px rgba(0,255,102,0.45)' }}>
+              <div style={{ width: '112px', height: '112px' }}>
                 <Sprite direction="down" frame={previewFrame} customColors={customColors} />
               </div>
             </div>

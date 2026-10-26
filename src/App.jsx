@@ -56,7 +56,7 @@ function DevCharacterCard() {
     <div style={{ display: 'flex', gap: '22px', flexWrap: 'wrap', marginTop: '10px' }}>
       {/* Left: animated sprite on a pedestal + identity + live status ticker */}
       <div style={{ width: '230px', display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
-        <div className="rpg-box" style={{ width: '170px', height: '170px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'radial-gradient(circle at 50% 35%, #1c2418 0%, #000 75%)', border: '3px solid var(--rpg-highlight)', boxShadow: '0 0 18px rgba(0,255,255,0.35)' }}>
+        <div className="rpg-box sprite-stage" style={{ width: '170px', height: '170px', border: '3px solid var(--rpg-highlight)', boxShadow: '0 0 18px rgba(0,255,255,0.35)' }}>
           <div style={{ width: '104px', height: '104px' }}>
             <Sprite direction="down" frame={frame} customColors={DEV_COLORS} />
           </div>

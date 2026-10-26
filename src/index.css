@@ -809,3 +809,17 @@ body {
   from { transform: translateY(50px) scale(0.8); }
   to { transform: none; }
 }
+
+/* Character preview "stage": a light parchment backdrop with a floor shadow.
+   The old near-black backdrop swallowed black hair, dark pants and dark
+   shirts; the sprite's dark outline reads clearly on this instead. */
+.sprite-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse 34% 7% at 50% 84%, rgba(60, 35, 15, 0.35), transparent 100%),
+    radial-gradient(circle at 50% 35%, #fff8ea 0%, #efe3c8 55%, #cdb88f 100%);
+  overflow: hidden;
+}
