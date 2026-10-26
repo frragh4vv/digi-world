@@ -3779,7 +3779,9 @@ export default function InteractiveAvatar() {
           <div style={{
             flex: 1,
             position: 'relative',
-            background: 'repeating-linear-gradient(90deg, #1b4b22 0px, #1b4b22 36px, #235c2b 36px, #235c2b 72px)',
+            // Textured turf (the pre-redesign grassturf art, now a 113KB WebP)
+            // with the mowing stripes as a light overlay on top
+            background: 'repeating-linear-gradient(90deg, rgba(0,0,0,0.12) 0px, rgba(0,0,0,0.12) 36px, rgba(255,255,255,0.04) 36px, rgba(255,255,255,0.04) 72px), #1b4b22 url(/grassturf.webp) center/cover',
             imageRendering: 'pixelated',
             overflow: 'hidden'
           }}>
